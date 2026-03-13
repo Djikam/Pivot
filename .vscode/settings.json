@@ -3,6 +3,7 @@
         "/^git add \\.$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "git commit": true
     }
 }
