@@ -1,0 +1,391 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PIVOT — Design System v2.0
+   "Le Pivot du handball camerounais."
+   Typographie : Cormorant Garamond (display) + Outfit (corps)
+   Motifs africains : Kente · Adinkra · Géométrie Sawa
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* ── Variables globales ── */
+:root {
+  /* Palette principale */
+  --p-red:   #8C1525;
+  --p-gold:  #C4922A;
+  --p-bg:    #070409;
+  --p-bg2:   #0F0B12;
+  --p-bg3:   #2A1E30;
+  --p-card:  #1D1120;
+  --p-border:#2E1F38;
+  --p-text:  #F0ECF4;
+  --p-sub:   #A090A8;
+  --p-muted: #6A5A72;
+
+  /* Statuts */
+  --p-green: #3BAA6A;
+  --p-blue:  #3A80BE;
+  --p-orange:#D4721A;
+  --p-blue-disc: #3A2A8A;  /* Carton bleu handball uniquement */
+
+  /* Motifs africains — Kente */
+  --kente-or:   #D4A820;
+  --kente-vert: #2C7A2C;
+  --kente-rouge:#8C1525;
+  --kente-bleu: #1A1A6A;
+  --kente-blanc:#F0ECF4;
+
+  /* Couleurs nationales Cameroun (module National uniquement) */
+  --cam-green:  #007A5E;
+  --cam-red:    #CE1126;
+  --cam-yellow: #FCD116;
+
+  /* Discipline handball */
+  --disc-avertissement: #A0A0A0;
+  --disc-jaune:         #D4A820;
+  --disc-suspension:    #D4721A;
+  --disc-rouge:         #8C1525;
+  --disc-bleu:          #3A2A8A;
+
+  /* Typographie */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'Outfit', system-ui, sans-serif;
+
+  /* Espacements */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+
+  /* Transitions */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur:  180ms;
+}
+
+/* ── Mode jour ── */
+html.light {
+  --p-bg:    #F5F2F8;
+  --p-bg2:   #EDE8F2;
+  --p-bg3:   #DDD6E8;
+  --p-card:  #FFFFFF;
+  --p-border:#D0C8DC;
+  --p-text:  #1A0D24;
+  --p-sub:   #5A4A6A;
+  --p-muted: #8A7A9A;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--p-bg);
+  color: var(--p-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOTIFS AFRICAINS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Kente Divider (bande tissu kente) ── */
+.kente-divider {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  height: 8px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+}
+.kente-divider > span:nth-child(10n+1)  { background: var(--kente-or); }
+.kente-divider > span:nth-child(10n+2)  { background: var(--kente-vert); }
+.kente-divider > span:nth-child(10n+3)  { background: var(--kente-rouge); }
+.kente-divider > span:nth-child(10n+4)  { background: var(--kente-bleu); }
+.kente-divider > span:nth-child(10n+5)  { background: var(--kente-blanc); }
+.kente-divider > span:nth-child(10n+6)  { background: var(--kente-or); }
+.kente-divider > span:nth-child(10n+7)  { background: var(--kente-rouge); }
+.kente-divider > span:nth-child(10n+8)  { background: var(--kente-vert); }
+.kente-divider > span:nth-child(10n+9)  { background: var(--kente-bleu); }
+.kente-divider > span:nth-child(10n+10) { background: var(--kente-or); }
+
+/* ── Adinkra Watermark (SVG en background) ── */
+/* Symbole Adinkra "Gye Nyame" simplifié — suprématie, force */
+.adinkra-watermark {
+  position: relative;
+  overflow: hidden;
+}
+.adinkra-watermark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23C4922A' stroke-width='1.5' opacity='0.12'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='18'/%3E%3Cline x1='40' y1='10' x2='40' y2='70'/%3E%3Cline x1='10' y1='40' x2='70' y2='40'/%3E%3Cline x1='19' y1='19' x2='61' y2='61'/%3E%3Cline x1='61' y1='19' x2='19' y2='61'/%3E%3Ccircle cx='40' cy='40' r='6' fill='%23C4922A' opacity='0.15'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  pointer-events: none;
+  z-index: 0;
+}
+.adinkra-watermark > * { position: relative; z-index: 1; }
+
+/* ── Sawa Géométrie (background pattern géométrique Littoral Cameroun) ── */
+.sawa-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%238C1525' stroke-width='0.8' opacity='0.08'%3E%3Cpolygon points='30,5 55,20 55,40 30,55 5,40 5,20'/%3E%3Cpolygon points='30,15 45,22 45,38 30,45 15,38 15,22'/%3E%3Cline x1='30' y1='5' x2='30' y2='55'/%3E%3Cline x1='5' y1='20' x2='55' y2='40'/%3E%3Cline x1='5' y1='40' x2='55' y2='20'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+
+/* ── Bande bicolore rouge/or (Adinkra-inspired dual stripe) ── */
+.adinkra-stripe {
+  height: 4px;
+  background: linear-gradient(to right, var(--p-red) 50%, var(--p-gold) 50%);
+  width: 100%;
+}
+
+/* ── Card Équipes Nationales (tricolore camerounais en top border) ── */
+.p-card-cam {
+  border-top: 4px solid transparent;
+  border-image: linear-gradient(to right, var(--cam-green), var(--cam-red), var(--cam-yellow)) 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPOSANTS PIVOT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Cards ── */
+.p-card {
+  background: var(--p-card);
+  border: 1px solid var(--p-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.p-card:hover {
+  border-color: var(--p-red);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(140, 21, 37, 0.15);
+}
+.p-card-gold:hover { border-color: var(--p-gold); box-shadow: 0 8px 24px rgba(196, 146, 42, 0.15); }
+.p-card-champion { border-color: var(--p-gold); }
+.p-card-champion.sawa-bg { /* pattern géométrique pour les cartes champions */ }
+
+/* ── Boutons ── */
+.p-btn-red {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  background: var(--p-red); color: #fff;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.p-btn-red:hover { background: #a01c2e; transform: translateY(-1px); }
+
+.p-btn-gold {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  background: var(--p-gold); color: #fff;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  transition: background var(--dur) var(--ease);
+}
+.p-btn-gold:hover { background: #b5831f; }
+
+.p-btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: var(--radius-sm);
+  border: 1px solid var(--p-border); color: var(--p-text);
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.p-btn-ghost:hover { border-color: var(--p-red); background: rgba(140,21,37,0.06); }
+
+.p-btn-sm { padding: 6px 14px; font-size: 13px; }
+.p-btn-lg { padding: 14px 28px; font-size: 16px; }
+
+/* ── Badges ── */
+.p-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 99px;
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.p-badge-red    { background: rgba(140,21,37,.18);   color: #e05070; border: 1px solid rgba(140,21,37,.3); }
+.p-badge-gold   { background: rgba(196,146,42,.18);  color: var(--p-gold); border: 1px solid rgba(196,146,42,.3); }
+.p-badge-green  { background: rgba(59,170,106,.18);  color: var(--p-green); border: 1px solid rgba(59,170,106,.3); }
+.p-badge-blue   { background: rgba(58,128,190,.18);  color: var(--p-blue); border: 1px solid rgba(58,128,190,.3); }
+.p-badge-muted  { background: rgba(160,144,168,.1);  color: var(--p-sub); border: 1px solid var(--p-border); }
+.p-badge-live   { background: rgba(59,170,106,.2);   color: var(--p-green); border: 1px solid var(--p-green); animation: pulseGreen 1.8s ease-in-out infinite; }
+
+/* ── Badges discipline handball ── */
+.p-badge-avertissement { background: rgba(160,160,160,.15); color: #A0A0A0; border: 1px solid rgba(160,160,160,.3); }
+.p-badge-jaune         { background: rgba(212,168,32,.2);  color: var(--kente-or); border: 1px solid rgba(212,168,32,.4); }
+.p-badge-suspension    { background: rgba(212,114,26,.2);  color: #D4721A; border: 1px solid rgba(212,114,26,.4); }
+.p-badge-rouge         { background: rgba(140,21,37,.25);  color: #e05070; border: 1px solid rgba(140,21,37,.5); }
+.p-badge-bleu          { background: rgba(58,42,138,.25);  color: #8A7AFF; border: 1px solid rgba(58,42,138,.5); }
+
+/* ── Tableaux ── */
+.p-table { width: 100%; border-collapse: collapse; }
+.p-table th {
+  background: var(--p-bg2); color: var(--p-sub);
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 10px 16px; text-align: left;
+  border-bottom: 1px solid var(--p-border);
+}
+.p-table td {
+  padding: 12px 16px; border-bottom: 1px solid var(--p-border);
+  font-size: 14px; color: var(--p-text);
+}
+.p-table tbody tr:hover { background: rgba(140,21,37,0.04); }
+.p-table .rank-1 td { background: rgba(196,146,42,0.06); }
+.p-table .rank-2 td { background: rgba(160,160,160,0.04); }
+.p-table .rank-3 td { background: rgba(140,80,30,0.04); }
+.p-table .zone-promotion td:first-child { border-left: 3px solid var(--p-green); }
+.p-table .zone-relegation td:first-child { border-left: 3px solid var(--p-red); }
+
+/* ── Inputs ── */
+.p-input {
+  width: 100%; padding: 10px 14px;
+  background: var(--p-bg2); border: 1px solid var(--p-border); border-radius: var(--radius-sm);
+  color: var(--p-text); font-family: var(--font-body); font-size: 14px;
+  transition: border-color var(--dur) var(--ease);
+  outline: none;
+}
+.p-input:focus { border-color: var(--p-red); }
+.p-input::placeholder { color: var(--p-muted); }
+
+.p-select {
+  appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A090A8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.p-label {
+  display: block; font-size: 12px; font-weight: 600; color: var(--p-sub);
+  letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px;
+}
+
+/* ── Score IA (cercle) ── */
+.p-score-ring {
+  position: relative; display: inline-flex;
+  align-items: center; justify-content: center;
+}
+.p-score-ring svg { transform: rotate(-90deg); }
+.p-score-ring .score-value {
+  position: absolute;
+  font-family: var(--font-display); font-weight: 700;
+  color: var(--p-text); line-height: 1;
+}
+
+/* ── Sections ── */
+.p-section { padding: 64px 0; }
+.p-section-sm { padding: 40px 0; }
+.p-container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+.p-container-sm { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+/* ── Hero ── */
+.p-hero {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--p-bg) 0%, var(--p-card) 50%, var(--p-bg) 100%);
+  border-bottom: 1px solid var(--p-border);
+}
+.p-hero::after {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 40%;
+  background: radial-gradient(ellipse at right center, rgba(140,21,37,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Tabs ── */
+.p-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--p-border); }
+.p-tab {
+  padding: 12px 20px; font-size: 14px; font-weight: 500; color: var(--p-sub);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.p-tab:hover { color: var(--p-text); }
+.p-tab.active { color: var(--p-red); border-bottom-color: var(--p-red); font-weight: 600; }
+
+/* ── Podium buteurs ── */
+.p-podium { display: flex; align-items: flex-end; justify-content: center; gap: 16px; }
+.p-podium-step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.p-podium-rank-1 .p-podium-bar { height: 80px; background: var(--p-gold); border-radius: 4px 4px 0 0; width: 60px; }
+.p-podium-rank-2 .p-podium-bar { height: 55px; background: #8A8A9A; border-radius: 4px 4px 0 0; width: 60px; }
+.p-podium-rank-3 .p-podium-bar { height: 38px; background: #8A5A2A; border-radius: 4px 4px 0 0; width: 60px; }
+
+/* ── Forme équipe (5 derniers matchs) ── */
+.p-forme { display: flex; gap: 3px; }
+.p-forme-v { width: 18px; height: 18px; border-radius: 3px; background: var(--p-green); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+.p-forme-n { background: var(--p-sub); }
+.p-forme-d { background: var(--p-red); }
+
+/* ── Fiabilité RADAR ── */
+.p-radar-4 { color: var(--p-green);  border-color: var(--p-green); }   /* Confirmé */
+.p-radar-3 { color: var(--p-blue);   border-color: var(--p-blue); }    /* Officieux */
+.p-radar-2 { color: var(--p-gold);   border-color: var(--p-gold); }    /* Rumeur */
+.p-radar-1 { color: var(--p-red);    border-color: var(--p-red); }     /* Suspicion */
+
+/* ── Kente stripe verticale (accent lateral card) ── */
+.kente-accent-left {
+  border-left: 4px solid transparent;
+  border-image: linear-gradient(to bottom, var(--kente-or), var(--kente-vert), var(--kente-rouge), var(--kente-bleu)) 1;
+}
+
+/* ── Séparateur de section ── */
+.p-divider { height: 1px; background: var(--p-border); margin: 32px 0; }
+.p-divider-kente { margin: 32px 0; }
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(140,21,37,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(140,21,37,0); }
+}
+@keyframes pulseGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,170,106,0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(59,170,106,0); }
+}
+@keyframes pulseGold {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in-up { animation: fadeInUp 0.4s var(--ease) both; }
+.animate-slide-in   { animation: slideInLeft 0.3s var(--ease) both; }
+.live-pulse         { animation: pulseRed 1.6s ease-in-out infinite; }
+.gold-pulse         { animation: pulseGold 2s ease-in-out infinite; }
+
+/* ── Utilitaires texte ── */
+.font-display   { font-family: var(--font-display); }
+.text-red       { color: var(--p-red); }
+.text-gold      { color: var(--p-gold); }
+.text-sub       { color: var(--p-sub); }
+.text-muted     { color: var(--p-muted); }
+.text-green     { color: var(--p-green); }
+.text-score     { font-family: var(--font-display); font-weight: 700; font-size: 3rem; color: var(--p-text); }
+.text-section-title { font-family: var(--font-display); font-weight: 600; font-size: 1.8rem; color: var(--p-text); }
+
+/* ── Scrollbar custom ── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--p-bg2); }
+::-webkit-scrollbar-thumb { background: var(--p-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--p-red); }
+
+/* ── Utilitaires divers ── */
+.p-glass { background: rgba(29,17,32,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.truncate-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .p-section { padding: 40px 0; }
+  .p-section-sm { padding: 24px 0; }
+  .p-container { padding: 0 16px; }
+}
