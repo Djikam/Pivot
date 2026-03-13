@@ -17,18 +17,19 @@
           <td class="text-sub" style="font-size:11px">{{ fd(d.created_at) }}</td>
           <td><span class="p-badge" :class="sc(d.statut)">{{ d.statut }}</span></td>
           <td style="display:flex;gap:6px">
-            <button v-if="d.statut==='en_attente'" class="p-btn-red p-btn-sm" @click="traiter(d,'traite')">✓</button>
-            <button v-if="d.statut==='en_attente'" class="p-btn-ghost p-btn-sm" @click="traiter(d,'rejete')">✗</button>
+            <button v-if="d.statut==='en_attente'" class="p-btn-red p-btn-sm" @click="traiter(d,'traite')"><Check class="w-4 h-4" /></button>
+            <button v-if="d.statut==='en_attente'" class="p-btn-ghost p-btn-sm" @click="traiter(d,'rejete')"><X class="w-4 h-4" /></button>
           </td>
         </tr>
       </tbody>
     </table>
-    <div v-if="!loading&&demandes.length===0" class="empty-state"><span>✅</span><p>Aucune demande.</p></div>
+    <div v-if="!loading&&demandes.length===0" class="empty-state"><CheckCircle class="w-5 h-5" /><p>Aucune demande.</p></div>
   </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { CheckCircle, Check, X } from 'lucide-vue-next'
 const demandes=ref<any[]>([]);const loading=ref(true);const filterStatut=ref('en_attente');const enAttente=ref(0)
 const tc=(t:string)=>({correction:'p-badge-blue',suppression:'p-badge-red',ajout:'p-badge-green',reclamation:'p-badge-gold'}[t]??'p-badge-muted')
 const sc=(s:string)=>({en_attente:'p-badge-gold',traite:'p-badge-green',rejete:'p-badge-red'}[s]??'p-badge-muted')

@@ -42,7 +42,7 @@
           <div v-if="t.motif" class="t-motif text-sub">{{ t.motif }}</div>
         </RouterLink>
       </div>
-      <div v-if="!loading && transferts.length===0" class="empty-state"><span>🎯</span><p>Aucun mouvement enregistré.</p></div>
+      <div v-if="!loading && transferts.length===0" class="empty-state"><Target class="w-8 h-8" /><p>Aucun mouvement enregistré.</p></div>
     </div>
   </div>
 </template>
@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { Target } from 'lucide-vue-next'
 
 const transferts = ref<any[]>([])
 const loading = ref(true)

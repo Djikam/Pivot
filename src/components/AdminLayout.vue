@@ -8,7 +8,7 @@
         </div>
         <div class="topbar-right">
           <RouterLink to="/" target="_blank" class="p-btn-ghost p-btn-sm">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 0 0-2h3l3-3m3 0h5m0 0v5m0-5L10 14"/></svg>
+            <component :is="ExternalLink" width="13" height="13" />
             Voir le site
           </RouterLink>
         </div>
@@ -24,6 +24,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import AppSidebar from './AppSidebar.vue'
+import { ExternalLink } from 'lucide-vue-next'
 
 const route = useRoute()
 const titles: Record<string, string> = {

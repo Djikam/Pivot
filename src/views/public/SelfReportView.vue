@@ -29,7 +29,7 @@
       </button>
     </div>
     <div v-else class="p-card" style="padding:32px;text-align:center">
-      <span style="font-size:3rem">✅</span>
+      <CheckCircle class="w-12 h-12" />
       <h2 class="font-display" style="font-size:1.4rem;font-weight:700;margin:12px 0 8px">Demande envoyée</h2>
       <p class="text-sub">Notre équipe te contactera sous 7 jours ouvrables.</p>
       <RouterLink to="/" class="p-btn-ghost p-btn-sm" style="margin-top:16px;display:inline-flex">Retour à l'accueil</RouterLink>
@@ -41,6 +41,7 @@
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '@/lib/supabaseClient'
+import { CheckCircle } from 'lucide-vue-next'
 
 const route = useRoute()
 const sent = ref(false)

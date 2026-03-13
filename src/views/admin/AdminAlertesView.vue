@@ -4,7 +4,7 @@
     <div class="alertes-sections">
       <!-- Cartons bleus non traités -->
       <div class="p-card alerte-block" v-if="cartonsBleu.length">
-        <h4 style="font-weight:700;margin-bottom:12px;color:#8A7AFF">🔵 Cartons bleus — Rapports disciplinaires en attente ({{ cartonsBleu.length }})</h4>
+        <h4 style="font-weight:700;margin-bottom:12px;color:#8A7AFF"><Circle class="inline w-4 h-4 mr-1" /> Cartons bleus — Rapports disciplinaires en attente ({{ cartonsBleu.length }})</h4>
         <table class="p-table">
           <thead><tr><th>Joueur</th><th>Date</th><th>Action</th></tr></thead>
           <tbody>
@@ -18,7 +18,7 @@
       </div>
       <!-- Suspicions RADAR -->
       <div class="p-card alerte-block" v-if="suspicions.length">
-        <h4 style="font-weight:700;margin-bottom:12px;color:var(--p-red)">🎯 Suspicions RADAR auto-détectées ({{ suspicions.length }})</h4>
+        <h4 style="font-weight:700;margin-bottom:12px;color:var(--p-red)"><Target class="inline w-4 h-4 mr-1" /> Suspicions RADAR auto-détectées ({{ suspicions.length }})</h4>
         <table class="p-table">
           <thead><tr><th>Joueur</th><th>Origine</th><th>Date</th><th>Action</th></tr></thead>
           <tbody>
@@ -34,13 +34,14 @@
           </tbody>
         </table>
       </div>
-      <div v-if="!loading && !cartonsBleu.length && !suspicions.length" class="empty-state"><span>✅</span><p>Aucune alerte active.</p></div>
+      <div v-if="!loading && !cartonsBleu.length && !suspicions.length" class="empty-state"><CheckCircle class="inline w-5 h-5" /><p>Aucune alerte active.</p></div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { Circle, Target, CheckCircle } from 'lucide-vue-next'
 const cartonsBleu=ref<any[]>([]);const suspicions=ref<any[]>([]);const loading=ref(true)
 const fd=(d:string)=>new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})
 async function marquer(id:string){await supabase.from('discipline').update({rapport_envoye:true}).eq('id',id);cartonsBleu.value=cartonsBleu.value.filter(x=>x.id!==id)}
