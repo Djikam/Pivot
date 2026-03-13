@@ -3,12 +3,12 @@
     <!-- Toolbar -->
     <div class="admin-toolbar">
       <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher…" @input="debouncedLoad" />
-      <select v-model="filterPoste" class="p-input p-select" @change="load">
+      <select v-model="filterPoste" class="p-input p-select" @change="applyFilters">
         <option value="">Tous postes</option>
         <option v-for="p in postes" :key="p.value" :value="p.value">{{ p.label }}</option>
       </select>
-      <label class="toggle-label"><input type="checkbox" v-model="onlyTalent" @change="load" /> Talents</label>
-      <label class="toggle-label"><input type="checkbox" v-model="onlyVerifie" @change="load" /> Vérifiés</label>
+      <label class="toggle-label"><input type="checkbox" v-model="onlyTalent" @change="applyFilters" /> Talents</label>
+      <label class="toggle-label"><input type="checkbox" v-model="onlyVerifie" @change="applyFilters" /> Vérifiés</label>
       <button class="p-btn-red" @click="openModal(null)">+ Ajouter joueur</button>
     </div>
 
@@ -33,6 +33,12 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="pagination" v-if="!loading && total > limit">
+      <button class="p-btn-ghost p-btn-sm" :disabled="page === 0" @click="prevPage">← Précédent</button>
+      <span class="text-sub">Page {{ page + 1 }} / {{ Math.ceil(total / limit) }}</span>
+      <button class="p-btn-ghost p-btn-sm" :disabled="(page + 1) * limit >= total" @click="nextPage">Suivant →</button>
+    </div>
 
     <!-- Modal ajout/édition -->
     <Teleport to="body">
@@ -127,6 +133,9 @@ import { supabase } from '@/lib/supabaseClient'
 const joueurs = ref<any[]>([])
 const clubs = ref<any[]>([])
 const loading = ref(true)
+const total = ref(0)
+const page = ref(0)
+const limit = 24
 const search = ref('')
 const filterPoste = ref('')
 const onlyTalent = ref(false)
@@ -147,17 +156,53 @@ const scoreColor = (s:number) => s>=80?'#3BAA6A':s>=60?'#C4922A':'#3A80BE'
 
 async function load() {
   loading.value = true
-  let q = supabase.from('joueurs').select('id,prenom,nom,poste_principal,score_ia,verifie,badge_talent,bras_fort,poste_secondaire,taille_estimee,statut_univ').order('nom')
+  let q = supabase
+    .from('joueurs')
+    .select('id,prenom,nom,poste_principal,score_ia,verifie,badge_talent,bras_fort,poste_secondaire,taille_estimee,statut_univ', { count: 'exact' })
+    .order('nom')
+    .range(page.value * limit, (page.value + 1) * limit - 1)
+
   if (search.value) q = q.ilike('nom', `%${search.value}%`)
   if (filterPoste.value) q = q.eq('poste_principal', filterPoste.value)
   if (onlyTalent.value) q = q.eq('badge_talent', true)
   if (onlyVerifie.value) q = q.eq('verifie', true)
-  const { data } = await q.limit(100)
-  joueurs.value = data??[]; loading.value = false
+
+  const { data, count } = await q
+  joueurs.value = data ?? []
+  total.value = count ?? 0
+  loading.value = false
 }
 
 let timer: ReturnType<typeof setTimeout>
-function debouncedLoad() { clearTimeout(timer); timer=setTimeout(load,350) }
+function debouncedLoad() { clearTimeout(timer); timer=setTimeout(() => { page.value = 0; load() }, 350) }
+
+function applyFilters() {
+  page.value = 0
+  load()
+}
+
+function resetFilters() {
+  search.value = ''
+  filterPoste.value = ''
+  onlyTalent.value = false
+  onlyVerifie.value = false
+  page.value = 0
+  load()
+}
+
+function prevPage() {
+  if (page.value > 0) {
+    page.value--
+    load()
+  }
+}
+
+function nextPage() {
+  if ((page.value + 1) * limit < total.value) {
+    page.value++
+    load()
+  }
+}
 
 function openModal(j: any) {
   editing.value = j ? { ...j } : { prenom:'',nom:'',poste_principal:'gardien',bras_fort:'droitier',verifie:false,badge_talent:false,statut_univ:false }
@@ -224,4 +269,5 @@ onMounted(async () => {
 .club-select { display:flex;gap:6px; }
 .club-select select { flex:1; }
 .club-select button { padding:0 8px;border-radius:6px;border:1px solid var(--p-border);background:transparent;color:var(--p-sub);cursor:pointer; }
+.pagination { display:flex;justify-content:center;align-items:center;gap:18px;margin-top:20px; }
 </style>

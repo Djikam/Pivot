@@ -42,6 +42,7 @@ export interface Club {
   universitaire: boolean
   universite_id?: string
   actif: boolean
+  pays: string // Nouveau champ pour gestion internationale
   logo_cloudinary_id?: string
   created_at: string
   // Joins

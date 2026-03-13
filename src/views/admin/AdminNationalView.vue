@@ -20,24 +20,33 @@
     </div>
 
     <div v-if="loading" class="loading-state"><div class="spinner" /></div>
-    <div v-else class="equipes-grid">
-      <div v-for="e in equipes" :key="e.id" class="equipe-card p-card">
-        <div class="equipe-header">
-          <h3 class="equipe-nom font-display">{{ e.nom }}</h3>
-          <div class="equipe-badges">
-            <span class="p-badge" :class="categorieColor(e.categorie)">{{ categorieLabel(e.categorie) }}</span>
-            <span class="p-badge p-badge-muted">{{ genreLabel(e.genre) }}</span>
+    <div v-else class="equipes-grouped">
+      <div v-for="saison in saisons" :key="saison" class="saison-section">
+        <h2 class="saison-title font-display">{{ saison }}</h2>
+        <div v-for="categorie in categories" :key="`${saison}-${categorie}`" class="categorie-section">
+          <h3 class="categorie-title">{{ categorieLabel(categorie) }}</h3>
+          <div class="equipes-grid">
+            <div v-for="e in getEquipesBySaisonCategorie(saison, categorie)" :key="e.id" class="equipe-card p-card">
+              <div class="equipe-header">
+                <h3 class="equipe-nom font-display">{{ e.nom }}</h3>
+                <div class="equipe-badges">
+                  <span class="p-badge p-badge-muted">{{ genreLabel(e.genre) }}</span>
+                </div>
+              </div>
+              <div class="equipe-info">
+                <p class="text-sub" v-if="e.selectionneur">Sélectionneur: {{ e.selectionneur }}</p>
+                <p class="text-sub">Sélection: {{ getSelectionCount(e.id) }} joueurs</p>
+              </div>
+              <div class="equipe-actions">
+                <button class="p-btn-ghost p-btn-sm" @click="openModalEquipe(e)">Éditer</button>
+                <button class="p-btn-ghost p-btn-sm" @click="manageSelection(e)">Gérer sélection</button>
+                <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteEquipe(e)">Suppr.</button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="equipe-info">
-          <p class="text-sub" v-if="e.selectionneur">Sélectionneur: {{ e.selectionneur }}</p>
-          <p class="text-sub">Saison active: {{ e.saison_active }}</p>
-          <p class="text-sub">Sélection: {{ getSelectionCount(e.id) }} joueurs</p>
-        </div>
-        <div class="equipe-actions">
-          <button class="p-btn-ghost p-btn-sm" @click="openModalEquipe(e)">Éditer</button>
-          <button class="p-btn-ghost p-btn-sm" @click="manageSelection(e)">Gérer sélection</button>
-          <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteEquipe(e)">Suppr.</button>
+          <div v-if="getEquipesBySaisonCategorie(saison, categorie).length === 0" class="empty-categorie">
+            <p class="text-sub">Aucune équipe dans cette catégorie</p>
+          </div>
         </div>
       </div>
     </div>
@@ -190,6 +199,14 @@ const genreLabel = (g:string) => ({masculin:'M',feminin:'F',mixte:'Mix'})[g]??g
 const statutLabel = (s:string) => ({preselectione:'Pré-sélectionné',finaliste:'Finaliste',titulaire:'Titulaire'})[s]??s
 const statutColor = (s:string) => ({preselectione:'p-badge-muted',finaliste:'p-badge-gold',titulaire:'p-badge-green'})[s]??'p-badge-muted'
 
+const saisons = computed(() => [...new Set(equipes.value.map(e => e.saison_active))].sort().reverse())
+const categories = ['senior', 'u20', 'u17', 'beach']
+
+function getEquipesBySaisonCategorie(saison: string, categorie: string) {
+  return equipes.value.filter(e => e.saison_active === saison && e.categorie === categorie)
+}
+
+
 const getSelectionCount = (equipeId: string) => selections.value.filter(s => s.equipe_nationale_id === equipeId).length
 
 const filteredSelections = computed(() => {
@@ -283,7 +300,13 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.equipes-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:20px; }
+.equipes-grouped { display:flex;flex-direction:column;gap:32px;margin-top:20px; }
+.saison-section { border:1px solid var(--p-border);border-radius:var(--radius-lg);padding:24px;background:var(--p-bg2); }
+.saison-title { font-size:1.5rem;font-weight:700;margin-bottom:24px;color:var(--p-red);border-bottom:2px solid var(--p-red);padding-bottom:8px; }
+.categorie-section { margin-bottom:24px; }
+.categorie-section:last-child { margin-bottom:0; }
+.categorie-title { font-size:1.1rem;font-weight:600;margin-bottom:16px;color:var(--p-sub);text-transform:uppercase;letter-spacing:0.5px; }
+.equipes-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:16px; }
 .equipe-card { padding:20px; }
 .equipe-header { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px; }
 .equipe-nom { font-size:1.2rem;font-weight:700;margin-bottom:4px; }
@@ -291,6 +314,7 @@ onMounted(async () => {
 .equipe-info { margin-bottom:16px; }
 .equipe-info p { margin:4px 0; }
 .equipe-actions { display:flex;gap:8px;flex-wrap:wrap; }
+.empty-categorie { padding:20px;text-align:center;color:var(--p-sub);font-style:italic; }
 
 .selection-toolbar { display:flex;gap:10px;margin-bottom:16px; }
 .selection-list { display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto; }

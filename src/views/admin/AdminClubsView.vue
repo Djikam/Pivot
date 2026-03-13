@@ -18,7 +18,7 @@
       <tbody>
         <tr v-for="c in clubs" :key="c.id">
           <td style="font-weight:600">{{ c.nom }} <span class="text-sub">({{ c.acronyme }})</span></td>
-          <td>{{ c.region }}</td>
+          <td>{{ c.pays === 'Cameroun' ? c.region : c.pays }}</td>
           <td>{{ c.ville }}</td>
           <td>
             <button class="toggle-btn" :class="{on:c.universitaire}" @click="toggleUniversitaire(c)">{{ c.universitaire ? '✓' : '○' }}</button>
@@ -45,20 +45,45 @@
           </div>
           <div class="modal-body">
             <div class="form-row">
-              <div class="field"><label class="p-label">Nom *</label><input v-model="editing.nom" class="p-input" /></div>
+              <div class="field club-field">
+                <label class="p-label">Nom *</label>
+                <input v-model="editing.nom" class="p-input" @input="onClubInput" @focus="onClubInput" @blur="hideSuggestions" />
+                <div v-if="showSuggestions" class="suggestions-list">
+                  <div v-for="suggestion in clubSuggestions" :key="suggestion.id" class="suggestion-item" @click="selectClubSuggestion(suggestion)">
+                    {{ suggestion.nom }} ({{ suggestion.ville }}, {{ suggestion.pays }})
+                  </div>
+                </div>
+              </div>
               <div class="field"><label class="p-label">Acronyme *</label><input v-model="editing.acronyme" class="p-input" /></div>
             </div>
             <div class="form-row">
-              <div class="field"><label class="p-label">Région *</label>
+              <div class="field"><label class="p-label">Ville *</label><input v-model="editing.ville" class="p-input" /></div>
+              <div class="field"><label class="p-label">Pays *</label>
+                <select v-model="editing.pays" class="p-input p-select">
+                  <option value="Cameroun">Cameroun</option>
+                  <option value="France">France</option>
+                  <option value="Espagne">Espagne</option>
+                  <option value="Allemagne">Allemagne</option>
+                  <option value="Italie">Italie</option>
+                  <option value="Angleterre">Angleterre</option>
+                  <option value="Brésil">Brésil</option>
+                  <option value="Argentine">Argentine</option>
+                  <option value="Autre">Autre</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div v-if="isInternational()" class="field">
+                <label class="p-label">Province/État</label>
+                <input v-model="editing.region" class="p-input" placeholder="Ex: Île-de-France, Catalogne..." />
+              </div>
+              <div v-else class="field">
+                <label class="p-label">Région *</label>
                 <select v-model="editing.region" class="p-input p-select">
                   <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
                 </select>
               </div>
-              <div class="field"><label class="p-label">Ville *</label><input v-model="editing.ville" class="p-input" /></div>
-            </div>
-            <div class="form-row">
               <div class="field"><label class="p-label">Gymnase</label><input v-model="editing.gymnase" class="p-input" /></div>
-              <div class="field"><label class="p-label">Couleur principale</label><input v-model="editing.couleur_principale" class="p-input" placeholder="Ex: #FF0000" /></div>
             </div>
             <div class="form-row">
               <label class="toggle-label" style="gap:8px"><input type="checkbox" v-model="editing.actif" /> Club actif</label>
@@ -127,6 +152,7 @@ import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
 
 const clubs = ref<any[]>([])
+const allClubs = ref<any[]>([]) // Pour l'autocomplete
 const joueurs = ref<any[]>([])
 const competitions = ref<any[]>([])
 const transferts = ref<any[]>([])
@@ -135,12 +161,14 @@ const search = ref('')
 const filterRegion = ref('')
 const onlyActif = ref(true)
 const onlyUniversitaire = ref(false)
-const modal = ref(false)
-const modalDetails = ref(false)
+const modal = ref<boolean | null>(null)
+const modalDetails = ref<boolean | null>(null)
 const selectedClub = ref<any>(null)
 const editing = ref<any>({})
 const saving = ref(false)
 const saveError = ref('')
+const clubSuggestions = ref<any[]>([])
+const showSuggestions = ref(false)
 
 const regions = [
   'Centre', 'Littoral', 'Ouest', 'Nord-Ouest', 'Sud-Ouest', 'Nord', 'Extrême-Nord', 'Est', 'Sud', 'Adamaoua'
@@ -155,7 +183,7 @@ const formatDate = (d:string) => new Date(d).toLocaleDateString('fr-FR')
 
 async function load() {
   loading.value = true
-  let q = supabase.from('clubs').select('id,nom,acronyme,region,ville,gymnase,couleur_principale,universitaire,actif').order('nom')
+  let q = supabase.from('clubs').select('id,nom,acronyme,region,ville,gymnase,couleur_principale,universitaire,actif,pays').order('nom')
   if (search.value) q = q.ilike('nom', `%${search.value}%`)
   if (filterRegion.value) q = q.eq('region', filterRegion.value)
   if (onlyActif.value) q = q.eq('actif', true)
@@ -183,8 +211,40 @@ async function viewDetails(c: any) {
   transferts.value = transfertsRes.data ?? []
 }
 
+function openModal(c: any) {
+  editing.value = c ? { ...c } : { nom:'',acronyme:'',region:'Centre',ville:'',gymnase:'',couleur_principale:'',actif:true,universitaire:false,pays:'Cameroun' }
+  modal.value = true; saveError.value = ''
+}
+
 async function saveClub() {
-  if (!editing.value.nom || !editing.value.acronyme || !editing.value.region || !editing.value.ville) { saveError.value='Nom, acronyme, région et ville requis'; return }
+  if (!editing.value.nom || !editing.value.acronyme || !editing.value.ville || !editing.value.pays) {
+    saveError.value = 'Nom, acronyme, ville et pays requis'
+    return
+  }
+
+  // Région obligatoire seulement pour le Cameroun
+  if (editing.value.pays === 'Cameroun' && !editing.value.region) {
+    saveError.value = 'Région requise pour les clubs camerounais'
+    return
+  }
+
+  // Normalisation : nom en MAJUSCULES
+  editing.value.nom = editing.value.nom.toUpperCase()
+
+  // Vérification anti-doublon
+  if (!editing.value.id) { // Seulement pour les nouveaux clubs
+    const { data: similar } = await supabase
+      .from('clubs')
+      .select('id,nom,ville,pays')
+      .ilike('nom', `%${editing.value.nom}%`)
+      .limit(5)
+
+    if (similar && similar.length > 0) {
+      const confirmMsg = `Club(s) similaire(s) trouvé(s) :\n${similar.map((c: any) => `- ${c.nom} (${c.ville}, ${c.pays})`).join('\n')}\n\nVoulez-vous quand même créer ce club ?`
+      if (!confirm(confirmMsg)) return
+    }
+  }
+
   saving.value = true; saveError.value = ''
   const { id, ...data } = editing.value
   if (id) { await supabase.from('clubs').update(data).eq('id', id) }
@@ -192,11 +252,55 @@ async function saveClub() {
   saving.value = false; modal.value = false; load()
 }
 
-async function toggleActif(c:any) { await supabase.from('clubs').update({actif:!c.actif}).eq('id',c.id); c.actif=!c.actif }
-async function toggleUniversitaire(c:any)  { await supabase.from('clubs').update({universitaire:!c.universitaire}).eq('id',c.id); c.universitaire=!c.universitaire }
-async function deleteClub(c:any)   { if(!confirm(`Supprimer ${c.nom} ?`)) return; await supabase.from('clubs').delete().eq('id',c.id); load() }
+async function loadAllClubs() {
+  const { data } = await supabase.from('clubs').select('id,nom,ville,pays').order('nom')
+  allClubs.value = data ?? []
+}
 
-onMounted(load)
+function onClubInput() {
+  const query = editing.value.nom?.trim() || ''
+  if (query.length >= 3) {
+    clubSuggestions.value = allClubs.value
+      .filter((c: any) => c.nom.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 5)
+    showSuggestions.value = clubSuggestions.value.length > 0
+  } else {
+    showSuggestions.value = false
+  }
+}
+
+function selectClubSuggestion(suggestion: any) {
+  editing.value.nom = suggestion.nom
+  editing.value.ville = suggestion.ville
+  editing.value.pays = suggestion.pays
+  showSuggestions.value = false
+}
+
+function hideSuggestions() {
+  showSuggestions.value = false
+}
+
+async function toggleUniversitaire(c: any) {
+  await supabase.from('clubs').update({ universitaire: !c.universitaire }).eq('id', c.id)
+  load()
+}
+
+async function toggleActif(c: any) {
+  await supabase.from('clubs').update({ actif: !c.actif }).eq('id', c.id)
+  load()
+}
+
+async function deleteClub(c: any) {
+  if (confirm(`Supprimer le club "${c.nom}" ? Cette action est irréversible.`)) {
+    await supabase.from('clubs').delete().eq('id', c.id)
+    load()
+  }
+}
+
+onMounted(() => {
+  load()
+  loadAllClubs()
+})
 </script>
 
 <style scoped>
@@ -226,4 +330,9 @@ onMounted(load)
 .info-list { display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto; }
 .info-item { padding:8px 12px;border-radius:6px;background:var(--p-bg2);font-size:14px; }
 .btn-danger { color:var(--p-red) !important; }
+.club-field { position:relative; }
+.suggestions-list { position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--p-border);border-radius:6px;max-height:200px;overflow-y:auto;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.1); }
+.suggestion-item { padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--p-border); }
+.suggestion-item:hover { background:var(--p-bg2); }
+.suggestion-item:last-child { border-bottom:none; }
 </style>
