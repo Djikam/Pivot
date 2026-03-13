@@ -1,4 +1,5 @@
 [build]
+  install = "npm ci --include=dev"
   command = "npm run build"
   publish = "dist"
 
