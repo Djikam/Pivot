@@ -27,6 +27,7 @@
             <button class="toggle-btn" :class="{on:c.actif}" @click="toggleActif(c)">{{ c.actif ? '✓' : '○' }}</button>
           </td>
           <td class="actions-cell">
+            <button class="p-btn-ghost p-btn-sm" @click="viewDetails(c)">Détails</button>
             <button class="p-btn-ghost p-btn-sm" @click="openModal(c)">Éditer</button>
             <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteClub(c)">Suppr.</button>
           </td>
@@ -72,6 +73,52 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal détails club -->
+    <Teleport to="body">
+      <div v-if="modalDetails" class="modal-backdrop" @click.self="modalDetails=null">
+        <div class="modal-box modal-large">
+          <div class="modal-header">
+            <h3 class="font-display">Détails — {{ selectedClub?.nom }}</h3>
+            <button @click="modalDetails=null">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="club-info">
+              <div class="info-section">
+                <h4>Joueurs ({{ joueurs.length }})</h4>
+                <div v-if="joueurs.length" class="info-list">
+                  <div v-for="j in joueurs" :key="j.id" class="info-item">
+                    {{ j.prenom }} {{ j.nom }} <span class="text-sub">({{ posteLabel(j.poste_principal) }})</span>
+                  </div>
+                </div>
+                <p v-else class="text-sub">Aucun joueur</p>
+              </div>
+              
+              <div class="info-section">
+                <h4>Compétitions ({{ competitions.length }})</h4>
+                <div v-if="competitions.length" class="info-list">
+                  <div v-for="comp in competitions" :key="comp.id" class="info-item">
+                    {{ comp.nom }} <span class="text-sub">({{ comp.type }}, {{ comp.saison }})</span>
+                  </div>
+                </div>
+                <p v-else class="text-sub">Aucune compétition</p>
+              </div>
+              
+              <div class="info-section">
+                <h4>Transferts récents ({{ transferts.length }})</h4>
+                <div v-if="transferts.length" class="info-list">
+                  <div v-for="t in transferts" :key="t.id" class="info-item">
+                    {{ t.type_transfert }} <span class="text-sub">({{ formatDate(t.date_transfert) }})</span>
+                    <span v-if="t.montant_estime" class="text-sub">{{ t.montant_estime }}€</span>
+                  </div>
+                </div>
+                <p v-else class="text-sub">Aucun transfert</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -80,12 +127,17 @@ import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
 
 const clubs = ref<any[]>([])
+const joueurs = ref<any[]>([])
+const competitions = ref<any[]>([])
+const transferts = ref<any[]>([])
 const loading = ref(true)
 const search = ref('')
 const filterRegion = ref('')
 const onlyActif = ref(true)
 const onlyUniversitaire = ref(false)
 const modal = ref(false)
+const modalDetails = ref(false)
+const selectedClub = ref<any>(null)
 const editing = ref<any>({})
 const saving = ref(false)
 const saveError = ref('')
@@ -93,6 +145,13 @@ const saveError = ref('')
 const regions = [
   'Centre', 'Littoral', 'Ouest', 'Nord-Ouest', 'Sud-Ouest', 'Nord', 'Extrême-Nord', 'Est', 'Sud', 'Adamaoua'
 ]
+
+const postes = [
+  {value:'gardien',label:'Gardien'},{value:'ailier_g',label:'Ailier G'},{value:'ailier_d',label:'Ailier D'},
+  {value:'arriere_g',label:'Arrière G'},{value:'arriere_d',label:'Arrière D'},{value:'demi_centre',label:'Demi-Centre'},{value:'pivot',label:'Pivot'},
+]
+const posteLabel = (p:string) => postes.find(x=>x.value===p)?.label??p
+const formatDate = (d:string) => new Date(d).toLocaleDateString('fr-FR')
 
 async function load() {
   loading.value = true
@@ -108,9 +167,20 @@ async function load() {
 let timer: ReturnType<typeof setTimeout>
 function debouncedLoad() { clearTimeout(timer); timer=setTimeout(load,350) }
 
-function openModal(c: any) {
-  editing.value = c ? { ...c } : { nom:'',acronyme:'',region:'Centre',ville:'',gymnase:'',couleur_principale:'',actif:true,universitaire:false }
-  modal.value = true; saveError.value = ''
+async function viewDetails(c: any) {
+  selectedClub.value = c
+  modalDetails.value = true
+  
+  // Charger les données liées
+  const [joueursRes, competitionsRes, transfertsRes] = await Promise.all([
+    supabase.from('joueurs').select('id,prenom,nom,poste_principal').eq('club_id', c.id).order('nom'),
+    supabase.from('competitions').select('id,nom,type,saison').eq('club_id', c.id).order('saison', { ascending: false }),
+    supabase.from('transferts').select('id,type_transfert,date_transfert,montant_estime').eq('club_id', c.id).order('date_transfert', { ascending: false })
+  ])
+  
+  joueurs.value = joueursRes.data ?? []
+  competitions.value = competitionsRes.data ?? []
+  transferts.value = transfertsRes.data ?? []
 }
 
 async function saveClub() {
@@ -150,5 +220,10 @@ onMounted(load)
 .field { display:flex;flex-direction:column;gap:6px; }
 .modal-footer { display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--p-border); }
 .save-error { padding:10px;border-radius:8px;background:rgba(140,21,37,.1);color:var(--p-red);font-size:13px; }
-@media (max-width:600px) { .form-row{grid-template-columns:1fr;} }
+.modal-large { max-width:800px; }
+.club-info { display:flex;flex-direction:column;gap:24px; }
+.info-section h4 { font-size:1.1rem;font-weight:700;margin-bottom:12px;color:var(--p-red); }
+.info-list { display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto; }
+.info-item { padding:8px 12px;border-radius:6px;background:var(--p-bg2);font-size:14px; }
+.btn-danger { color:var(--p-red) !important; }
 </style>

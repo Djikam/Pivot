@@ -61,10 +61,14 @@
               </div>
             </div>
             <div class="form-row">
-              <div class="field"><label class="p-label">Bras fort</label>
-                <select v-model="editing.bras_fort" class="p-input p-select">
-                  <option value="droitier">Droitier</option><option value="gaucher">Gaucher</option><option value="ambidextre">Ambidextre</option>
-                </select>
+              <div class="field"><label class="p-label">Club</label>
+                <div class="club-select">
+                  <select v-model="editing.club_id" class="p-input p-select">
+                    <option value="">— Aucun club —</option>
+                    <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.nom }} ({{ c.ville }})</option>
+                  </select>
+                  <button type="button" class="p-btn-ghost p-btn-sm" @click="openClubModal" title="Créer nouveau club">+</button>
+                </div>
               </div>
               <div class="field"><label class="p-label">Taille (cm)</label><input v-model.number="editing.taille_estimee" type="number" class="p-input" placeholder="Ex: 185" /></div>
             </div>
@@ -82,6 +86,37 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal création club -->
+    <Teleport to="body">
+      <div v-if="modalClub" class="modal-backdrop" @click.self="modalClub=null">
+        <div class="modal-box">
+          <div class="modal-header">
+            <h3 class="font-display">Créer nouveau club</h3>
+            <button @click="modalClub=null">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="field"><label class="p-label">Nom *</label><input v-model="editingClub.nom" class="p-input" /></div>
+              <div class="field"><label class="p-label">Ville *</label><input v-model="editingClub.ville" class="p-input" /></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label class="p-label">Région</label><input v-model="editingClub.region" class="p-input" /></div>
+              <div class="field"><label class="p-label">Gymnase</label><input v-model="editingClub.gymnase" class="p-input" /></div>
+            </div>
+            <div class="form-row">
+              <label class="toggle-label" style="gap:8px"><input type="checkbox" v-model="editingClub.actif" /> Club actif</label>
+              <label class="toggle-label" style="gap:8px"><input type="checkbox" v-model="editingClub.universitaire" /> Club universitaire</label>
+            </div>
+            <div v-if="saveError" class="save-error">{{ saveError }}</div>
+          </div>
+          <div class="modal-footer">
+            <button class="p-btn-ghost" @click="modalClub=null">Annuler</button>
+            <button class="p-btn-red" :disabled="saving" @click="saveClub">{{ saving ? 'Création…' : 'Créer' }}</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -90,13 +125,16 @@ import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
 
 const joueurs = ref<any[]>([])
+const clubs = ref<any[]>([])
 const loading = ref(true)
 const search = ref('')
 const filterPoste = ref('')
 const onlyTalent = ref(false)
 const onlyVerifie = ref(false)
 const modal = ref(false)
+const modalClub = ref(false)
 const editing = ref<any>({})
+const editingClub = ref<any>({})
 const saving = ref(false)
 const saveError = ref('')
 
@@ -135,11 +173,29 @@ async function saveJoueur() {
   saving.value = false; modal.value = false; load()
 }
 
-async function toggleVerifie(j:any) { await supabase.from('joueurs').update({verifie:!j.verifie}).eq('id',j.id); j.verifie=!j.verifie }
-async function toggleTalent(j:any)  { await supabase.from('joueurs').update({badge_talent:!j.badge_talent}).eq('id',j.id); j.badge_talent=!j.badge_talent }
-async function deleteJoueur(j:any)   { if(!confirm(`Supprimer ${j.prenom} ${j.nom} ?`)) return; await supabase.from('joueurs').delete().eq('id',j.id); load() }
+async function loadClubs() {
+  const { data } = await supabase.from('clubs').select('id,nom,ville').order('nom').limit(1000)
+  clubs.value = data ?? []
+}
 
-onMounted(load)
+function openClubModal() {
+  editingClub.value = { nom:'',ville:'',region:'',gymnase:'',actif:true,universitaire:false }
+  modalClub.value = true
+}
+
+async function saveClub() {
+  if (!editingClub.value.nom || !editingClub.value.ville) { saveError.value='Nom et ville requis'; return }
+  saving.value = true; saveError.value = ''
+  const { data } = await supabase.from('clubs').insert(editingClub.value).select('id,nom,ville').single()
+  clubs.value.push(data)
+  editing.value.club_id = data.id
+  saving.value = false; modalClub.value = false
+}
+
+onMounted(async () => {
+  await loadClubs()
+  load()
+})
 </script>
 
 <style scoped>
@@ -165,5 +221,7 @@ onMounted(load)
 .loading-state { display:flex;justify-content:center;padding:60px 0; }
 .spinner { width:32px;height:32px;border:3px solid var(--p-border);border-top-color:var(--p-red);border-radius:50%;animation:spin 700ms linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
-@media (max-width:600px) { .form-row{grid-template-columns:1fr;} }
+.club-select { display:flex;gap:6px; }
+.club-select select { flex:1; }
+.club-select button { padding:0 8px;border-radius:6px;border:1px solid var(--p-border);background:transparent;color:var(--p-sub);cursor:pointer; }
 </style>

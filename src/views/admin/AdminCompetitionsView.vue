@@ -53,7 +53,7 @@
                   <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
                 </select>
               </div>
-              <div class="field"><label class="p-label">Saison *</label><input v-model="editing.saison" class="p-input" placeholder="2025-2026" /></div>
+              <div class="field"><label class="p-label">Saison *</label><input v-model="editing.saison" class="p-input" placeholder="2026" /></div>
             </div>
             <div class="form-row">
               <div class="field"><label class="p-label">Genre *</label>
@@ -110,6 +110,7 @@ const saveError = ref('')
 const types = [
   {value:'regional',label:'Régional'},{value:'national',label:'National'},{value:'universitaire',label:'Universitaire'},
   {value:'coupe',label:'Coupe'},{value:'international',label:'International'},
+  {value:'tournament',label:'Tournoi'},{value:'friendly',label:'Amical'},
 ]
 
 const typeLabel = (t:string) => types.find(x=>x.value===t)?.label??t
@@ -130,7 +131,7 @@ let timer: ReturnType<typeof setTimeout>
 function debouncedLoad() { clearTimeout(timer); timer=setTimeout(load,350) }
 
 function openModal(c: any) {
-  editing.value = c ? { ...c } : { nom:'',slug:'',type:'regional',saison:'2025-2026',region:'',genre:'masculin',statut:'a_venir',niveau:'club' }
+  editing.value = c ? { ...c } : { nom:'',slug:'',type:'regional',saison:'2026',region:'',genre:'masculin',statut:'a_venir',niveau:'club' }
   modal.value = true; saveError.value = ''
 }
 
