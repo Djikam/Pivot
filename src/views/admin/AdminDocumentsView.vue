@@ -9,14 +9,14 @@
       <button class="p-btn-red" @click="openModal(null)">+ Ajouter document</button>
     </div>
 
-    <div v-if="loading" class="loading-state"><div class="spinner" /></div>
+    <div v-if="loading" class="loading-state"><div class="spinner"></div></div>
     <table v-else class="p-table">
       <thead><tr><th>Titre</th><th>Catégorie</th><th>Format</th><th>Version</th><th>Date</th><th>Actif</th><th>Actions</th></tr></thead>
       <tbody>
         <tr v-for="d in docs" :key="d.id">
           <td style="font-weight:600;max-width:250px">{{ d.titre }}</td>
           <td>{{ catLabel(d.categorie) }}</td>
-          <td><span class="p-badge" :class="formatBadge(d.format)">{{ d.format.toUpperCase() }}</span></td>
+          <td><span class="p-badge" :class="formatBadge(d.format)">{{ formatIcon(d.format) }} {{ d.format.toUpperCase() }}</span></td>
           <td class="text-sub">{{ d.version }}</td>
           <td class="text-sub" style="font-size:12px">{{ formatDate(d.publie_le) }}</td>
           <td>
@@ -41,7 +41,7 @@
           </div>
           <div class="modal-body">
             <div class="field"><label class="p-label">Titre *</label><input v-model="editing.titre" class="p-input" /></div>
-            <div class="field"><label class="p-label">Description</label><textarea v-model="editing.description" class="p-input" rows="2" /></div>
+            <div class="field"><label class="p-label">Description</label><textarea v-model="editing.description" class="p-input" rows="2"></textarea></div>
             <div class="form-row">
               <div class="field"><label class="p-label">Catégorie *</label>
                 <select v-model="editing.categorie" class="p-input p-select">
@@ -58,8 +58,38 @@
               <div class="field"><label class="p-label">Version</label><input v-model="editing.version" class="p-input" placeholder="v1.0" /></div>
               <div class="field"><label class="p-label">Date de publication</label><input v-model="editing.publie_le" type="date" class="p-input" /></div>
             </div>
-            <div class="field"><label class="p-label">URL du fichier *</label><input v-model="editing.fichier_url" class="p-input" placeholder="https://… ou chemin Supabase Storage" /></div>
-            <p class="text-sub" style="font-size:12px">💡 Utilise Supabase Storage ou un lien Cloudinary pour héberger le fichier, puis colle l'URL ici.</p>
+            <div class="field">
+              <label class="p-label">Fichier *</label>
+              <div
+                class="file-dropzone"
+                :class="{ 'drag-over': isDragOver }"
+                @dragover.prevent="isDragOver = true"
+                @dragleave.prevent="isDragOver = false"
+                @drop.prevent="onDrop"
+                @click="fileInputRef?.click()"
+              >
+                <input
+                  ref="fileInputRef"
+                  type="file"
+                  class="file-input"
+                  @change="onFileSelected"
+                  accept=".pdf,.docx,.xlsx,.csv,.jpg,.jpeg,.png,.html"
+                />
+
+                <div v-if="selectedFileName" class="file-info">
+                  <span class="file-icon">{{ formatIcon(editing.format) }}</span>
+                  <span class="file-name">{{ selectedFileName }}</span>
+                  <span class="file-format">({{ editing.format?.toUpperCase() }})</span>
+                </div>
+
+                <div v-else class="file-prompt">
+                  Glissez-déposez un fichier ici, ou cliquez pour sélectionner
+                </div>
+              </div>
+
+              <div v-if="uploading" class="text-sub" style="font-size:12px">Téléchargement en cours…</div>
+              <div v-if="uploadError" class="text-error" style="font-size:12px">{{ uploadError }}</div>
+            </div>
           </div>
           <div class="modal-footer">
             <button class="p-btn-ghost" @click="modal=false">Annuler</button>
@@ -84,46 +114,143 @@ const editing = ref<any>({})
 const saving = ref(false)
 
 const categories = [
-  { value:'regles',       label:'Règles du jeu',  icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>' },
-  { value:'droits_joueur',label:'Droits joueurs',  icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>' },
-  { value:'droits_club',  label:'Droits clubs',    icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>' },
-  { value:'arbitrage',    label:'Arbitrage',       icon:'<svg class="w-5 h-5" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/></svg>' },
-  { value:'officiel',     label:'Docs officiels',  icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' },
-  { value:'pedagogue',    label:'Pédagogie',       icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>' },
+  { value:'reglement',     label:'Règlement',      icon:'📘' },
+  { value:'administratif', label:'Administratif',  icon:'🧾' },
+  { value:'communique',    label:'Communiqué',     icon:'📢' },
+  { value:'formulaire',    label:'Formulaire',     icon:'📄' },
 ]
-const catLabel = (c:string) => categories.find(x=>x.value===c)?.label??c
-const formatBadge = (f:string) => ({ pdf:'p-badge-red', xlsx:'p-badge-green', csv:'p-badge-blue', html:'p-badge-gold' }[f]??'p-badge-muted')
-const formatDate = (d:string) => new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})
 
-async function load() {
-  loading.value = true
-  let q = supabase.from('documents_education').select('*').order('publie_le',{ascending:false})
-  if (search.value) q = q.ilike('titre', `%${search.value}%`)
-  if (filterCat.value) q = q.eq('categorie', filterCat.value)
-  const { data } = await q; docs.value=data??[]; loading.value=false
+const bucketName = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET ?? 'documents'
+const uploading = ref(false)
+const uploadError = ref('')
+const selectedFileName = ref('')
+const isDragOver = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+
+const allowedExtensions = ['pdf','docx','xlsx','csv','jpg','jpeg','png','html']
+const maxFileSize = 15 * 1024 * 1024 // 15 Mo
+
+const detectFormat = (filename: string) => {
+  const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+  return allowedExtensions.includes(ext) ? (ext === 'jpeg' ? 'jpg' : ext) : 'pdf'
+}
+
+function storagePathFromUrl(url?: string) {
+  if (!url) return null
+  try {
+    const u = new URL(url)
+    const parts = u.pathname.split('/').filter(Boolean)
+    const publicIndex = parts.indexOf('public')
+    if (publicIndex >= 0 && parts.length > publicIndex + 2) {
+      return parts.slice(publicIndex + 2).join('/')
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+async function uploadFile(file: File) {
+  if (!file) return
+  uploadError.value = ''
+  if (file.size > maxFileSize) {
+    uploadError.value = `Fichier trop volumineux (max ${Math.round(maxFileSize / 1024 / 1024)} Mo)`
+    return
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+  if (!allowedExtensions.includes(ext)) {
+    uploadError.value = `Format non supporté (${ext}).`
+    return
+  }
+
+  uploading.value = true
+  try {
+    const path = `documents/${Date.now()}_${file.name}`
+    const { error: uploadError } = await supabase.storage.from(bucketName).upload(path, file, { upsert: true })
+    if (uploadError) throw uploadError
+
+    const { data } = supabase.storage.from(bucketName).getPublicUrl(path)
+    editing.value.fichier_url = data.publicUrl
+    editing.value.format = detectFormat(file.name)
+    selectedFileName.value = file.name
+  } catch (err: any) {
+    uploadError.value = err.message ?? 'Échec du téléchargement'
+  } finally {
+    uploading.value = false
+  }
+}
+
+function openModal(d:any) {
+  uploadError.value = ''
+  isDragOver.value = false
+  if (fileInputRef.value) fileInputRef.value.value = ''
+  editing.value = d ? { ...d } : { titre:'',categorie:'regles',format:'pdf',version:'v1.0',fichier_url:'',actif:true,publie_le:new Date().toISOString().slice(0,10) }
+  selectedFileName.value = d?.fichier_url ? d.fichier_url.split('/').pop() ?? '' : ''
+  modal.value = true
+}
+
+async function saveDoc() {
+  if (!editing.value.titre || !editing.value.fichier_url) {
+    uploadError.value = 'Le titre et le fichier sont requis.'
+    return
+  }
+
+  saving.value = true
+  try {
+    const { id, ...data } = editing.value
+    const payload = {
+      ...data,
+      format: data.format ?? detectFormat(data.fichier_url ?? ''),
+      updated_at: new Date().toISOString(),
+    }
+
+    if (id) {
+      await supabase.from('documents_education').update(payload).eq('id', id)
+    } else {
+      await supabase.from('documents_education').insert(payload)
+    }
+
+    modal.value = false
+    load()
+  } catch (err: any) {
+    uploadError.value = err.message ?? 'Erreur lors de l\'enregistrement'
+  } finally {
+    saving.value = false
+  }
+}
+
+async function toggleActif(d:any) { await supabase.from('documents_education').update({actif:!d.actif,updated_at:new Date().toISOString()}).eq('id',d.id); d.actif=!d.actif }
+
+async function deleteDoc(d:any) {
+  if (!confirm(`Supprimer "${d.titre}" ?`)) return
+  const path = storagePathFromUrl(d.fichier_url)
+  if (path) {
+    await supabase.storage.from(bucketName).remove([path])
+  }
+  await supabase.from('documents_education').delete().eq('id',d.id)
+  load()
+}
+
+function onDrop(event: DragEvent) {
+  isDragOver.value = false
+  const file = event.dataTransfer?.files?.[0]
+  if (!file) return
+  uploadFile(file)
+}
+
+function onFileSelected(event: Event) {
+  isDragOver.value = false
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  uploadFile(file)
 }
 
 let timer: ReturnType<typeof setTimeout>
 function debouncedLoad() { clearTimeout(timer); timer=setTimeout(load,350) }
 
-function openModal(d:any) {
-  editing.value = d ? { ...d } : { titre:'',categorie:'regles',format:'pdf',version:'v1.0',fichier_url:'',actif:true,publie_le:new Date().toISOString().slice(0,10) }
-  modal.value = true
-}
-
-async function saveDoc() {
-  if (!editing.value.titre || !editing.value.fichier_url) return
-  saving.value = true
-  const { id, ...data } = editing.value
-  if (id) { await supabase.from('documents_education').update({...data,updated_at:new Date().toISOString()}).eq('id',id) }
-  else     { await supabase.from('documents_education').insert(data) }
-  saving.value=false; modal.value=false; load()
-}
-
-async function toggleActif(d:any) { await supabase.from('documents_education').update({actif:!d.actif,updated_at:new Date().toISOString()}).eq('id',d.id); d.actif=!d.actif }
-async function deleteDoc(d:any)   { if(!confirm(`Supprimer "${d.titre}" ?`)) return; await supabase.from('documents_education').delete().eq('id',d.id); load() }
-
 onMounted(load)
+
 </script>
 
 <style scoped>
@@ -142,5 +269,10 @@ onMounted(load)
 .modal-footer { display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--p-border); }
 .loading-state { display:flex;justify-content:center;padding:60px 0; }
 .spinner { width:32px;height:32px;border:3px solid var(--p-border);border-top-color:var(--p-red);border-radius:50%;animation:spin 700ms linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
+  .file-dropzone { border:2px dashed var(--p-border);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:90px;transition:background 150ms,border-color 150ms;background:var(--p-surface); }
+  .file-dropzone.drag-over { background:rgba(0,0,0,.06);border-color:var(--p-blue); }
+  .file-input { display:none; }
+  .file-prompt { color:var(--p-sub);font-size:13px;text-align:center; }
+  .file-info { display:flex;gap:8px;align-items:center; }
+  .file-name { font-weight:600; }
 </style>
