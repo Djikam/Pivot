@@ -113,11 +113,27 @@
               </select>
               <button class="p-btn-red p-btn-sm" @click="openModalJoueur(null)">+ Ajouter joueur</button>
             </div>
+
+            <div class="selection-multi-add">
+              <label class="p-label" style="margin-bottom:8px">Ajouter plusieurs joueurs</label>
+              <div class="multi-add-row">
+                <select v-model="newJoueurIds" class="p-input p-select" multiple>
+                  <option v-for="j in availableJoueurs" :key="j.id" :value="j.id">{{ j.prenom }} {{ j.nom }}</option>
+                </select>
+                <button class="p-btn p-btn-sm" :disabled="!newJoueurIds.length || saving" @click="addSelectedJoueurs">Ajouter à la sélection</button>
+              </div>
+              <p class="text-sub" v-if="availableJoueurs.length === 0" style="margin-top:8px">Tous les joueurs disponibles sont déjà dans cette sélection.</p>
+            </div>
+
             <div class="selection-list">
               <div v-for="s in filteredSelections" :key="s.id" class="selection-item">
                 <div class="selection-info">
                   <span class="joueur-name">{{ s.joueur?.prenom }} {{ s.joueur?.nom }}</span>
-                  <span class="p-badge" :class="statutColor(s.statut)">{{ statutLabel(s.statut) }}</span>
+                  <select v-model="s.statut" class="p-input p-select statut-select" @change="updateSelectionStatut(s)">
+                    <option value="preselectione">Pré-sélectionné</option>
+                    <option value="finaliste">Finaliste</option>
+                    <option value="titulaire">Titulaire</option>
+                  </select>
                   <span class="text-sub">{{ s.saison }}</span>
                 </div>
                 <div class="selection-actions">
@@ -192,6 +208,14 @@ const saving = ref(false)
 const saveError = ref('')
 const searchJoueur = ref('')
 const filterStatut = ref('')
+const newJoueurIds = ref<string[]>([])
+
+const availableJoueurs = computed(() => {
+  const alreadySelected = new Set(selections.value
+    .filter(s => s.equipe_nationale_id === currentEquipe.value?.id)
+    .map(s => s.joueur_id))
+  return joueurs.value.filter(j => !alreadySelected.has(j.id))
+})
 
 const categorieLabel = (c:string) => ({senior:'Senior',u20:'U20',u17:'U17',beach:'Beach'})[c]??c
 const categorieColor = (c:string) => ({senior:'p-badge-green',u20:'p-badge-blue',u17:'p-badge-gold',beach:'p-badge-red'})[c]??'p-badge-muted'
@@ -224,7 +248,7 @@ const filteredSelections = computed(() => {
 
 async function load() {
   loading.value = true
-  let q = supabase.from('equipe_nationale').select('*').order('nom')
+  let q = supabase.from('equipes_nationales').select('*').order('nom')
   if (search.value) q = q.ilike('nom', `%${search.value}%`)
   if (filterCategorie.value) q = q.eq('categorie', filterCategorie.value)
   if (filterGenre.value) q = q.eq('genre', filterGenre.value)
@@ -233,10 +257,10 @@ async function load() {
 }
 
 async function loadSelections() {
-  const { data } = await supabase.from('selection_joueur').select(`
+  const { data } = await supabase.from('selections_joueurs').select(`
     *, 
     joueur:joueurs(prenom,nom),
-    equipe_nationale:equipe_nationale(nom)
+    equipe_nationale:equipes_nationales(nom)
   `).order('created_at', { ascending: false })
   selections.value = data ?? []
 }
@@ -259,11 +283,13 @@ function manageSelection(e: any) {
   modalSelection.value = true
   searchJoueur.value = ''
   filterStatut.value = ''
+  newJoueurIds.value = []
 }
 
 function closeModalSelection() {
   modalSelection.value = false
   currentEquipe.value = null
+  newJoueurIds.value = []
 }
 
 function openModalJoueur(s: any) {
@@ -275,8 +301,8 @@ async function saveEquipe() {
   if (!editingEquipe.value.nom || !editingEquipe.value.categorie || !editingEquipe.value.genre || !editingEquipe.value.saison_active) { saveError.value='Nom, catégorie, genre et saison requis'; return }
   saving.value = true; saveError.value = ''
   const { id, ...data } = editingEquipe.value
-  if (id) { await supabase.from('equipe_nationale').update(data).eq('id', id) }
-  else     { await supabase.from('equipe_nationale').insert(data) }
+  if (id) { await supabase.from('equipes_nationales').update(data).eq('id', id) }
+  else     { await supabase.from('equipes_nationales').insert(data) }
   saving.value = false; modalEquipe.value = false; load()
 }
 
@@ -285,13 +311,35 @@ async function saveSelection() {
   saving.value = true; saveError.value = ''
   const data = { ...editingSelection.value, equipe_nationale_id: currentEquipe.value.id }
   const { id, joueur, equipe_nationale, ...cleanData } = data
-  if (id) { await supabase.from('selection_joueur').update(cleanData).eq('id', id) }
-  else     { await supabase.from('selection_joueur').insert(cleanData) }
+  if (id) { await supabase.from('selections_joueurs').update(cleanData).eq('id', id) }
+  else     { await supabase.from('selections_joueurs').insert(cleanData) }
   saving.value = false; modalJoueur.value = false; loadSelections()
 }
 
-async function deleteEquipe(e:any)   { if(!confirm(`Supprimer ${e.nom} ?`)) return; await supabase.from('equipe_nationale').delete().eq('id',e.id); load() }
-async function removeJoueur(s:any)   { if(!confirm(`Retirer ${s.joueur?.prenom} ${s.joueur?.nom} ?`)) return; await supabase.from('selection_joueur').delete().eq('id',s.id); loadSelections() }
+async function addSelectedJoueurs() {
+  if (!newJoueurIds.value.length || !currentEquipe.value) return
+  saving.value = true; saveError.value = ''
+  const inserts = newJoueurIds.value.map(id => ({
+    joueur_id: id,
+    equipe_nationale_id: currentEquipe.value.id,
+    statut: 'preselectione',
+    saison: currentEquipe.value.saison_active
+  }))
+  const { error } = await supabase.from('selections_joueurs').upsert(inserts, { onConflict: ['joueur_id','equipe_nationale_id','saison'] })
+  if (error) saveError.value = error.message
+  await loadSelections()
+  newJoueurIds.value = []
+  saving.value = false
+}
+
+async function updateSelectionStatut(selection: any) {
+  saving.value = true
+  await supabase.from('selections_joueurs').update({ statut: selection.statut }).eq('id', selection.id)
+  saving.value = false
+}
+
+async function deleteEquipe(e:any)   { if(!confirm(`Supprimer ${e.nom} ?`)) return; await supabase.from('equipes_nationales').delete().eq('id',e.id); load() }
+async function removeJoueur(s:any)   { if(!confirm(`Retirer ${s.joueur?.prenom} ${s.joueur?.nom} ?`)) return; await supabase.from('selections_joueurs').delete().eq('id',s.id); loadSelections() }
 
 onMounted(async () => {
   await Promise.all([loadJoueurs(), loadSelections()])
@@ -317,11 +365,15 @@ onMounted(async () => {
 .empty-categorie { padding:20px;text-align:center;color:var(--p-sub);font-style:italic; }
 
 .selection-toolbar { display:flex;gap:10px;margin-bottom:16px; }
+.selection-multi-add { margin-bottom:18px; }
+.multi-add-row { display:flex;gap:10px;align-items:flex-start; }
+.multi-add-row select { flex:1; min-height:120px; }
 .selection-list { display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto; }
 .selection-item { display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;background:var(--p-bg2); }
 .selection-info { display:flex;align-items:center;gap:8px;flex:1; }
 .joueur-name { font-weight:600; }
 .selection-actions { display:flex;gap:6px; }
+.statut-select { min-width:150px; }
 
 .modal-large { max-width:800px; }
 .btn-danger { color:var(--p-red) !important; }

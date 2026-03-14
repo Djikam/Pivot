@@ -50,7 +50,7 @@
                 <span v-else class="roster-initials">{{ sel.joueur?.prenom[0] }}{{ sel.joueur?.nom[0] }}</span>
               </div>
               <div class="roster-info">
-                <span class="p-badge p-badge-green" style="margin-bottom:4px">{{ statutLabel(sel.statut) }}</span>
+                <span class="p-badge" :class="statutColor(sel.statut)" style="margin-bottom:4px">{{ statutLabel(sel.statut) }}</span>
                 <div class="roster-name">{{ sel.joueur?.prenom }} {{ sel.joueur?.nom }}</div>
                 <div class="roster-poste text-sub">{{ posteLabel(sel.joueur?.poste_principal ?? '') }}</div>
               </div>
@@ -143,6 +143,7 @@ const postes: Record<string, string> = {
 }
 const posteLabel = (p: string) => postes[p] ?? p
 const statutLabel = (s: string) => ({ preselectione:'Présélectionné', finaliste:'Finaliste', titulaire:'Titulaire' }[s] ?? s)
+const statutColor = (s: string) => ({ preselectione:'p-badge-muted', finaliste:'p-badge-gold', titulaire:'p-badge-green' }[s] ?? 'p-badge-muted')
 const getCatBadge = (c: string) => ({ senior:'p-badge-red', u20:'p-badge-gold', u17:'p-badge-blue', beach:'p-badge-green' }[c] ?? 'p-badge-muted')
 const scoreColor = (s: number) => s >= 80 ? '#3BAA6A' : s >= 60 ? '#C4922A' : '#3A80BE'
 const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' })
