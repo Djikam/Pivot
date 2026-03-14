@@ -76,14 +76,8 @@ router.beforeEach(async (to) => {
   if (!to.meta.requiresAuth) return true
 
   const auth = useAuthStore()
-  if (auth.loading) {
-    // Attendre l'initialisation
-    await new Promise<void>(resolve => {
-      const stop = setInterval(() => {
-        if (!auth.loading) { clearInterval(stop); resolve() }
-      }, 50)
-    })
-  }
+  // Attendre l'initialisation (session + rôle) pour éviter les redirections intempestives
+  await auth.waitForInit()
 
   if (!auth.isLogged) return { name: 'admin-login', query: { redirect: to.fullPath } }
   if (!auth.isSaisie) return { name: 'home' } // Viewer ne peut pas accéder au backoffice

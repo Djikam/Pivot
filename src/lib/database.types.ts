@@ -130,6 +130,16 @@ export interface Competition {
   created_at: string
 }
 
+export interface CompetitionClub {
+  id: string
+  competition_id: string
+  club_id: string
+  created_at: string
+  // Joins
+  competition?: Competition
+  club?: Club
+}
+
 export interface Phase {
   id: string
   competition_id: string

@@ -17,6 +17,10 @@
         <button v-for="p in phases" :key="p.id" class="phase-tab" :class="{active:selectedPhase?.id===p.id}" @click="selectPhase(p)">{{ p.nom }}</button>
       </div>
 
+      <div v-if="journees.length" class="phase-tabs" style="margin-top:16px">
+        <button v-for="j in journees" :key="j" class="phase-tab" :class="{active:selectedJournee===j}" @click="selectedJournee=j">Journée {{ j }}</button>
+      </div>
+
       <div class="comp-layout">
         <!-- Classement -->
         <div class="classement-col">
@@ -55,7 +59,7 @@
         <!-- Derniers matchs -->
         <div class="matchs-col">
           <h2 class="font-display" style="font-size:1.2rem;font-weight:700;margin-bottom:14px">Résultats récents</h2>
-          <div v-for="m in matchs" :key="m.id" class="match-card p-card">
+          <div v-for="m in matchsByJournee" :key="m.id" class="match-card p-card">
             <div class="match-meta text-sub">J{{ m.journee }} · {{ formatDate(m.date_match) }}</div>
             <div class="match-score-row">
               <span class="match-club">{{ m.club_domicile?.nom }}</span>
@@ -69,7 +73,7 @@
             </div>
             <div v-if="m.mi_temps_dom !== null" class="match-mi text-sub">Mi-temps : {{ m.mi_temps_dom }}–{{ m.mi_temps_ext }}</div>
           </div>
-          <div v-if="matchs.length === 0" class="text-sub" style="padding:20px;text-align:center">Aucun résultat disponible.</div>
+          <div v-if="matchsByJournee.length === 0" class="text-sub" style="padding:20px;text-align:center">Aucun résultat disponible.</div>
           <RouterLink :to="'/matchs?competition='+competition.slug" class="p-btn-ghost p-btn-sm" style="margin-top:12px">Voir tous les matchs →</RouterLink>
         </div>
       </div>
@@ -79,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '@/lib/supabaseClient'
 
@@ -90,21 +94,33 @@ const selectedPhase = ref<any>(null)
 const classement = ref<any[]>([])
 const matchs = ref<any[]>([])
 const loadingClass = ref(true)
+const selectedJournee = ref<number | null>(null)
 
 const statutBadge = (s:string) => ({ en_cours:'p-badge-green',termine:'p-badge-muted',a_venir:'p-badge-gold' }[s]??'p-badge-muted')
 const statutLabel = (s:string) => ({ en_cours:'En cours',termine:'Terminé',a_venir:'À venir' }[s]??s)
 const formatDate = (d:string) => new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})
 const formatShortDate = (d:string) => new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})
 
+const journees = computed(() => {
+  const nums = Array.from(new Set(matchs.value.map(m => m.journee))).sort((a,b)=>a-b)
+  return nums
+})
+
+const matchsByJournee = computed(() => {
+  if (!selectedJournee.value) return matchs.value
+  return matchs.value.filter(m => m.journee === selectedJournee.value)
+})
+
 async function selectPhase(p: any) {
   selectedPhase.value = p
   loadingClass.value = true
   const [{ data: cls }, { data: mx }] = await Promise.all([
-    supabase.from('classements').select('*, club:clubs(id,nom)').eq('phase_id', p.id).order('pts',{ascending:false}).order('db',{ascending:false}),
-    supabase.from('matchs').select('*, club_domicile:clubs!matchs_club_domicile_id_fkey(nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom)').eq('phase_id', p.id).order('date_match',{ascending:false}).limit(8),
+    supabase.from('classement_general').select('*').eq('phase_id', p.id),
+    supabase.from('matchs').select('*, club_domicile:clubs!matchs_club_domicile_id_fkey(nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom)').eq('phase_id', p.id).order('date_match',{ascending:false}),
   ])
   classement.value = cls ?? []
   matchs.value = mx ?? []
+  selectedJournee.value = matchs.value.length ? matchs.value[0].journee : null
   loadingClass.value = false
 }
 

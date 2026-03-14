@@ -106,6 +106,14 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   border-bottom: 1px solid var(--p-border);
   transition: all 180ms ease;
 }
+html.light .pivot-nav {
+  background: rgba(255,255,255,0.92);
+  border-bottom-color: rgba(0,0,0,0.12);
+}
+html.light .pivot-nav.scrolled {
+  background: rgba(255,255,255,0.96);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.14);
+}
 .pivot-nav.scrolled {
   background: rgba(7,4,9,0.97);
   box-shadow: 0 2px 20px rgba(0,0,0,0.4);

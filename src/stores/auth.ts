@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
 import type { Session, User } from '@supabase/supabase-js'
 import type { RoleUser } from '@/lib/database.types'
@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user    = ref<User | null>(null)
   const role    = ref<RoleUser | null>(null)
   const loading = ref(true)
+  const initialized = ref(false)
 
   const isAdmin   = computed(() => role.value === 'admin')
   const isSaisie  = computed(() => role.value === 'admin' || role.value === 'saisie')
@@ -32,6 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
     })
 
     loading.value = false
+    initialized.value = true
   }
 
   async function fetchRole() {
@@ -57,5 +59,14 @@ export const useAuthStore = defineStore('auth', () => {
     role.value    = null
   }
 
-  return { session, user, role, loading, isAdmin, isSaisie, isLogged, init, login, logout }
+  function waitForInit() {
+    if (initialized.value) return Promise.resolve()
+    return new Promise<void>(resolve => {
+      const stop = watch(initialized, (v) => {
+        if (v) { stop(); resolve() }
+      })
+    })
+  }
+
+  return { session, user, role, loading, isAdmin, isSaisie, isLogged, init, waitForInit, login, logout }
 })

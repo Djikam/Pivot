@@ -28,6 +28,7 @@
           <td><span class="statut-badge" :class="'statut-' + c.statut">{{ statutLabel(c.statut) }}</span></td>
           <td class="actions-cell">
             <button class="p-btn-ghost p-btn-sm" @click="openModal(c)">Éditer</button>
+            <button class="p-btn-ghost p-btn-sm" @click="manageCompetition(c)">Gérer</button>
             <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteCompetition(c)">Suppr.</button>
           </td>
         </tr>
@@ -90,11 +91,120 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal gestion compétition (phases / matches) -->
+    <Teleport to="body">
+      <div v-if="manageModal" class="modal-backdrop" @click.self="manageModal=false">
+        <div class="modal-box modal-large">
+          <div class="modal-header">
+            <h3 class="font-display">Gérer compétition — {{ selectedCompetition?.nom }}</h3>
+            <button @click="manageModal=false">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="field" style="flex:1">
+                <label class="p-label">Phase</label>
+                <select v-model="selectedPhase" class="p-input p-select" @change="loadMatches">
+                  <option v-for="p in phases" :key="p.id" :value="p">{{ p.nom }}</option>
+                </select>
+              </div>
+              <div class="field" style="flex:1">
+                <label class="p-label">Journée</label>
+                <input v-model.number="newMatch.journee" type="number" min="1" class="p-input" />
+              </div>
+            </div>
+
+            <div class="section">
+              <h4 class="section-title">Participants</h4>
+              <div class="form-row" style="align-items:flex-end;">
+                <div class="field" style="flex:1">
+                  <label class="p-label">Ajouter un club</label>
+                  <select v-model="participantClubId" class="p-input p-select">
+                    <option value="">— Sélectionner un club —</option>
+                    <option v-for="c in allClubs" :key="c.id" :value="c.id">{{ c.nom }}</option>
+                  </select>
+                </div>
+                <button class="p-btn p-btn-sm" @click="addParticipant" :disabled="!participantClubId">Ajouter</button>
+              </div>
+              <div class="participants-list">
+                <div v-for="p in participants" :key="p.id" class="participant-item">
+                  <span>{{ p.club?.nom }}</span>
+                  <button class="p-btn-ghost p-btn-sm btn-danger" @click="removeParticipant(p)">Retirer</button>
+                </div>
+                <div v-if="participants.length === 0" class="text-sub" style="padding:10px 0">Aucun club ajouté à cette compétition.</div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h4 class="section-title">Calendrier</h4>
+              <div class="section-actions">
+                <button class="p-btn p-btn-sm" @click="generateCalendar" :disabled="!selectedPhase || participants.length < 2">Générer le calendrier</button>
+              </div>
+              <div class="match-table">
+                <table class="p-table">
+                  <thead>
+                    <tr><th>J</th><th>Dom.</th><th>Ext.</th><th>Date</th><th>Score</th><th>Statut</th><th></th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="m in matches" :key="m.id">
+                      <td>{{ m.journee }}</td>
+                      <td>{{ m.club_domicile?.nom }}</td>
+                      <td>{{ m.club_exterieur?.nom }}</td>
+                      <td><input type="datetime-local" v-model="m.date_match" class="p-input" @change="saveMatch(m)" /></td>
+                      <td>
+                        <input type="number" v-model.number="m.score_dom" class="p-input" style="width:70px;display:inline-block;" @change="saveMatch(m)" />
+                        —
+                        <input type="number" v-model.number="m.score_ext" class="p-input" style="width:70px;display:inline-block;" @change="saveMatch(m)" />
+                      </td>
+                      <td>
+                        <select v-model="m.statut" class="p-input p-select" @change="saveMatch(m)">
+                          <option value="programme">Programmé</option>
+                          <option value="en_cours">En cours</option>
+                          <option value="termine">Terminé</option>
+                          <option value="reporte">Reporté</option>
+                        </select>
+                      </td>
+                      <td>
+                        <button class="p-btn-ghost p-btn-sm" @click="closeMatch(m)">Clôturer</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div v-if="matches.length === 0" class="text-sub" style="padding:12px">Aucun match enregistré pour cette phase.</div>
+              </div>
+
+              <div class="match-create" style="margin-top:16px">
+                <h4 class="section-title">Ajouter un match</h4>
+                <div class="form-row">
+                  <div class="field"><label class="p-label">Domicile</label>
+                    <select v-model="newMatch.club_domicile_id" class="p-input p-select">
+                      <option value="">— Club domicile —</option>
+                      <option v-for="c in participants" :key="c.club.id" :value="c.club.id">{{ c.club.nom }}</option>
+                    </select>
+                  </div>
+                  <div class="field"><label class="p-label">Extérieur</label>
+                    <select v-model="newMatch.club_exterieur_id" class="p-input p-select">
+                      <option value="">— Club extérieur —</option>
+                      <option v-for="c in participants" :key="c.club.id" :value="c.club.id">{{ c.club.nom }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="field"><label class="p-label">Date</label><input v-model="newMatch.date_match" type="datetime-local" class="p-input" /></div>
+                  <div class="field"><label class="p-label">Journée</label><input v-model.number="newMatch.journee" type="number" min="1" class="p-input" /></div>
+                </div>
+                <button class="p-btn p-btn-sm" @click="createMatch" :disabled="!selectedPhase || !newMatch.club_domicile_id || !newMatch.club_exterieur_id">Créer match</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
 
 const competitions = ref<any[]>([])
@@ -106,6 +216,17 @@ const modal = ref(false)
 const editing = ref<any>({})
 const saving = ref(false)
 const saveError = ref('')
+
+// Gestion compétition (phases / matches)
+const manageModal = ref(false)
+const selectedCompetition = ref<any>(null)
+const phases = ref<any[]>([])
+const selectedPhase = ref<any>(null)
+const matches = ref<any[]>([])
+const allClubs = ref<any[]>([])
+const participants = ref<any[]>([])
+const participantClubId = ref<string>('')
+const newMatch = ref<any>({ club_domicile_id:'', club_exterieur_id:'', date_match:'', journee:1, statut:'programme' })
 
 const types = [
   {value:'regional',label:'Régional'},{value:'national',label:'National'},{value:'universitaire',label:'Universitaire'},
@@ -145,6 +266,128 @@ async function saveCompetition() {
 }
 
 async function deleteCompetition(c:any)   { if(!confirm(`Supprimer ${c.nom} ?`)) return; await supabase.from('competitions').delete().eq('id',c.id); load() }
+
+async function loadAllClubs() {
+  const { data } = await supabase.from('clubs').select('id,nom').order('nom')
+  allClubs.value = data ?? []
+}
+
+async function loadParticipants() {
+  if (!selectedCompetition.value) return
+  const { data } = await supabase.from('competition_clubs')
+    .select('id,club:clubs(id,nom)')
+    .eq('competition_id', selectedCompetition.value.id)
+    .order('created_at')
+  participants.value = (data ?? []).map((r:any) => ({ id: r.id, club: r.club }))
+}
+
+async function addParticipant() {
+  if (!participantClubId.value || !selectedCompetition.value) return
+  await supabase.from('competition_clubs').insert({ competition_id: selectedCompetition.value.id, club_id: participantClubId.value })
+  participantClubId.value = ''
+  await loadParticipants()
+}
+
+async function removeParticipant(p: any) {
+  if (!confirm(`Retirer ${p.club?.nom} ?`)) return
+  await supabase.from('competition_clubs').delete().eq('id', p.id)
+  await loadParticipants()
+}
+
+async function loadPhases() {
+  if (!selectedCompetition.value) return
+  const { data } = await supabase.from('phases').select('*').eq('competition_id', selectedCompetition.value.id).order('ordre')
+  phases.value = data ?? []
+  if (phases.value.length && !selectedPhase.value) selectPhase(phases.value[0])
+}
+
+async function selectPhase(p: any) {
+  selectedPhase.value = p
+  await loadMatches()
+}
+
+async function loadMatches() {
+  if (!selectedPhase.value) return
+  const { data } = await supabase.from('matchs')
+    .select('*, club_domicile:clubs!matchs_club_domicile_id_fkey(id,nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(id,nom)')
+    .eq('phase_id', selectedPhase.value.id)
+    .order('journee', { ascending: true })
+    .order('date_match', { ascending: true })
+  matches.value = data ?? []
+}
+
+async function manageCompetition(c:any) {
+  selectedCompetition.value = c
+  manageModal.value = true
+  selectedPhase.value = null
+  await Promise.all([loadAllClubs(), loadParticipants(), loadPhases()])
+}
+
+async function saveMatch(match: any) {
+  const { id, club_domicile, club_exterieur, ...rest } = match
+  const data = {
+    ...rest,
+    club_domicile_id: match.club_domicile_id,
+    club_exterieur_id: match.club_exterieur_id,
+  }
+  if (id) {
+    await supabase.from('matchs').update(data).eq('id', id)
+  } else {
+    await supabase.from('matchs').insert(data)
+  }
+  await loadMatches()
+}
+
+async function closeMatch(match: any) {
+  if (!match.id) return
+  await supabase.from('matchs').update({ statut: 'termine' }).eq('id', match.id)
+  await loadMatches()
+}
+
+function resetNewMatch() {
+  newMatch.value = { club_domicile_id:'', club_exterieur_id:'', date_match:'', journee:1, statut:'programme' }
+}
+
+async function createMatch() {
+  if (!selectedPhase.value) return
+  const m = { ...newMatch.value, phase_id: selectedPhase.value.id }
+  await supabase.from('matchs').insert(m)
+  resetNewMatch()
+  await loadMatches()
+}
+
+// Simple round-robin scheduler (gens des journées) - ignore if odd
+async function generateCalendar() {
+  if (!selectedPhase.value) return
+  const clubs = participants.value.map((p:any) => p.club)
+  if (clubs.length < 2) return
+  const teamIds = clubs.map((c:any) => c.id)
+  const even = teamIds.length % 2 === 0
+  const teams = [...teamIds]
+  if (!even) teams.push(null)
+  const rounds = teams.length - 1
+  const half = teams.length / 2
+  const fixtures: any[] = []
+  for (let round = 0; round < rounds; round++) {
+    for (let i = 0; i < half; i++) {
+      const home = teams[i]
+      const away = teams[teams.length - 1 - i]
+      if (home && away) {
+        fixtures.push({
+          phase_id: selectedPhase.value.id,
+          club_domicile_id: home,
+          club_exterieur_id: away,
+          date_match: new Date(Date.now() + round * 7 * 24 * 60 * 60 * 1000).toISOString(),
+          journee: round + 1,
+          statut: 'programme'
+        })
+      }
+    }
+    teams.splice(1, 0, teams.pop())
+  }
+  await supabase.from('matchs').insert(fixtures)
+  await loadMatches()
+}
 
 onMounted(load)
 </script>

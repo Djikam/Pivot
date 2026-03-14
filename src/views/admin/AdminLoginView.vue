@@ -12,7 +12,12 @@
         </div>
         <div class="field">
           <label class="p-label">Mot de passe</label>
-          <input v-model="password" type="password" class="p-input" placeholder="••••••••" required autocomplete="current-password" />
+          <div class="password-row">
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" class="p-input" placeholder="••••••••" required autocomplete="current-password" />
+            <button type="button" class="password-toggle" @click="showPassword = !showPassword" :title="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+              {{ showPassword ? '👁️‍🗨️' : '👁️' }}
+            </button>
+          </div>
         </div>
         <div v-if="error" class="login-error">{{ error }}</div>
         <button type="submit" class="p-btn-red" style="width:100%;justify-content:center" :disabled="loading">
@@ -35,10 +40,11 @@ import { useAuthStore } from '@/stores/auth'
 const auth     = useAuthStore()
 const router   = useRouter()
 const route    = useRoute()
-const email    = ref('')
-const password = ref('')
-const loading  = ref(false)
-const error    = ref('')
+const email        = ref('')
+const password     = ref('')
+const showPassword = ref(false)
+const loading      = ref(false)
+const error        = ref('')
 
 async function doLogin() {
   loading.value = true
@@ -64,6 +70,22 @@ async function doLogin() {
   width:100%; max-width:400px; padding:32px;
   background:var(--p-card); border:1px solid var(--p-border); border-radius:var(--radius-lg);
 }
+.password-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.password-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--p-border);
+  background: transparent;
+  color: var(--p-sub);
+  cursor: pointer;
+  font-size: 16px;
+}
+.password-toggle:hover { border-color: var(--p-red); color: var(--p-text); }
 .login-logo { font-size:2.4rem;font-weight:700;color:var(--p-red);text-align:center;margin-bottom:4px; }
 .login-sub { text-align:center;font-size:13px;margin-bottom:28px; }
 .login-form { display:flex;flex-direction:column;gap:16px; }
