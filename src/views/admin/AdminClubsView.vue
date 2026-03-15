@@ -112,7 +112,7 @@
               <div class="info-section">
                 <h4>Joueurs ({{ joueurs.length }})</h4>
                 <div v-if="joueurs.length" class="info-list">
-                  <div v-for="j in joueurs" :key="j.id" class="info-item">
+                  <div v-for="j in joueurs" :key="j.id" class="info-item clickable" @click="viewJoueurDetails(j)">
                     {{ j.prenom }} {{ j.nom }} <span class="text-sub">({{ posteLabel(j.poste_principal) }})</span>
                   </div>
                 </div>
@@ -144,6 +144,57 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal détails joueur -->
+    <Teleport to="body">
+      <div v-if="modalJoueur" class="modal-backdrop" @click.self="modalJoueur=null">
+        <div class="modal-box modal-large">
+          <div class="modal-header">
+            <h3 class="font-display">Détails — {{ selectedJoueur?.prenom }} {{ selectedJoueur?.nom }}</h3>
+            <button @click="modalJoueur=null">✕</button>
+          </div>
+          <div class="modal-body" v-if="selectedJoueur">
+            <div class="joueur-info">
+              <div class="info-section">
+                <h4>Informations générales</h4>
+                <div class="info-grid">
+                  <div><strong>Poste principal:</strong> {{ posteLabel(selectedJoueur.poste_principal) }}</div>
+                  <div v-if="selectedJoueur.poste_secondaire"><strong>Poste secondaire:</strong> {{ posteLabel(selectedJoueur.poste_secondaire) }}</div>
+                  <div><strong>Bras fort:</strong> {{ selectedJoueur.bras_fort }}</div>
+                  <div v-if="selectedJoueur.taille_estimee"><strong>Taille estimée:</strong> {{ selectedJoueur.taille_estimee }} cm</div>
+                  <div v-if="selectedJoueur.date_naissance_approx"><strong>Date naissance approx:</strong> {{ formatDate(selectedJoueur.date_naissance_approx) }}</div>
+                  <div><strong>Statut universitaire:</strong> {{ selectedJoueur.statut_univ ? 'Oui' : 'Non' }}</div>
+                  <div><strong>Vérifié:</strong> {{ selectedJoueur.verifie ? 'Oui' : 'Non' }}</div>
+                  <div><strong>Badge Talent:</strong> {{ selectedJoueur.badge_talent ? 'Oui' : 'Non' }}</div>
+                  <div><strong>Score IA:</strong> {{ selectedJoueur.score_ia }}</div>
+                </div>
+              </div>
+              
+              <div class="info-section">
+                <h4>Licences saisonnières</h4>
+                <div v-if="licencesJoueur.length" class="info-list">
+                  <div v-for="l in licencesJoueur" :key="l.id" class="info-item">
+                    Saison {{ l.saison }} - {{ l.club?.nom }} ({{ l.type_licence }})
+                    <span v-if="l.numero_maillot" class="text-sub">Maillot #{{ l.numero_maillot }}</span>
+                  </div>
+                </div>
+                <p v-else class="text-sub">Aucune licence</p>
+              </div>
+              
+              <div class="info-section">
+                <h4>Distinctions</h4>
+                <div v-if="distinctionsJoueur.length" class="info-list">
+                  <div v-for="d in distinctionsJoueur" :key="d.id" class="info-item">
+                    {{ d.titre }} ({{ d.annee }})
+                  </div>
+                </div>
+                <p v-else class="text-sub">Aucune distinction</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -163,7 +214,11 @@ const onlyActif = ref(true)
 const onlyUniversitaire = ref(false)
 const modal = ref<boolean | null>(null)
 const modalDetails = ref<boolean | null>(null)
+const modalJoueur = ref<boolean | null>(null)
 const selectedClub = ref<any>(null)
+const selectedJoueur = ref<any>(null)
+const licencesJoueur = ref<any[]>([])
+const distinctionsJoueur = ref<any[]>([])
 const editing = ref<any>({})
 const saving = ref(false)
 const saveError = ref('')
@@ -201,7 +256,7 @@ async function viewDetails(c: any) {
   
   // Charger les données liées
   const [joueursRes, competitionsRes, transfertsRes] = await Promise.all([
-    supabase.from('joueurs').select('id,prenom,nom,poste_principal').eq('club_id', c.id).order('nom'),
+    supabase.from('joueurs').select('id,prenom,nom,poste_principal,poste_secondaire,bras_fort,taille_estimee,date_naissance_approx,statut_univ,verifie,badge_talent,score_ia').eq('club_id', c.id).order('nom'),
     supabase.from('competitions').select('id,nom,type,saison').eq('club_id', c.id).order('saison', { ascending: false }),
     supabase.from('transferts').select('id,type_transfert,date_transfert,montant_estime').eq('club_id', c.id).order('date_transfert', { ascending: false })
   ])
@@ -209,6 +264,20 @@ async function viewDetails(c: any) {
   joueurs.value = joueursRes.data ?? []
   competitions.value = competitionsRes.data ?? []
   transferts.value = transfertsRes.data ?? []
+}
+
+async function viewJoueurDetails(j: any) {
+  selectedJoueur.value = j
+  modalJoueur.value = true
+  
+  // Charger licences et distinctions
+  const [licencesRes, distinctionsRes] = await Promise.all([
+    supabase.from('licences_saison').select('id,saison,type_licence,numero_maillot,club:club_id(nom)').eq('joueur_id', j.id).order('saison', { ascending: false }),
+    supabase.from('distinctions').select('id,titre,annee').eq('joueur_id', j.id).order('annee', { ascending: false })
+  ])
+  
+  licencesJoueur.value = licencesRes.data ?? []
+  distinctionsJoueur.value = distinctionsRes.data ?? []
 }
 
 function openModal(c: any) {
@@ -329,6 +398,11 @@ onMounted(() => {
 .info-section h4 { font-size:1.1rem;font-weight:700;margin-bottom:12px;color:var(--p-red); }
 .info-list { display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto; }
 .info-item { padding:8px 12px;border-radius:6px;background:var(--p-bg2);font-size:14px; }
+.clickable { cursor: pointer; transition: background 150ms; }
+.clickable:hover { background: rgba(255,255,255,.05); }
+.joueur-info { display:flex;flex-direction:column;gap:24px; }
+.info-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px; }
+.info-grid div { padding:8px 0; }
 .btn-danger { color:var(--p-red) !important; }
 .club-field { position:relative; }
 .suggestions-list { position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--p-border);border-radius:6px;max-height:200px;overflow-y:auto;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.1); }
