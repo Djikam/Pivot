@@ -133,8 +133,7 @@
                 <h4>Transferts récents ({{ transferts.length }})</h4>
                 <div v-if="transferts.length" class="info-list">
                   <div v-for="t in transferts" :key="t.id" class="info-item">
-                    {{ t.type_transfert }} <span class="text-sub">({{ formatDate(t.date_transfert) }})</span>
-                    <span v-if="t.montant_estime" class="text-sub">{{ t.montant_estime }}€</span>
+                    {{ t.type }} <span class="text-sub">({{ formatDate(t.date_transfert) }})</span>
                   </div>
                 </div>
                 <p v-else class="text-sub">Aucun transfert</p>
@@ -261,8 +260,8 @@ async function viewDetails(c: any) {
     `).eq('club_id', c.id).eq('saison', '2025-2026'),
     supabase.from('competition_clubs').select(`
       competition:competitions(id,nom,type,saison)
-    `).eq('club_id', c.id),
-    supabase.from('transferts').select('id,type_transfert,date_transfert,montant_estime').eq('club_id', c.id).order('date_transfert', { ascending: false })
+    `).eq('club_id', c.id).catch(() => ({ data: [] })), // Handle if table doesn't exist
+    supabase.from('transferts').select('id,type,date_transfert').or(`club_origine_id.eq.${c.id},club_destination_id.eq.${c.id}`).order('date_transfert', { ascending: false }).limit(10)
   ])
   
   // Traiter les joueurs : extraire de licences_saison et éviter doublons
