@@ -256,13 +256,27 @@ async function viewDetails(c: any) {
   
   // Charger les données liées
   const [joueursRes, competitionsRes, transfertsRes] = await Promise.all([
-    supabase.from('joueurs').select('id,prenom,nom,poste_principal,poste_secondaire,bras_fort,taille_estimee,date_naissance_approx,statut_univ,verifie,badge_talent,score_ia').eq('club_id', c.id).order('nom'),
-    supabase.from('competitions').select('id,nom,type,saison').eq('club_id', c.id).order('saison', { ascending: false }),
+    supabase.from('licences_saison').select(`
+      joueur:joueurs(id,prenom,nom,poste_principal,poste_secondaire,bras_fort,taille_estimee,date_naissance_approx,statut_univ,verifie,badge_talent,score_ia)
+    `).eq('club_id', c.id).eq('saison', '2025-2026'),
+    supabase.from('competition_clubs').select(`
+      competition:competitions(id,nom,type,saison)
+    `).eq('club_id', c.id),
     supabase.from('transferts').select('id,type_transfert,date_transfert,montant_estime').eq('club_id', c.id).order('date_transfert', { ascending: false })
   ])
   
-  joueurs.value = joueursRes.data ?? []
-  competitions.value = competitionsRes.data ?? []
+  // Traiter les joueurs : extraire de licences_saison et éviter doublons
+  const joueursMap = new Map()
+  joueursRes.data?.forEach((l: any) => {
+    if (l.joueur && !joueursMap.has(l.joueur.id)) {
+      joueursMap.set(l.joueur.id, l.joueur)
+    }
+  })
+  joueurs.value = Array.from(joueursMap.values())
+  
+  // Traiter les compétitions
+  competitions.value = competitionsRes.data?.map((cc: any) => cc.competition).filter(Boolean) || []
+  
   transferts.value = transfertsRes.data ?? []
 }
 
