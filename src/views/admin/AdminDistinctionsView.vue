@@ -102,16 +102,22 @@ const types = ['MVP', 'Meilleur buteur', 'Meilleur passeur', 'Meilleur gardien',
 
 async function load() {
   loading.value = true
-  let q = supabase.from('distinctions').select(`
-    id,joueur_id,club_id,type,saison,competition_id,periode,
-    joueur:joueurs(prenom,nom),
-    club:clubs(nom)
-  `).order('saison', { ascending: false })
-  if (search.value) q = q.or(`joueur.prenom.ilike.%${search.value}%,joueur.nom.ilike.%${search.value}%,club.nom.ilike.%${search.value}%`)
-  if (filterSaison.value) q = q.eq('saison', filterSaison.value)
-  if (filterType.value) q = q.eq('type', filterType.value)
-  const { data } = await q.limit(100)
-  distinctions.value = data??[]; loading.value = false
+  try {
+    let q = supabase.from('distinctions').select(`
+      id,joueur_id,club_id,type,saison,competition_id,periode,
+      joueur:joueurs(prenom,nom),
+      club:clubs(nom)
+    `).order('saison', { ascending: false })
+    if (search.value) q = q.or(`joueur.prenom.ilike.%${search.value}%,joueur.nom.ilike.%${search.value}%,club.nom.ilike.%${search.value}%`)
+    if (filterSaison.value) q = q.eq('saison', filterSaison.value)
+    if (filterType.value) q = q.eq('type', filterType.value)
+    const { data } = await q.limit(100)
+    distinctions.value = data??[]
+  } catch (error) {
+    console.error('Erreur lors du chargement des distinctions:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 let timer: ReturnType<typeof setTimeout>
@@ -137,13 +143,28 @@ async function saveDistinction() {
   if (!editing.value.type || !editing.value.saison) { saveError.value='Type et saison requis'; return }
   if (!editing.value.joueur_id && !editing.value.club_id) { saveError.value='Joueur ou club requis'; return }
   saving.value = true; saveError.value = ''
-  const { id, joueur, club, ...data } = editing.value
-  if (id) { await supabase.from('distinctions').update(data).eq('id', id) }
-  else     { await supabase.from('distinctions').insert(data) }
-  saving.value = false; modal.value = false; load()
+  try {
+    const { id, joueur, club, ...data } = editing.value
+    if (id) { await supabase.from('distinctions').update(data).eq('id', id) }
+    else     { await supabase.from('distinctions').insert(data) }
+    modal.value = false; load()
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde:', error)
+    saveError.value = 'Erreur lors de la sauvegarde'
+  } finally {
+    saving.value = false
+  }
 }
 
-async function deleteDistinction(d:any)   { if(!confirm(`Supprimer la distinction "${d.type}" ?`)) return; await supabase.from('distinctions').delete().eq('id',d.id); load() }
+async function deleteDistinction(d:any) {
+  if(!confirm(`Supprimer la distinction "${d.type}" ?`)) return
+  try {
+    await supabase.from('distinctions').delete().eq('id',d.id)
+    load()
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error)
+  }
+}
 
 onMounted(async () => {
   await loadData()

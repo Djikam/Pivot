@@ -212,23 +212,35 @@ async function saveDoc() {
 
     modal.value = false
     load()
-  } catch (err: any) {
-    uploadError.value = err.message ?? 'Erreur lors de l\'enregistrement'
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde:', error)
+    uploadError.value = 'Erreur lors de la sauvegarde. Veuillez réessayer.'
   } finally {
     saving.value = false
   }
 }
 
-async function toggleActif(d:any) { await supabase.from('documents_education').update({actif:!d.actif,updated_at:new Date().toISOString()}).eq('id',d.id); d.actif=!d.actif }
+async function toggleActif(d:any) { 
+  try {
+    await supabase.from('documents_education').update({actif:!d.actif,updated_at:new Date().toISOString()}).eq('id',d.id)
+    d.actif = !d.actif
+  } catch (error) {
+    console.error('Erreur lors du toggle actif:', error)
+  }
+}
 
 async function deleteDoc(d:any) {
   if (!confirm(`Supprimer "${d.titre}" ?`)) return
-  const path = storagePathFromUrl(d.fichier_url)
-  if (path) {
-    await supabase.storage.from(bucketName).remove([path])
+  try {
+    const path = storagePathFromUrl(d.fichier_url)
+    if (path) {
+      await supabase.storage.from(bucketName).remove([path])
+    }
+    await supabase.from('documents_education').delete().eq('id',d.id)
+    load()
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error)
   }
-  await supabase.from('documents_education').delete().eq('id',d.id)
-  load()
 }
 
 function onDrop(event: DragEvent) {
@@ -248,6 +260,21 @@ function onFileSelected(event: Event) {
 
 let timer: ReturnType<typeof setTimeout>
 function debouncedLoad() { clearTimeout(timer); timer=setTimeout(load,350) }
+
+async function load() {
+  loading.value = true
+  try {
+    let q = supabase.from('documents_education').select('*').order('publie_le', { ascending: false })
+    if (search.value) q = q.ilike('titre', `%${search.value}%`)
+    if (filterCat.value) q = q.eq('categorie', filterCat.value)
+    const { data } = await q
+    docs.value = data ?? []
+  } catch (error) {
+    console.error('Erreur lors du chargement des documents:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 onMounted(load)
 
