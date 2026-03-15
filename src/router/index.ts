@@ -81,6 +81,11 @@ router.beforeEach(async (to) => {
   await auth.waitForInit()
 
   if (!auth.isLogged) return { name: 'admin-login', query: { redirect: to.fullPath } }
+  
+  // Pour le dashboard admin, permettre si loggé (même viewer)
+  if (to.name === 'admin-dashboard') return true
+  
+  // Pour les autres pages admin, vérifier les droits saisis
   if (!auth.isSaisie) return { name: 'home' } // Viewer ne peut pas accéder au backoffice
 
   return true
