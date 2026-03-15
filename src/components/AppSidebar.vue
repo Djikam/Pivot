@@ -34,7 +34,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { 
-  LayoutDashboard, Users, Home, Trophy, Clock, Activity, MapPin, Heart, Newspaper, BookOpen, Star, Shield, Bell, ChevronRight, ChevronLeft, LogOut 
+  LayoutDashboard, Users, Home, Trophy, Clock, Activity, MapPin, Heart, Newspaper, BookOpen, Star, Shield, Bell, ChevronRight, ChevronLeft, LogOut, AlertTriangle
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
@@ -62,6 +62,7 @@ const navItems: NavItem[] = [
   { to: '/admin/distinctions',label: 'Distinctions',  icon: Star },
   { to: '/admin/validation',  label: 'RGPD',          icon: Shield },
   { to: '/admin/alertes',     label: 'Alertes',       icon: Bell },
+  { to: '/admin/doublons',    label: 'Doublons',      icon: AlertTriangle },
 ]
 
 async function logout() {

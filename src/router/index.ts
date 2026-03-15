@@ -63,6 +63,7 @@ const router = createRouter({
         { path: 'national',   name: 'admin-national',     component: () => import('@/views/admin/AdminNationalView.vue') },
         { path: 'validation', name: 'admin-validation',   component: () => import('@/views/admin/AdminValidationView.vue') },
         { path: 'alertes',    name: 'admin-alertes',      component: () => import('@/views/admin/AdminAlertesView.vue') },
+        { path: 'doublons',   name: 'admin-doublons',     component: () => import('@/views/admin/AdminDoublonsView.vue') },
       ]
     },
 

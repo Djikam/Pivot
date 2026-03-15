@@ -152,7 +152,11 @@ async function load() {
   loading.value = true
   let q = supabase
     .from('joueurs')
-    .select('id, prenom, nom, poste_principal, bras_fort, score_ia, badge_talent, verifie, photo_cloudinary_id', { count: 'exact' })
+    .select(`
+      id, prenom, nom, poste_principal, bras_fort, score_ia, badge_talent, verifie, photo_cloudinary_id,
+      licences_saison!inner(*)
+    `, { count: 'exact' })
+    .eq('licences_saison.saison', '2025-2026')
     .order('score_ia', { ascending: false })
     .range(page.value * limit, (page.value + 1) * limit - 1)
 
@@ -166,7 +170,14 @@ async function load() {
   if (filters.value.statut === 'univ')    q = q.eq('statut_univ', true)
 
   const { data, count } = await q
-  joueurs.value = data ?? []
+  // Filtrer les doublons : si un joueur a plusieurs licences, prendre la plus récente
+  const uniqueJoueurs = data?.reduce((acc, joueur) => {
+    if (!acc[joueur.id] || new Date(joueur.licences_saison[0].created_at) > new Date(acc[joueur.id].licences_saison[0].created_at)) {
+      acc[joueur.id] = joueur
+    }
+    return acc
+  }, {}) ?? {}
+  joueurs.value = Object.values(uniqueJoueurs)
   total.value   = count ?? 0
   loading.value = false
 }

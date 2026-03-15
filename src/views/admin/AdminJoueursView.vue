@@ -76,7 +76,7 @@
                   <button type="button" class="p-btn-ghost p-btn-sm" @click="openClubModal" title="Créer nouveau club">+</button>
                 </div>
               </div>
-              <div class="field"><label class="p-label">Taille (cm)</label><input v-model.number="editing.taille_estimee" type="number" class="p-input" placeholder="Ex: 185" /></div>
+              <div class="field"><label class="p-label">Saison</label><input v-model="editing.saison" class="p-input" placeholder="Ex: 2025-2026" /></div>
             </div>
             <div class="form-row">
               <label class="toggle-label" style="gap:8px"><input type="checkbox" v-model="editing.statut_univ" /> Joueur universitaire</label>
@@ -205,12 +205,27 @@ function nextPage() {
 }
 
 function openModal(j: any) {
-  editing.value = j ? { ...j } : { prenom:'',nom:'',poste_principal:'gardien',bras_fort:'droitier',verifie:false,badge_talent:false,statut_univ:false }
+  editing.value = j ? { ...j } : { prenom:'',nom:'',poste_principal:'gardien',bras_fort:'droitier',verifie:false,badge_talent:false,statut_univ:false,club_id:'',saison:'2025-2026' }
   modal.value = true; saveError.value = ''
 }
 
 async function saveJoueur() {
   if (!editing.value.prenom || !editing.value.nom) { saveError.value='Prénom et nom requis'; return }
+  
+  // Contrôle d'unicité : vérifier si le joueur a déjà une licence pour cette saison
+  if (editing.value.club_id && editing.value.saison) {
+    const { data: existing } = await supabase
+      .from('licences_saison')
+      .select('id')
+      .eq('joueur_id', editing.value.id || 'temp') // Pour les nouveaux, on ne peut pas vérifier avant insert
+      .eq('saison', editing.value.saison)
+      .limit(1)
+    if (existing && existing.length > 0) {
+      saveError.value = 'Ce joueur a déjà une licence pour cette saison'
+      return
+    }
+  }
+  
   saving.value = true; saveError.value = ''
   const { id, ...data } = editing.value
   if (id) { await supabase.from('joueurs').update(data).eq('id', id) }

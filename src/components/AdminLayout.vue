@@ -41,6 +41,7 @@ const titles: Record<string, string> = {
   'admin-distinctions':'Distinctions',
   'admin-validation':  'Validation RGPD',
   'admin-alertes':     'Alertes',
+  'admin-doublons':    'Doublons',
 }
 const pageTitle = computed(() => titles[route.name as string] ?? 'Administration')
 </script>
