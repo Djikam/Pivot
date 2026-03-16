@@ -36,7 +36,7 @@
               <span class="event-icon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg></span>
               <RouterLink :to="'/joueurs/'+b.joueur_id" class="event-name">{{ b.joueur?.prenom }} {{ b.joueur?.nom }}</RouterLink>
               <span v-if="b.type !== 'normal'" class="p-badge p-badge-muted">{{ b.type === '7m' ? '7m' : 'Pén.' }}</span>
-              <span class="event-equipe text-sub">{{ b.equipe === 'domicile' ? 'DOM' : 'EXT' }}</span>
+              <span class="event-equipe text-sub">{{ b.equipe === 'dom' ? 'DOM' : 'EXT' }}</span>
             </div>
           </div>
         </div>
@@ -99,8 +99,8 @@ onMounted(async () => {
 .events-layout { display:grid;grid-template-columns:1fr 1fr;gap:32px; }
 .events-list { display:flex;flex-direction:column;gap:6px; }
 .event-item { display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:var(--p-bg2);font-size:13px; }
-.event-item.domicile { border-left:3px solid var(--p-red); }
-.event-item.exterieur { border-left:3px solid var(--p-blue); }
+.event-item.dom { border-left:3px solid var(--p-red); }
+.event-item.ext { border-left:3px solid var(--p-blue); }
 .event-min { font-size:11px;min-width:24px;flex-shrink:0; }
 .event-name { flex:1;font-weight:600;color:var(--p-text); }
 .event-equipe { font-size:11px;color:var(--p-sub); }

@@ -79,6 +79,29 @@
               <div class="field"><label class="p-label">Saison</label><input v-model="editing.saison" class="p-input" placeholder="Ex: 2025-2026" /></div>
             </div>
             <div class="form-row">
+              <div class="field"><label class="p-label">Nationalité</label><input v-model="editing.nationalite" class="p-input" placeholder="Camerounais" /></div>
+              <div class="field"><label class="p-label">Genre</label>
+                <select v-model="editing.genre" class="p-input p-select">
+                  <option value="masculin">Masculin</option>
+                  <option value="feminin">Féminin</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label class="p-label">Taille (cm)</label><input v-model.number="editing.taille_estimee" type="number" class="p-input" /></div>
+              <div class="field"><label class="p-label">Poids (kg)</label><input v-model.number="editing.poids" type="number" class="p-input" /></div>
+            </div>
+            <div class="form-row">
+              <div class="field"><label class="p-label">Date naissance (approx.)</label><input v-model="editing.date_naissance_approx" type="date" class="p-input" /></div>
+              <div class="field"><label class="p-label">Bras fort</label>
+                <select v-model="editing.bras_fort" class="p-input p-select">
+                  <option value="droitier">Droitier</option>
+                  <option value="gaucher">Gaucher</option>
+                  <option value="ambidextre">Ambidextre</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
               <label class="toggle-label" style="gap:8px"><input type="checkbox" v-model="editing.statut_univ" /> Joueur universitaire</label>
               <label class="toggle-label" style="gap:8px"><input type="checkbox" v-model="editing.verifie" /> Profil vérifié</label>
               <label class="toggle-label" style="gap:8px"><input type="checkbox" v-model="editing.badge_talent" /> Badge Talent</label>
@@ -205,31 +228,40 @@ function nextPage() {
 }
 
 function openModal(j: any) {
-  editing.value = j ? { ...j } : { prenom:'',nom:'',poste_principal:'gardien',bras_fort:'droitier',verifie:false,badge_talent:false,statut_univ:false,club_id:'',saison:'2025-2026' }
+  editing.value = j ? { ...j } : {
+    prenom:'', nom:'', poste_principal:'gardien', bras_fort:'droitier',
+    verifie:false, badge_talent:false, statut_univ:false,
+    nationalite:'Camerounais', genre:'masculin',
+    club_id:'', saison:'2025-2026'
+  }
   modal.value = true; saveError.value = ''
 }
 
 async function saveJoueur() {
   if (!editing.value.prenom || !editing.value.nom) { saveError.value='Prénom et nom requis'; return }
-  
-  // Contrôle d'unicité : vérifier si le joueur a déjà une licence pour cette saison
-  if (editing.value.club_id && editing.value.saison) {
-    const { data: existing } = await supabase
-      .from('licences_saison')
-      .select('id')
-      .eq('joueur_id', editing.value.id || 'temp') // Pour les nouveaux, on ne peut pas vérifier avant insert
-      .eq('saison', editing.value.saison)
-      .limit(1)
-    if (existing && existing.length > 0) {
-      saveError.value = 'Ce joueur a déjà une licence pour cette saison'
-      return
-    }
-  }
-  
   saving.value = true; saveError.value = ''
-  const { id, ...data } = editing.value
-  if (id) { await supabase.from('joueurs').update(data).eq('id', id) }
-  else     { await supabase.from('joueurs').insert(data) }
+
+  // Séparer les champs joueur des champs licence
+  const { id, club_id, saison, ...joueurData } = editing.value
+  // Supprimer les champs non-joueur potentiellement copiés depuis la liste
+  delete joueurData.licences_saison
+
+  let joueurId = id
+  if (id) {
+    await supabase.from('joueurs').update(joueurData).eq('id', id)
+  } else {
+    const { data: newJ } = await supabase.from('joueurs').insert(joueurData).select('id').single()
+    joueurId = newJ?.id
+  }
+
+  // Créer/mettre à jour la licence si club + saison fournis
+  if (joueurId && club_id && saison) {
+    await supabase.from('licences_saison').upsert(
+      { joueur_id: joueurId, club_id, saison, actif: true },
+      { onConflict: 'joueur_id,saison' }
+    )
+  }
+
   saving.value = false; modal.value = false; load()
 }
 

@@ -3,7 +3,12 @@
  * Généré manuellement — peut être remplacé par `supabase gen types typescript`
  */
 
-export type DisciplineType = 'avertissement' | 'carton_jaune' | 'suspension_2min' | 'carton_rouge' | 'carton_bleu'
+// Nouveaux types issus des migrations
+export type TypeMatch = 'club' | 'international'
+export type EquipeCote = 'dom' | 'ext'
+export type StatutCompetition = 'a_venir' | 'en_cours' | 'termine' | 'suspendu' | 'annule'
+export type NiveauCompetition = 'club' | 'national' | 'universitaire' | 'international'
+export type GenreType = 'masculin' | 'feminin' | 'mixte'
 export type Fiabilite = 1 | 2 | 3 | 4
 export type Genre = 'masculin' | 'feminin' | 'mixte'
 export type TypeCompetition = 'regional' | 'national' | 'universitaire' | 'coupe' | 'international'
@@ -57,11 +62,16 @@ export interface Joueur {
   poste_secondaire?: string
   bras_fort: 'droitier' | 'gaucher' | 'ambidextre'
   taille_estimee?: number
+  poids?: number
   statut_univ: boolean
   date_naissance_approx?: string
   verifie: boolean
   score_ia: number
   badge_talent: boolean
+  nationalite: string       // Nouveau : 'Camerounais' par défaut
+  genre: GenreType          // Nouveau : pour filtrage équipe nationale
+  im_ihf: number            // Indice de mouvement IHF
+  ig_ihf: number            // Indice de goal IHF
   photo_cloudinary_id?: string
   created_at: string
   updated_at: string
@@ -124,9 +134,9 @@ export interface Competition {
   type: TypeCompetition
   saison: string
   region?: string
-  genre: Genre
-  statut: 'a_venir' | 'en_cours' | 'termine'
-  niveau: 'club' | 'national' | 'international'
+  genre: GenreType
+  statut: StatutCompetition
+  niveau: NiveauCompetition
   created_at: string
 }
 
@@ -153,8 +163,15 @@ export interface Phase {
 export interface Match {
   id: string
   phase_id: string
-  club_domicile_id: string
-  club_exterieur_id: string
+  // Matchs club (nullable pour les internationaux)
+  club_domicile_id?: string
+  club_exterieur_id?: string
+  // Matchs internationaux
+  type_match: TypeMatch            // 'club' | 'international'
+  equipe_nationale_id?: string     // FK si type_match = 'international'
+  adversaire_international?: string // Nom de l'adversaire
+  lieu?: string                    // Lieu du match
+  arbitre_id?: string              // FK vers arbitres
   date_match: string
   score_dom?: number
   score_ext?: number
@@ -167,6 +184,7 @@ export interface Match {
   phase?: Phase
   club_domicile?: Club
   club_exterieur?: Club
+  equipe_nationale?: EquipeNationale
   buts?: But[]
   discipline?: Discipline[]
 }
@@ -187,13 +205,31 @@ export interface MatchInternational {
 
 export interface But {
   id: string
-  match_id: string
+  match_id?: string               // nullable (peut être match_international_id)
+  match_international_id?: string // FK vers matchs_internationaux si match intl
   joueur_id: string
   minute?: number
   type: TypeBut
-  equipe: 'domicile' | 'exterieur'
+  equipe: EquipeCote              // 'dom' | 'ext'
   // Joins
   joueur?: Joueur
+}
+
+export interface StaffClub {
+  id: string
+  club_id?: string
+  type_staff: 'COACH' | 'PRESIDENT'
+  nom: string
+  prenom: string
+  email?: string
+  telephone?: string
+  cv_url?: string
+  photo_url?: string
+  details_techniques?: Record<string, any>
+  created_at: string
+  updated_at: string
+  // Joins
+  club?: Club
 }
 
 export interface Discipline {

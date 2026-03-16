@@ -27,13 +27,20 @@
           <RouterLink v-for="m in group.matchs" :key="m.id" :to="'/matchs/'+m.id" class="match-row p-card">
             <div class="match-comp text-sub">{{ m.phase?.competition?.nom }} · J{{ m.journee }}</div>
             <div class="match-main">
-              <span class="match-club text-right">{{ m.club_domicile?.nom }}</span>
+              <span class="match-club text-right">
+                {{ m.type_match === 'international' ? '🇨🇲 Cameroun' : m.club_domicile?.nom }}
+              </span>
               <div class="match-score-box">
                 <span v-if="m.statut==='termine'" class="font-display score-txt">{{ m.score_dom }} – {{ m.score_ext }}</span>
                 <span v-else-if="m.statut==='en_cours'" class="p-badge p-badge-live">🔴 LIVE</span>
                 <span v-else class="match-heure text-sub">{{ formatHeure(m.date_match) }}</span>
               </div>
-              <span class="match-club">{{ m.club_exterieur?.nom }}</span>
+              <span class="match-club">
+                {{ m.type_match === 'international' ? m.adversaire_international : m.club_exterieur?.nom }}
+              </span>
+            </div>
+            <div v-if="m.type_match === 'international'" class="match-intl-badge">
+              <span class="p-badge p-badge-green" style="font-size:10px">🌍 International</span>
             </div>
           </RouterLink>
         </div>
@@ -78,10 +85,11 @@ const grouped = computed(() => {
 async function load() {
   loading.value = true
   let q = supabase.from('matchs')
-    .select('*, phase:phases(nom,competition:competitions(nom)), club_domicile:clubs!matchs_club_domicile_id_fkey(nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom)')
+    .select('*, phase:phases(nom,competition_id,competition:competitions(id,nom)), club_domicile:clubs!matchs_club_domicile_id_fkey(nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom)')
     .order('date_match', { ascending: false })
     .range(page.value * limit, (page.value + 1) * limit - 1)
   if (filterStatut.value) q = q.eq('statut', filterStatut.value)
+  if (filterComp.value)   q = q.eq('phase.competition_id', filterComp.value)
   const { data } = await q
   matchs.value = data ?? []; loading.value = false
 }
@@ -99,6 +107,7 @@ onMounted(async () => {
 .match-group { margin-bottom:24px; }
 .group-header { padding:8px 0;margin-bottom:8px;border-bottom:1px solid var(--p-border); }
 .group-date { font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--p-sub); }
+.match-intl-badge { margin-top:4px; }
 .match-row { display:flex;flex-direction:column;gap:4px;padding:12px 16px;margin-bottom:6px; }
 .match-comp { font-size:11px; }
 .match-main { display:flex;align-items:center;gap:12px; }

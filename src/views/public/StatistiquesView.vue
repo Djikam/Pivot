@@ -22,7 +22,7 @@
               <div class="podium-name">{{ b.joueur?.prenom }} {{ b.joueur?.nom }}</div>
               <div class="podium-buts font-display">{{ b.total_buts }} <span style="font-size:12px">buts</span></div>
               <div class="podium-bar" />
-              <div class="podium-rank">{{ i+1 === 1 ? '<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg>' : i+1 === 2 ? '<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg>' : '<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg>' }}</div>
+              <div class="podium-rank">{{ i+1 === 1 ? '🥇' : i+1 === 2 ? '🥈' : '🥉' }}</div>
             </div>
           </div>
           <table class="p-table" style="margin-top:20px">

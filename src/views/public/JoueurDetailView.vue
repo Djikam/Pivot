@@ -211,18 +211,35 @@ const disciplineSummary = computed(() => {
 
 onMounted(async () => {
   const id = route.params.id as string
-  const [{ data: j }, { data: lic }, { data: sel }, { data: disc }, { data: dist }] = await Promise.all([
+  const [{ data: j }, { data: lic }, { data: sel }, { data: disc }, { data: dist }, { data: butsRaw }] = await Promise.all([
     supabase.from('joueurs').select('*').eq('id', id).single(),
     supabase.from('licences_saison').select('*, club:clubs(id,nom)').eq('joueur_id', id).order('saison', { ascending: false }),
     supabase.from('selections_joueurs').select('*, equipe_nationale:equipes_nationales(nom)').eq('joueur_id', id),
-    supabase.from('discipline').select('*').eq('joueur_id', id).order('created_at', { ascending: false }),
+    supabase.from('discipline').select('*, match:matchs(phase:phases(competition:competitions(nom)), club_domicile:clubs!matchs_club_domicile_id_fkey(nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom))').eq('joueur_id', id).order('created_at', { ascending: false }),
     supabase.from('distinctions').select('*').eq('joueur_id', id).order('saison', { ascending: false }),
+    supabase.from('buts').select('match_id, match:matchs(phase:phases(competition:competitions(nom)))').eq('joueur_id', id),
   ])
   joueur.value = j
   licences.value = lic ?? []
   selections.value = sel ?? []
-  disciplineEvents.value = disc ?? []
+  // Enrichir discipline avec info match
+  disciplineEvents.value = (disc ?? []).map(d => ({
+    ...d,
+    match_info: d.match ? `${d.match.club_domicile?.nom ?? 'Cameroun'} vs ${d.match.club_exterieur?.nom ?? d.match.adversaire_international ?? '?'}` : null
+  }))
   distinctions.value = dist ?? []
+
+  // Agréger buts par compétition
+  const compMap = new Map<string, { nom: string; buts: number; matchs: Set<string> }>()
+  for (const b of (butsRaw ?? [])) {
+    const compNom = (b.match as any)?.phase?.competition?.nom ?? 'Inconnue'
+    if (!compMap.has(compNom)) compMap.set(compNom, { nom: compNom, buts: 0, matchs: new Set() })
+    const e = compMap.get(compNom)!
+    e.buts++
+    e.matchs.add(b.match_id)
+  }
+  butsParComp.value = [...compMap.values()].map(e => ({ nom: e.nom, buts: e.buts, matchs: e.matchs.size }))
+
   loading.value = false
 })
 </script>

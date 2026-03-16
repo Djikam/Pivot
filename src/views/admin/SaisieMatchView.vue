@@ -56,8 +56,8 @@
             <div class="section-block-header">
               <h4 class="block-title"><svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg> Buteurs</h4>
               <div class="equipe-toggle">
-                <button class="p-btn-ghost p-btn-sm" :class="{active: buteurEquipe==='domicile'}" @click="buteurEquipe='domicile'">DOM</button>
-                <button class="p-btn-ghost p-btn-sm" :class="{active: buteurEquipe==='exterieur'}" @click="buteurEquipe='exterieur'">EXT</button>
+                <button class="p-btn-ghost p-btn-sm" :class="{active: buteurEquipe==='dom'}" @click="buteurEquipe='dom'">DOM</button>
+                <button class="p-btn-ghost p-btn-sm" :class="{active: buteurEquipe==='ext'}" @click="buteurEquipe='ext'">EXT</button>
               </div>
             </div>
 
@@ -83,7 +83,7 @@
                 <span class="event-icon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg></span>
                 <span class="event-name">{{ joueurNom(b.joueur_id) }}</span>
                 <span class="p-badge p-badge-muted" v-if="b.type !== 'normal'">{{ b.type === '7m' ? '7m' : 'Pén.' }}</span>
-                <span class="event-equipe text-sub">{{ b.equipe === 'domicile' ? 'DOM' : 'EXT' }}</span>
+                <span class="event-equipe text-sub">{{ b.equipe === 'dom' ? 'DOM' : 'EXT' }}</span>
                 <button class="del-btn" @click="form.buts.splice(i,1)"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
               </div>
             </div>
@@ -162,7 +162,7 @@ const selectedMatch = ref<any | null>(null)
 const saving = ref(false)
 const saveError = ref('')
 const saveSuccess = ref(false)
-const buteurEquipe = ref<'domicile'|'exterieur'>('domicile')
+const buteurEquipe = ref<'dom'|'ext'>('dom')
 
 const form = ref({
   score_dom: 0, score_ext: 0,
@@ -171,14 +171,14 @@ const form = ref({
   discipline: [] as any[],
 })
 
-const newBut  = ref({ joueur_id:'', minute: null as number|null, type:'normal' as TypeBut, equipe:'domicile' as 'domicile'|'exterieur' })
+const newBut  = ref({ joueur_id:'', minute: null as number|null, type:'normal' as TypeBut, equipe:'dom' as 'dom'|'ext' })
 const newDisc = ref({ joueur_id:'', type:'carton_jaune' as DisciplineType, minute: null as number|null })
 
 const licences = ref<any[]>([])
 const tousJoueurs = computed(() => licences.value)
-const joueursEquipe = (eq: 'domicile'|'exterieur') => {
+const joueursEquipe = (eq: 'dom'|'ext') => {
   if (!selectedMatch.value) return []
-  const clubId = eq === 'domicile' ? selectedMatch.value.club_domicile_id : selectedMatch.value.club_exterieur_id
+  const clubId = eq === 'dom' ? selectedMatch.value.club_domicile_id : selectedMatch.value.club_exterieur_id
   return licences.value.filter(l => l.club_id === clubId)
 }
 
@@ -276,7 +276,7 @@ async function sauvegarder() {
 }
 
 onMounted(async () => {
-  const { data } = await supabase.from('competitions').select('id,nom').eq('statut','en_cours').order('nom')
+  const { data } = await supabase.from('competitions').select('id,nom').in('statut', ['en_cours', 'a_venir']).order('nom')
   competitions.value = data ?? []
 })
 </script>

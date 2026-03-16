@@ -34,7 +34,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { 
-  LayoutDashboard, Users, Home, Trophy, Clock, Activity, MapPin, Heart, Newspaper, BookOpen, Star, Shield, Bell, ChevronRight, ChevronLeft, LogOut, AlertTriangle
+  LayoutDashboard, Users, Home, Trophy, Clock, Activity, MapPin, Heart, Newspaper, BookOpen, Star, Shield, Bell, ChevronRight, ChevronLeft, LogOut, AlertTriangle, UserCog, Gavel
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
@@ -56,6 +56,8 @@ const navItems: NavItem[] = [
   { to: '/admin/matchs',      label: 'Saisie Matchs', icon: Clock },
   { to: '/admin/transferts',  label: 'RADAR',         icon: Activity },
   { to: '/admin/national',    label: 'National',      icon: MapPin },
+  { to: '/admin/staff',       label: 'Staff & Coaches', icon: UserCog },
+  { to: '/admin/arbitres',    label: 'Arbitres',      icon: Gavel },
   { to: '/admin/votes',       label: 'PULSE',         icon: Heart },
   { to: '/admin/articles',    label: 'FEED',          icon: Newspaper },
   { to: '/admin/education',   label: 'Éducation',     icon: BookOpen },

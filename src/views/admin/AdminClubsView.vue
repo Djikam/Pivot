@@ -184,7 +184,7 @@
                 <h4>Distinctions</h4>
                 <div v-if="distinctionsJoueur.length" class="info-list">
                   <div v-for="d in distinctionsJoueur" :key="d.id" class="info-item">
-                    {{ d.titre }} ({{ d.annee }})
+                    {{ d.type }} ({{ d.saison }})
                   </div>
                 </div>
                 <p v-else class="text-sub">Aucune distinction</p>

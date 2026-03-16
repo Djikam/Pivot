@@ -159,25 +159,35 @@ async function selectEquipe(eq: EquipeNationale) {
       .eq('equipe_nationale_id', eq.id)
       .eq('saison', eq.saison_active)
       .order('statut'),
-    supabase.from('matchs_internationaux')
-      .select('*')
+    supabase.from('matchs')
+      .select('*, phase:phases(nom,competition:competitions(nom))')
+      .eq('type_match', 'international')
       .eq('equipe_nationale_id', eq.id)
       .order('date_match', { ascending: false })
   ])
 
   joueurs.value = sels ?? []
-  matchsInternationaux.value = matchs ?? []
+  // Normaliser les champs pour l'affichage (score_dom → score_cam, adversaire_international → adversaire)
+  matchsInternationaux.value = (matchs ?? []).map(m => ({
+    ...m,
+    adversaire: m.adversaire_international,
+    score_cam: m.score_dom,
+    score_adv: m.score_ext,
+    type: m.phase?.competition?.nom ?? 'International',
+  }))
 
   // KPIs
   const termines = (matchs ?? []).filter(m => m.statut === 'termine')
-  const victoires = termines.filter(m => (m.score_cam ?? 0) > (m.score_adv ?? 0)).length
-  const defaites  = termines.filter(m => (m.score_cam ?? 0) < (m.score_adv ?? 0)).length
-  const nuls      = termines.filter(m => (m.score_cam ?? 0) === (m.score_adv ?? 0)).length
+  const victoires = termines.filter(m => (m.score_dom ?? 0) > (m.score_ext ?? 0)).length
+  const defaites  = termines.filter(m => (m.score_dom ?? 0) < (m.score_ext ?? 0)).length
+  const nuls      = termines.filter(m => (m.score_dom ?? 0) === (m.score_ext ?? 0) && m.score_dom !== null).length
+  const totalButs = termines.reduce((a, m) => a + (m.score_dom ?? 0), 0)
   matchsKPI.value = termines.length ? [
-    { label:'Victoires',   value: victoires, color:'text-green' },
-    { label:'Nuls',        value: nuls,      color:'text-sub' },
-    { label:'Défaites',    value: defaites,  color:'text-red' },
-    { label:'Matchs joués',value: termines.length, color:'' },
+    { label:'Victoires',    value: victoires,        color:'text-green' },
+    { label:'Nuls',         value: nuls,             color:'text-sub' },
+    { label:'Défaites',     value: defaites,         color:'text-red' },
+    { label:'Matchs joués', value: termines.length,  color:'' },
+    { label:'Buts marqués', value: totalButs,        color:'text-gold' },
   ] : []
 }
 

@@ -134,43 +134,89 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import KenteDivider from '@/components/KenteDivider.vue'
 import { User, Trophy, BarChart3, Lock, Heart, Newspaper, BookOpen, Flag } from 'lucide-vue-next'
+import { supabase } from '@/lib/supabaseClient'
 
-const heroStats = [
-  { value: '200+', label: 'Joueurs' },
-  { value: '20+',  label: 'Clubs' },
-  { value: '5',    label: 'Compétitions' },
+const heroStats = ref([
+  { value: '…', label: 'Joueurs' },
+  { value: '…', label: 'Clubs' },
+  { value: '…', label: 'Compétitions' },
   { value: '2026', label: 'CAN Rwanda' },
-]
+])
 
 const modules = [
-  { to:'/joueurs',      tag:'M1', name:'ATLAS',      icon: User, desc:'Annuaire complet des joueurs et clubs camerounais avec score IA.', class:'' },
-  { to:'/competitions', tag:'M2', name:'ARENA',      icon: Trophy, desc:'Classements et résultats de toutes les compétitions.', class:'' },
+  { to:'/joueurs',      tag:'M1', name:'ATLAS',      icon: User,      desc:'Annuaire complet des joueurs et clubs camerounais avec score IA.', class:'' },
+  { to:'/competitions', tag:'M2', name:'ARENA',      icon: Trophy,    desc:'Classements et résultats de toutes les compétitions.', class:'' },
   { to:'/statistiques', tag:'M3', name:'SCOPE',      icon: BarChart3, desc:'Statistiques individuelles, top buteurs, distinctions.', class:'' },
-  { to:'/transferts',   tag:'M4', name:'RADAR',      icon: Lock, desc:'Transferts et mutations à 4 niveaux de fiabilité.', class:'' },
-  { to:'/votes',        tag:'M5', name:'PULSE',      icon: Heart, desc:'Votes participatifs — MVP, Homme de la Semaine.', class:'' },
+  { to:'/transferts',   tag:'M4', name:'RADAR',      icon: Lock,      desc:'Transferts et mutations à 4 niveaux de fiabilité.', class:'' },
+  { to:'/votes',        tag:'M5', name:'PULSE',      icon: Heart,     desc:'Votes participatifs — MVP, Homme de la Semaine.', class:'' },
   { to:'/actualites',   tag:'M6', name:'FEED',       icon: Newspaper, desc:'Actualités handball avec résumés générés par IA.', class:'' },
-  { to:'/education',    tag:'M7', name:'ÉDUCATION',  icon: BookOpen, desc:'Règles, droits, arbitrage — documents officiels téléchargeables.', class:'' },
-  { to:'/national',     tag:'M8', name:'NATIONAL',   icon: Flag, desc:'Équipes nationales — CAN 2026 et U20 Masculin.', class:'module-national' },
+  { to:'/education',    tag:'M7', name:'ÉDUCATION',  icon: BookOpen,  desc:'Règles, droits, arbitrage — documents officiels téléchargeables.', class:'' },
+  { to:'/national',     tag:'M8', name:'NATIONAL',   icon: Flag,      desc:'Équipes nationales — CAN 2026 et U20 Masculin.', class:'module-national' },
 ]
 
-const topButeurs = [
-  { id:1, prenom:'Jean',    nom:'Mbarga',   club:'ASCD Dragons',      buts:42 },
-  { id:2, prenom:'Paul',    nom:'Talla',    club:'Handball Club Messa',buts:38 },
-  { id:3, prenom:'Eric',    nom:'Nguemo',   club:'ASCD Dragons',      buts:35 },
-  { id:4, prenom:'Claude',  nom:'Biya',     club:'PAF HB Douala',     buts:31 },
-  { id:5, prenom:'Maurice', nom:'Ondoua',   club:'Caïmans de Douala', buts:28 },
-]
-
-const dernierTransferts = [
-  { id:1, joueur:'Alain Mbarga', depart:'ASCD Dragons', arrivee:'PAF HB Douala', fiabilite:4, date:'Mars 2026' },
-  { id:2, joueur:'Serge Talla',  depart:'HBC Yaoundé',  arrivee:'Handball Messa', fiabilite:2, date:'Fév 2026' },
-  { id:3, joueur:'Boris Nguem',  depart:'Caïmans',      arrivee:'Club inconnu',   fiabilite:1, date:'Mars 2026' },
-]
+const topButeurs = ref<any[]>([])
+const dernierTransferts = ref<any[]>([])
 
 const fiabiliteLabel = (n:number) => ['','Suspicion','Rumeur','Officieux','Confirmé'][n]
 const fiabiliteColor = (n:number) => ['','red','gold','blue','green'][n]
+const formatDate = (d:string) => new Date(d).toLocaleDateString('fr-FR', { month:'short', year:'numeric' })
+
+onMounted(async () => {
+  // Stats hero
+  const [{ count: nbJoueurs }, { count: nbClubs }, { count: nbComps }] = await Promise.all([
+    supabase.from('joueurs').select('*', { count:'exact', head:true }),
+    supabase.from('clubs').select('*', { count:'exact', head:true }).eq('actif', true),
+    supabase.from('competitions').select('*', { count:'exact', head:true }),
+  ])
+  heroStats.value = [
+    { value: (nbJoueurs ?? 0) + '+', label: 'Joueurs' },
+    { value: (nbClubs ?? 0) + '',    label: 'Clubs' },
+    { value: (nbComps ?? 0) + '',    label: 'Compétitions' },
+    { value: '2026',                  label: 'CAN Rwanda' },
+  ]
+
+  // Top buteurs réels
+  const { data: butsData } = await supabase.from('buts').select('joueur_id, match_id')
+  const butMap = new Map<string, { total:number; matchs:Set<string> }>()
+  for (const b of (butsData ?? [])) {
+    if (!butMap.has(b.joueur_id)) butMap.set(b.joueur_id, { total:0, matchs:new Set() })
+    const e = butMap.get(b.joueur_id)!; e.total++; e.matchs.add(b.match_id)
+  }
+  const topIds = [...butMap.entries()].sort((a,b) => b[1].total - a[1].total).slice(0,5).map(([id]) => id)
+  if (topIds.length) {
+    const { data: joueurs } = await supabase
+      .from('joueurs').select('id,prenom,nom')
+      .in('id', topIds)
+    const { data: licences } = await supabase
+      .from('licences_saison').select('joueur_id, club:clubs(nom)')
+      .in('joueur_id', topIds).eq('saison','2025-2026').eq('actif', true)
+    topButeurs.value = topIds.map(id => ({
+      id,
+      prenom: joueurs?.find(j => j.id === id)?.prenom ?? '',
+      nom:    joueurs?.find(j => j.id === id)?.nom ?? '',
+      club:   (licences?.find(l => l.joueur_id === id)?.club as any)?.nom ?? '—',
+      buts:   butMap.get(id)?.total ?? 0,
+    }))
+  }
+
+  // Derniers transferts réels
+  const { data: transfertsData } = await supabase
+    .from('transferts')
+    .select('id, joueur:joueurs(prenom,nom), club_origine:clubs!transferts_club_origine_id_fkey(nom), club_destination:clubs!transferts_club_destination_id_fkey(nom), fiabilite, date_transfert')
+    .order('date_transfert', { ascending:false })
+    .limit(3)
+  dernierTransferts.value = (transfertsData ?? []).map(t => ({
+    id: t.id,
+    joueur: `${(t.joueur as any)?.prenom ?? ''} ${(t.joueur as any)?.nom ?? ''}`.trim(),
+    depart: (t.club_origine as any)?.nom ?? '—',
+    arrivee:(t.club_destination as any)?.nom ?? '—',
+    fiabilite: t.fiabilite,
+    date: t.date_transfert ? formatDate(t.date_transfert) : '—',
+  }))
+})
 </script>
 
 <style scoped>
