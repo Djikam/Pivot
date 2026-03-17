@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-layout" :class="{sidebar-open: sidebarOpen}">
+  <div class="admin-layout" :class="{'sidebar-open': sidebarOpen}">
     <div class="sidebar-overlay" v-if="sidebarOpen" @click="sidebarOpen=false" />
     <AppSidebar :force-collapsed="!sidebarOpen && isMobile" />
     <div class="admin-main">
