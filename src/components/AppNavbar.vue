@@ -74,10 +74,10 @@ const navLinks = [
   { to: '/clubs',        label: 'Clubs' },
   { to: '/competitions', label: 'Compétitions' },
   { to: '/matchs',       label: 'Matchs' },
+  { to: '/national',     label: 'National 🇨🇲' },
   { to: '/statistiques', label: 'Stats' },
   { to: '/transferts',   label: 'Radar' },
-  { to: '/votes',        label: 'Pulse' },
-  { to: '/actualites',   label: 'Feed' },
+  { to: '/self-report',  label: '+ Rejoindre' },
 ]
 
 const isActive = (path: string) => route.path.startsWith(path)

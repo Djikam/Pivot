@@ -2,6 +2,9 @@
   <div class="joueur-detail" v-if="joueur">
     <!-- Hero -->
     <section class="detail-hero adinkra-watermark">
+      <div class="p-container" style="padding-bottom:8px">
+        <button class="p-btn-ghost p-btn-sm back-btn" @click="$router.back()">← Retour</button>
+      </div>
       <div class="p-container hero-inner">
         <div class="avatar-wrap">
           <img v-if="joueur.photo_cloudinary_id" :src="cloudinaryUrl(joueur.photo_cloudinary_id,{w:120,h:120})" class="avatar-img" />
@@ -246,6 +249,7 @@ onMounted(async () => {
 
 <style scoped>
 .detail-hero { background:var(--p-card);border-bottom:1px solid var(--p-border);padding:40px 0 32px; }
+.back-btn { margin-bottom:12px; display:inline-flex; }
 .hero-inner { display:flex;align-items:center;gap:24px; }
 .avatar-wrap { position:relative;flex-shrink:0; }
 .avatar-img { width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--p-border); }

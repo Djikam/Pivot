@@ -1,0 +1,22 @@
+{
+  "name": "PIVOT — Handball Cameroun",
+  "short_name": "PIVOT",
+  "description": "La première plateforme data indépendante du handball camerounais.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070409",
+  "theme_color": "#8C1525",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/favicon.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "/favicon.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ],
+  "categories": ["sports", "news"],
+  "lang": "fr",
+  "shortcuts": [
+    { "name": "Joueurs", "url": "/joueurs", "description": "Annuaire des joueurs" },
+    { "name": "Équipes Nationales", "url": "/national", "description": "Lions Indomptables" },
+    { "name": "Transferts", "url": "/transferts", "description": "RADAR - Mouvements" }
+  ]
+}

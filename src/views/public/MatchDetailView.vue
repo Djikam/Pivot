@@ -1,25 +1,41 @@
 <template>
   <div v-if="match">
     <section class="match-hero">
+      <div class="p-container" style="padding-bottom:8px">
+        <button class="p-btn-ghost p-btn-sm" style="display:inline-flex" @click="$router.back()">← Retour</button>
+      </div>
       <div class="p-container">
         <div class="match-header-meta">
           <span class="p-badge" :class="statutBadge(match.statut)">{{ statutLabel(match.statut) }}</span>
           <span class="text-sub">{{ match.phase?.competition?.nom }} · J{{ match.journee }} · {{ formatDate(match.date_match) }}</span>
+          <span v-if="match.lieu" class="text-sub">📍 {{ match.lieu }}</span>
         </div>
         <div class="match-scoreboard">
-          <RouterLink :to="'/clubs/'+match.club_domicile_id" class="team-block">
-            <div class="team-logo"><span class="font-display">{{ match.club_domicile?.nom?.slice(0,2).toUpperCase() }}</span></div>
-            <div class="team-name">{{ match.club_domicile?.nom }}</div>
-          </RouterLink>
+          <!-- Côté domicile / Cameroun -->
+          <component :is="match.type_match === 'international' ? 'div' : 'RouterLink'"
+            v-bind="match.type_match === 'club' ? { to: '/clubs/'+match.club_domicile_id } : {}"
+            class="team-block">
+            <div class="team-logo">
+              <span v-if="match.type_match === 'international'" style="font-size:2rem">🇨🇲</span>
+              <span v-else class="font-display">{{ match.club_domicile?.nom?.slice(0,2).toUpperCase() }}</span>
+            </div>
+            <div class="team-name">{{ match.type_match === 'international' ? 'Cameroun' : match.club_domicile?.nom }}</div>
+          </component>
           <div class="score-center-block">
             <div class="big-score font-display" v-if="match.statut === 'termine'">{{ match.score_dom }} – {{ match.score_ext }}</div>
             <div v-else class="big-score font-display text-sub">vs</div>
-            <div v-if="match.mi_temps_dom !== null" class="mi-temps text-sub">Mi-temps : {{ match.mi_temps_dom }}–{{ match.mi_temps_ext }}</div>
+            <div v-if="match.mi_temps_dom !== null && match.mi_temps_dom !== undefined" class="mi-temps text-sub">Mi-temps : {{ match.mi_temps_dom }}–{{ match.mi_temps_ext }}</div>
           </div>
-          <RouterLink :to="'/clubs/'+match.club_exterieur_id" class="team-block team-right">
-            <div class="team-logo"><span class="font-display">{{ match.club_exterieur?.nom?.slice(0,2).toUpperCase() }}</span></div>
-            <div class="team-name">{{ match.club_exterieur?.nom }}</div>
-          </RouterLink>
+          <!-- Côté extérieur / Adversaire -->
+          <component :is="match.type_match === 'international' ? 'div' : 'RouterLink'"
+            v-bind="match.type_match === 'club' ? { to: '/clubs/'+match.club_exterieur_id } : {}"
+            class="team-block team-right">
+            <div class="team-logo">
+              <span v-if="match.type_match === 'international'" style="font-size:1.6rem">🌍</span>
+              <span v-else class="font-display">{{ match.club_exterieur?.nom?.slice(0,2).toUpperCase() }}</span>
+            </div>
+            <div class="team-name">{{ match.type_match === 'international' ? match.adversaire_international : match.club_exterieur?.nom }}</div>
+          </component>
         </div>
       </div>
     </section>

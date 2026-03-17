@@ -17,10 +17,12 @@
     <div class="p-container" style="padding-top:40px">
       <!-- Sélecteur équipe -->
       <div class="equipe-tabs">
-        <button v-for="eq in equipes" :key="eq.id" class="equipe-tab p-card" :class="{active: selectedId === eq.id}" @click="selectEquipe(eq)">
+        <button v-for="eq in equipes" :key="eq.id" class="equipe-tab p-card"
+          :class="{active: selectedId === eq.id}" @click="selectEquipe(eq)">
           <span class="eq-cat p-badge" :class="getCatBadge(eq.categorie)">{{ eq.categorie.toUpperCase() }}</span>
           <span class="eq-nom">{{ eq.nom }}</span>
           <span class="eq-saison text-sub">{{ eq.saison_active }}</span>
+          <RouterLink :to="'/national/'+eq.id" class="eq-detail-link text-sub" @click.stop>Détails →</RouterLink>
         </button>
       </div>
 
@@ -144,7 +146,7 @@ const postes: Record<string, string> = {
 const posteLabel = (p: string) => postes[p] ?? p
 const statutLabel = (s: string) => ({ preselectione:'Présélectionné', finaliste:'Finaliste', titulaire:'Titulaire' }[s] ?? s)
 const statutColor = (s: string) => ({ preselectione:'p-badge-muted', finaliste:'p-badge-gold', titulaire:'p-badge-green' }[s] ?? 'p-badge-muted')
-const getCatBadge = (c: string) => ({ senior:'p-badge-red', u20:'p-badge-gold', u17:'p-badge-blue', beach:'p-badge-green' }[c] ?? 'p-badge-muted')
+const getCatBadge  = (c: string) => ({ senior:'p-badge-red', u20:'p-badge-gold', u17:'p-badge-blue', u18:'p-badge-blue', beach:'p-badge-green' }[c] ?? 'p-badge-muted')
 const scoreColor = (s: number) => s >= 80 ? '#3BAA6A' : s >= 60 ? '#C4922A' : '#3A80BE'
 const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' })
 

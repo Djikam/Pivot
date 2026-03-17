@@ -1,6 +1,9 @@
 <template>
   <div v-if="club">
     <section class="club-hero adinkra-watermark">
+      <div class="p-container" style="padding-bottom:8px">
+        <button class="p-btn-ghost p-btn-sm" style="display:inline-flex" @click="$router.back()">← Retour</button>
+      </div>
       <div class="p-container hero-inner">
         <div class="club-logo-lg">
           <img v-if="club.logo_cloudinary_id" :src="cloudinaryUrl(club.logo_cloudinary_id,{w:80,h:80})" :alt="club.nom" />

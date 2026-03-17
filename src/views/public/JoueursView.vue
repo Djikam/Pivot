@@ -22,6 +22,11 @@
           <option value="gaucher">Gaucher</option>
           <option value="ambidextre">Ambidextre</option>
         </select>
+        <select v-model="filters.genre" class="p-input p-select" @change="load">
+          <option value="">Tous genres</option>
+          <option value="masculin">Masculin</option>
+          <option value="feminin">Féminin</option>
+        </select>
         <select v-model="filters.statut" class="p-input p-select" @change="load">
           <option value="">Tous statuts</option>
           <option value="verifie">✓ Vérifiés</option>
@@ -134,7 +139,7 @@ const gridMode = ref(true)
 const page    = ref(0)
 const limit   = 24
 const search  = ref('')
-const filters = ref({ poste: '', bras: '', statut: '' })
+const filters = ref({ poste: '', bras: '', statut: '', genre: '' })
 
 const postes = [
   {value:'gardien',      label:'Gardien'},
@@ -153,31 +158,37 @@ async function load() {
   let q = supabase
     .from('joueurs')
     .select(`
-      id, prenom, nom, poste_principal, bras_fort, score_ia, badge_talent, verifie, photo_cloudinary_id,
-      licences_saison!inner(*)
+      id, prenom, nom, poste_principal, bras_fort, score_ia, badge_talent, verifie, photo_cloudinary_id, genre,
+      licences_saison!inner(club_id, saison, actif, club:clubs(nom))
     `, { count: 'exact' })
     .eq('licences_saison.saison', '2025-2026')
+    .eq('licences_saison.actif', true)
     .order('score_ia', { ascending: false })
     .range(page.value * limit, (page.value + 1) * limit - 1)
 
-  if (search.value.trim()) {
-    q = q.ilike('nom', `%${search.value}%`)
-  }
+  if (search.value.trim()) q = q.or(`nom.ilike.%${search.value}%,prenom.ilike.%${search.value}%`)
   if (filters.value.poste)  q = q.eq('poste_principal', filters.value.poste)
   if (filters.value.bras)   q = q.eq('bras_fort', filters.value.bras)
+  if (filters.value.genre)  q = q.eq('genre', filters.value.genre)
   if (filters.value.statut === 'verifie') q = q.eq('verifie', true)
   if (filters.value.statut === 'talent')  q = q.eq('badge_talent', true)
   if (filters.value.statut === 'univ')    q = q.eq('statut_univ', true)
+  if (filters.value.statut === 'national') {
+    // Filtrer joueurs ayant une sélection nationale
+    const { data: selIds } = await supabase.from('selections_joueurs').select('joueur_id')
+    const ids = (selIds ?? []).map((s: any) => s.joueur_id)
+    if (ids.length) q = q.in('id', ids)
+    else { joueurs.value = []; total.value = 0; loading.value = false; return }
+  }
 
   const { data, count } = await q
-  // Filtrer les doublons : si un joueur a plusieurs licences, prendre la plus récente
-  const uniqueJoueurs = data?.reduce((acc, joueur) => {
-    if (!acc[joueur.id] || new Date(joueur.licences_saison[0].created_at) > new Date(acc[joueur.id].licences_saison[0].created_at)) {
-      acc[joueur.id] = joueur
-    }
-    return acc
-  }, {}) ?? {}
-  joueurs.value = Object.values(uniqueJoueurs)
+  // Dédoublonner si un joueur a plusieurs licences
+  const seen = new Set<string>()
+  const unique: any[] = []
+  for (const j of (data ?? [])) {
+    if (!seen.has(j.id)) { seen.add(j.id); j.club_nom = j.licences_saison?.[0]?.club?.nom; unique.push(j) }
+  }
+  joueurs.value = unique
   total.value   = count ?? 0
   loading.value = false
 }
@@ -188,7 +199,7 @@ function debouncedLoad() {
   searchTimer = setTimeout(load, 350)
 }
 
-function resetFilters() { search.value = ''; filters.value = { poste:'', bras:'', statut:'' }; page.value = 0; load() }
+function resetFilters() { search.value = ''; filters.value = { poste:'', bras:'', statut:'', genre:'' }; page.value = 0; load() }
 function prevPage() { if(page.value > 0) { page.value--; load() } }
 function nextPage() { page.value++; load() }
 
