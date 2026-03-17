@@ -7,6 +7,7 @@
         <option value="">Toutes catégories</option>
         <option value="senior">Senior</option>
         <option value="u20">U20</option>
+        <option value="u18">U18</option>
         <option value="u17">U17</option>
         <option value="beach">Beach</option>
       </select>
@@ -225,7 +226,7 @@ const statutLabel = (s:string) => ({preselectione:'Pré-sélectionné',finaliste
 const statutColor = (s:string) => ({preselectione:'p-badge-muted',finaliste:'p-badge-gold',titulaire:'p-badge-green'})[s]??'p-badge-muted'
 
 const saisons = computed(() => [...new Set(equipes.value.map(e => e.saison_active))].sort().reverse())
-const categories = ['senior', 'u20', 'u17', 'beach']
+const categories = ['senior', 'u20', 'u18', 'u17', 'beach']
 
 function getEquipesBySaisonCategorie(saison: string, categorie: string) {
   return equipes.value.filter(e => e.saison_active === saison && e.categorie === categorie)

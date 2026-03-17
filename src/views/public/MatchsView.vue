@@ -18,6 +18,11 @@
           <option value="">Toutes compétitions</option>
           <option v-for="c in competitions" :key="c.id" :value="c.id">{{ c.nom }}</option>
         </select>
+        <select v-model="filterGenre" class="p-input p-select" @change="load">
+          <option value="">Tous genres</option>
+          <option value="masculin">Masculin</option>
+          <option value="feminin">Féminin</option>
+        </select>
       </div>
       <div v-if="loading" class="loading-state"><div class="spinner" /></div>
       <div v-else>
@@ -67,9 +72,10 @@ const loading = ref(true)
 const page = ref(0)
 const limit = 20
 const filterStatut = ref('')
-const filterComp = ref('')
+const filterComp   = ref('')
+const filterGenre  = ref('')
 
-const formatHeure = (d:string) => new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
+const formatHeure     = (d:string) => new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})
 const formatGroupDate = (d:string) => new Date(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})
 
 const grouped = computed(() => {
@@ -84,21 +90,52 @@ const grouped = computed(() => {
 
 async function load() {
   loading.value = true
+  // Si filtre compétition : récupérer d'abord les phase_ids
+  let phaseIds: string[] | null = null
+  if (filterComp.value) {
+    const { data: ph } = await supabase.from('phases').select('id').eq('competition_id', filterComp.value)
+    phaseIds = (ph ?? []).map((p: any) => p.id)
+    if (!phaseIds.length) { matchs.value = []; loading.value = false; return }
+  }
+
   let q = supabase.from('matchs')
-    .select('*, phase:phases(nom,competition_id,competition:competitions(id,nom)), club_domicile:clubs!matchs_club_domicile_id_fkey(nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom)')
+    .select(`
+      id, journee, statut, date_match, score_dom, score_ext, type_match, adversaire_international, phase_id,
+      phase:phases(nom, competition:competitions(id, nom, genre)),
+      club_domicile:clubs!matchs_club_domicile_id_fkey(nom),
+      club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom)
+    `)
     .order('date_match', { ascending: false })
     .range(page.value * limit, (page.value + 1) * limit - 1)
+
   if (filterStatut.value) q = q.eq('statut', filterStatut.value)
-  if (filterComp.value)   q = q.eq('phase.competition_id', filterComp.value)
+  if (phaseIds)           q = q.in('phase_id', phaseIds)
+
   const { data } = await q
-  matchs.value = data ?? []; loading.value = false
+  let result = data ?? []
+
+  // Filtre genre côté client
+  if (filterGenre.value) {
+    result = result.filter((m: any) => {
+      const compGenre = (m.phase as any)?.competition?.genre
+      return compGenre === filterGenre.value || !compGenre
+    })
+  }
+
+  matchs.value = result
+  loading.value = false
 }
 
 onMounted(async () => {
   const slug = route.query.competition as string
-  const [, { data: comps }] = await Promise.all([load(), supabase.from('competitions').select('id,nom').order('nom')])
+  const genre = route.query.genre as string
+  const [, { data: comps }] = await Promise.all([
+    load(),
+    supabase.from('competitions').select('id,nom,genre,slug').order('nom')
+  ])
   competitions.value = comps ?? []
-  if (slug) { const c = competitions.value.find(x => x.slug === slug); if (c) filterComp.value = c.id }
+  if (slug)  { const c = competitions.value.find((x:any) => x.slug === slug);  if (c) filterComp.value  = c.id }
+  if (genre) { filterGenre.value = genre; load() }
 })
 </script>
 

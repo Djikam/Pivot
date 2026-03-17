@@ -76,6 +76,7 @@ const navLinks = [
   { to: '/matchs',       label: 'Matchs' },
   { to: '/national',     label: 'National 🇨🇲' },
   { to: '/statistiques', label: 'Stats' },
+  { to: '/coaches',      label: 'Coaches' },
   { to: '/transferts',   label: 'Radar' },
   { to: '/self-report',  label: '+ Rejoindre' },
 ]

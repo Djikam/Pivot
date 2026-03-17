@@ -78,9 +78,18 @@ async function logout() {
   width: 220px; min-height: 100vh;
   background: var(--p-card); border-right: 1px solid var(--p-border);
   display: flex; flex-direction: column;
-  transition: width 200ms ease; flex-shrink: 0;
+  transition: width 200ms ease, transform 200ms ease; flex-shrink: 0;
 }
 .sidebar.collapsed { width: 56px; }
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+    transform: translateX(-100%); width: 240px !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,.3);
+  }
+  .sidebar.mobile-open { transform: translateX(0); }
+}
 .sidebar-header {
   display: flex; align-items: center; gap: 8px;
   padding: 16px 16px 12px; border-bottom: 1px solid var(--p-border);

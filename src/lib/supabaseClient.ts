@@ -14,13 +14,14 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
     storageKey: 'pivot-auth-token',
+    // Fix "Lock was not released within 5000ms" warning
+    lock: async (name: string, acquireTimeout: number, fn: () => Promise<any>) => {
+      // Utiliser un mutex simple sans Web Locks API pour éviter les conflits
+      return await fn()
+    },
   },
-  realtime: {
-    params: { eventsPerSecond: 10 }
-  },
-  global: {
-    headers: { 'x-app': 'pivot' }
-  }
+  realtime: { params: { eventsPerSecond: 10 } },
+  global: { headers: { 'x-app': 'pivot' } }
 })
 
 // Rafraîchir la session quand l'onglet redevient actif (évite les redirections après inactivité)

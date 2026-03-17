@@ -13,6 +13,12 @@
           <option value="">Toutes les régions</option>
           <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
         </select>
+        <select v-model="filterGenre" class="p-input p-select" @change="load">
+          <option value="">Tous genres</option>
+          <option value="masculin">Masculin</option>
+          <option value="feminin">Féminin</option>
+          <option value="mixte">Mixte</option>
+        </select>
         <label class="toggle-label">
           <input type="checkbox" v-model="filterUniv" @change="load" /> Universitaires
         </label>
@@ -49,6 +55,7 @@ const loading = ref(true)
 const search = ref('')
 const filterRegion = ref('')
 const filterUniv = ref(false)
+const filterGenre = ref('')
 
 const regions = ['Adamaoua','Centre','Est','Extrême-Nord','Littoral','Nord','Nord-Ouest','Ouest','Sud','Sud-Ouest']
 
@@ -58,6 +65,7 @@ async function load() {
   if (search.value.trim()) q = q.ilike('nom', `%${search.value}%`)
   if (filterRegion.value) q = q.eq('region', filterRegion.value)
   if (filterUniv.value)   q = q.eq('universitaire', true)
+  if (filterGenre.value)  q = q.eq('genre', filterGenre.value)
   const { data, count } = await q
   clubs.value = data ?? []; total.value = count ?? 0; loading.value = false
 }

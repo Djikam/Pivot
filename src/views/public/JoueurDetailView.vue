@@ -71,16 +71,21 @@
             <div v-if="butsParComp.length" style="margin-top:24px">
               <h3 style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:12px">Buts par compétition</h3>
               <table class="p-table">
-                <thead><tr><th>Compétition</th><th>Matchs</th><th>Buts</th><th>Moy.</th></tr></thead>
+                <thead><tr><th>Compétition</th><th>Matchs</th><th>Buts</th><th>Pén.</th><th>7m</th><th>Moy.</th></tr></thead>
                 <tbody>
                   <tr v-for="c in butsParComp" :key="c.nom">
                     <td>{{ c.nom }}</td>
-                    <td>{{ c.matchs }}</td>
+                    <td class="text-sub">{{ c.matchs }}</td>
                     <td class="font-display" style="font-weight:700;color:var(--p-red)">{{ c.buts }}</td>
-                    <td class="text-sub">{{ (c.buts/c.matchs).toFixed(1) }}</td>
+                    <td class="text-sub">{{ c.buts_penalty ?? 0 }}</td>
+                    <td class="text-sub">{{ c.buts_7m ?? 0 }}</td>
+                    <td class="text-sub">{{ c.matchs ? (c.buts/c.matchs).toFixed(1) : '—' }}</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div v-else-if="!loading" class="text-sub" style="padding:20px 0;font-size:13px">
+              Aucun but enregistré pour ce joueur dans la base PIVOT.
             </div>
           </div>
 
@@ -220,7 +225,15 @@ onMounted(async () => {
     supabase.from('selections_joueurs').select('*, equipe_nationale:equipes_nationales(nom)').eq('joueur_id', id),
     supabase.from('discipline').select('*, match:matchs(phase:phases(competition:competitions(nom)), club_domicile:clubs!matchs_club_domicile_id_fkey(nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom))').eq('joueur_id', id).order('created_at', { ascending: false }),
     supabase.from('distinctions').select('*').eq('joueur_id', id).order('saison', { ascending: false }),
-    supabase.from('buts').select('match_id, match:matchs(phase:phases(competition:competitions(nom)))').eq('joueur_id', id),
+    supabase.from('buts').select(`
+      match_id, type,
+      match:matchs(
+        type_match, adversaire_international,
+        phase:phases(competition:competitions(nom)),
+        club_domicile:clubs!matchs_club_domicile_id_fkey(nom),
+        club_exterieur:clubs!matchs_club_exterieur_id_fkey(nom)
+      )
+    `).eq('joueur_id', id).order('created_at', { ascending: false }),
   ])
   joueur.value = j
   licences.value = lic ?? []
@@ -232,16 +245,23 @@ onMounted(async () => {
   }))
   distinctions.value = dist ?? []
 
-  // Agréger buts par compétition
-  const compMap = new Map<string, { nom: string; buts: number; matchs: Set<string> }>()
+  // Agréger buts par compétition (club + international)
+  const compMap = new Map<string, { nom: string; buts: number; penalty: number; sept: number; matchs: Set<string> }>()
   for (const b of (butsRaw ?? [])) {
-    const compNom = (b.match as any)?.phase?.competition?.nom ?? 'Inconnue'
-    if (!compMap.has(compNom)) compMap.set(compNom, { nom: compNom, buts: 0, matchs: new Set() })
+    const m = b.match as any
+    const compNom = m?.phase?.competition?.nom
+      ?? (m?.type_match === 'international' ? (m?.adversaire_international ? 'International' : 'International') : null)
+      ?? 'Inconnue'
+    if (!compMap.has(compNom)) compMap.set(compNom, { nom: compNom, buts: 0, penalty: 0, sept: 0, matchs: new Set() })
     const e = compMap.get(compNom)!
     e.buts++
+    if ((b as any).type === 'penalty') e.penalty++
+    if ((b as any).type === '7m')      e.sept++
     e.matchs.add(b.match_id)
   }
-  butsParComp.value = [...compMap.values()].map(e => ({ nom: e.nom, buts: e.buts, matchs: e.matchs.size }))
+  butsParComp.value = [...compMap.values()]
+    .map(e => ({ nom: e.nom, buts: e.buts, buts_penalty: e.penalty, buts_7m: e.sept, matchs: e.matchs.size }))
+    .sort((a, b) => b.buts - a.buts)
 
   loading.value = false
 })

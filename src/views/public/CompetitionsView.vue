@@ -10,6 +10,11 @@
       <div class="type-tabs">
         <button v-for="t in types" :key="t.value" class="type-tab" :class="{active:filterType===t.value}" @click="filterType=t.value"><component :is="t.icon" class="w-4 h-4 mr-1" /> {{ t.label }}</button>
       </div>
+      <div class="genre-tabs" style="margin-top:10px">
+        <button class="genre-tab" :class="{active:filterGenre===''}" @click="filterGenre=''">Tous</button>
+        <button class="genre-tab" :class="{active:filterGenre==='masculin'}" @click="filterGenre='masculin'">👨 Masculin</button>
+        <button class="genre-tab" :class="{active:filterGenre==='feminin'}" @click="filterGenre='feminin'">👩 Féminin</button>
+      </div>
       <KenteDivider :my="20" />
       <div v-if="loading" class="loading-state"><div class="spinner" /></div>
       <div v-else class="comps-grid">
@@ -37,16 +42,21 @@ import KenteDivider from '@/components/KenteDivider.vue'
 import { Trophy, MapPin, Flag, GraduationCap, CheckCircle, Globe } from 'lucide-vue-next'
 const competitions = ref<any[]>([])
 const loading = ref(true)
-const filterType = ref('all')
+const filterType  = ref('all')
+const filterGenre = ref('')
 const types = [
-  { value:'all', label:'Toutes', icon: Trophy },
-  { value:'regional', label:'Régionales', icon: MapPin },
-  { value:'national', label:'Nationales', icon: Flag },
-  { value:'universitaire', label:'Universitaires', icon: GraduationCap },
-  { value:'coupe', label:'Coupe', icon: CheckCircle },
-  { value:'international', label:'International', icon: Globe },
+  { value:'all',          label:'Toutes',        icon: Trophy },
+  { value:'regional',     label:'Régionales',    icon: MapPin },
+  { value:'national',     label:'Nationales',    icon: Flag },
+  { value:'universitaire',label:'Universitaires',icon: GraduationCap },
+  { value:'coupe',        label:'Coupe',         icon: CheckCircle },
+  { value:'international',label:'International', icon: Globe },
 ]
-const filteredComps = computed(() => filterType.value === 'all' ? competitions.value : competitions.value.filter(c => c.type === filterType.value))
+const filteredComps = computed(() => {
+  let r = filterType.value === 'all' ? competitions.value : competitions.value.filter(c => c.type === filterType.value)
+  if (filterGenre.value) r = r.filter(c => c.genre === filterGenre.value)
+  return r
+})
 const statutBadge = (s: string) => ({ en_cours:'p-badge-green', termine:'p-badge-muted', a_venir:'p-badge-gold' }[s] ?? 'p-badge-muted')
 const statutLabel = (s: string) => ({ en_cours:'En cours', termine:'Terminé', a_venir:'À venir' }[s] ?? s)
 const typeIcon = (t: string) => ({ regional: MapPin, national: Flag, universitaire: GraduationCap, coupe: CheckCircle, international: Globe }[t] ?? Trophy)
@@ -61,6 +71,9 @@ onMounted(async () => {
 .type-tabs { display:flex;gap:8px;flex-wrap:wrap; }
 .type-tab { padding:8px 14px;border-radius:8px;border:1px solid var(--p-border);font-size:13px;cursor:pointer;background:transparent;color:var(--p-sub);transition:all 150ms; }
 .type-tab.active { border-color:var(--p-red);background:rgba(140,21,37,.1);color:var(--p-red); }
+.genre-tabs { display:flex;gap:8px;flex-wrap:wrap; }
+.genre-tab { padding:5px 12px;border-radius:99px;border:1px solid var(--p-border);font-size:12px;cursor:pointer;background:transparent;color:var(--p-sub);transition:all 150ms; }
+.genre-tab.active { border-color:var(--p-gold);background:rgba(196,146,42,.1);color:var(--p-gold); }
 .comps-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px; }
 .comp-card { padding:20px;display:flex;flex-direction:column;gap:10px; }
 .comp-header { display:flex;gap:6px;flex-wrap:wrap; }

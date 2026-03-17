@@ -8,7 +8,7 @@ export default defineConfig({
   },
   plugins: [vue()],
   build: {
-    // Désactiver modulePreload pour éviter l'erreur CSS preload sur Netlify
+    sourcemap: false, // Désactive les sourcemaps pour éviter l'erreur JSON.parse
     modulePreload: { polyfill: false },
     rollupOptions: {
       output: {

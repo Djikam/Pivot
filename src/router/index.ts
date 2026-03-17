@@ -34,6 +34,7 @@ const router = createRouter({
         { path: 'national/:id',       name: 'selection-detail',   component: () => import('@/views/public/SelectionDetailView.vue') },
         { path: 'self-report',        name: 'self-report',        component: () => import('@/views/public/SelfReportView.vue') },
         { path: 'arbitres',           name: 'arbitres',           component: () => import('@/views/public/ArbitresView.vue') },
+        { path: 'coaches',            name: 'coaches',            component: () => import('@/views/public/CoachesView.vue') },
       ]
     },
 
