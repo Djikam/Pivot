@@ -40,6 +40,7 @@
               <div class="equipe-actions">
                 <button class="p-btn-ghost p-btn-sm" @click="openModalEquipe(e)">Éditer</button>
                 <button class="p-btn-ghost p-btn-sm" @click="manageSelection(e)">Gérer sélection</button>
+                <RouterLink :to="'/admin/staff?equipe=' + e.id" class="p-btn-ghost p-btn-sm">Staff/Coachs</RouterLink>
                 <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteEquipe(e)">Suppr.</button>
               </div>
             </div>

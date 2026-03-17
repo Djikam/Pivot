@@ -114,11 +114,18 @@ const editing = ref<any>({})
 const saving = ref(false)
 
 const categories = [
-  { value:'reglement',     label:'Règlement',      icon:'📘' },
-  { value:'administratif', label:'Administratif',  icon:'🧾' },
-  { value:'communique',    label:'Communiqué',     icon:'📢' },
-  { value:'formulaire',    label:'Formulaire',     icon:'📄' },
+  { value:'regles',       label:'Règles du jeu',    icon:'📘' },
+  { value:'droits_joueur',label:'Droits joueur',    icon:'⚖️' },
+  { value:'droits_club',  label:'Droits club',      icon:'🏢' },
+  { value:'arbitrage',    label:'Arbitrage',        icon:'🟡' },
+  { value:'officiel',     label:'Officiel',         icon:'📋' },
+  { value:'pedagogue',    label:'Pédagogie',        icon:'🎓' },
 ]
+
+const catLabel    = (v:string) => categories.find(c => c.value === v)?.label ?? v
+const formatIcon  = (f:string) => ({ pdf:'📄', xlsx:'📊', csv:'📉', html:'🌐', docx:'📝' }[f] ?? '📄')
+const formatBadge = (f:string) => ({ pdf:'p-badge-red', xlsx:'p-badge-green', csv:'p-badge-blue', html:'p-badge-gold' }[f] ?? 'p-badge-muted')
+const formatDate  = (d:string) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) : '—'
 
 const bucketName = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET ?? 'documents'
 const uploading = ref(false)

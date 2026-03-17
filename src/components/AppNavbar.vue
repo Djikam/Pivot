@@ -3,8 +3,8 @@
     <div class="nav-inner p-container">
       <!-- Logo -->
       <RouterLink to="/" class="nav-logo">
-        <span class="logo-text">PIVOT</span>
-        <span class="logo-sub">handball cameroun</span>
+        <img src="/pivot-logo.svg" alt="PIVOT" class="logo-img" height="32" />
+        <span class="logo-text-fallback">PIVOT</span>
       </RouterLink>
 
       <!-- Nav links desktop -->
@@ -123,17 +123,18 @@ html.light .pivot-nav.scrolled {
   height: 60px;
 }
 .nav-logo {
-  display: flex; flex-direction: column; line-height: 1;
+  display: flex; align-items: center; gap: 8px; line-height: 1;
   flex-shrink: 0;
 }
-.logo-text {
+.logo-img {
+  height: 32px; width: auto; display: block;
+}
+.logo-text-fallback {
+  display: none; /* visible seulement si l'image ne charge pas */
   font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
   color: var(--p-red); letter-spacing: -0.02em;
 }
-.logo-sub {
-  font-size: 9px; font-weight: 500; color: var(--p-sub);
-  letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px;
-}
+.logo-img:error + .logo-text-fallback { display: block; }
 .nav-links {
   display: flex; gap: 2px; flex: 1;
 }

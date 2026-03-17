@@ -5,25 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#8C1525" />
     <meta name="description" content="PIVOT — Le Pivot du handball camerounais. Stats, classements, transferts, équipes nationales." />
+    <meta name="keywords" content="handball cameroun, CAN 2026, lions indomptables, statistiques handball" />
+    <meta property="og:title" content="PIVOT — Handball Cameroun" />
+    <meta property="og:description" content="La première plateforme data indépendante du handball camerounais." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pivotcm.netlify.app" />
     <title>PIVOT — Handball Cameroun</title>
+    <!-- Favicon SVG (moderne) + fallback ICO -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg" />
+    <!-- Polices -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-      body {
-        margin: 0;
-        font-family: 'Outfit', sans-serif;
-        background-color: #f8f9fa;
-      }
-      #app {
-        min-height: 100vh;
-      }
+      body { margin:0; font-family:'Outfit',sans-serif; background-color:#070409; }
+      #app { min-height:100vh; }
+      /* Anti-FOUC : fond sombre immédiat avant hydratation Vue */
+      #app:empty { background:#070409; }
     </style>
   </head>
   <body>
     <div id="app"></div>
-    
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

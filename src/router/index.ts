@@ -76,19 +76,23 @@ const router = createRouter({
 
 // ─── Guard auth ───────────────────────────────────────────────────────────────
 router.beforeEach(async (to) => {
+  // Pages publiques : toujours accessibles, pas de vérification auth
   if (!to.meta.requiresAuth) return true
 
   const auth = useAuthStore()
-  // Attendre l'initialisation (session + rôle) pour éviter les redirections intempestives
   await auth.waitForInit()
 
-  if (!auth.isLogged) return { name: 'admin-login', query: { redirect: to.fullPath } }
-  
-  // Pour le dashboard admin, permettre si loggé (même viewer)
+  // Session expirée ? Tenter un refresh silencieux avant de rediriger
+  if (!auth.isLogged) {
+    const { data } = await auth.tryRefresh()
+    if (!data?.session) return { name: 'admin-login', query: { redirect: to.fullPath } }
+  }
+
+  // Dashboard accessible à tous les loggés
   if (to.name === 'admin-dashboard') return true
-  
-  // Pour les autres pages admin, vérifier les droits saisis
-  if (!auth.isSaisie) return { name: 'home' } // Viewer ne peut pas accéder au backoffice
+
+  // Autres pages admin : droits saisie/admin requis
+  if (!auth.isSaisie) return { name: 'home' }
 
   return true
 })

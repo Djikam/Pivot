@@ -68,5 +68,15 @@ export const useAuthStore = defineStore('auth', () => {
     })
   }
 
-  return { session, user, role, loading, isAdmin, isSaisie, isLogged, init, waitForInit, login, logout }
+  async function tryRefresh() {
+    const result = await supabase.auth.refreshSession()
+    if (result.data?.session) {
+      session.value = result.data.session
+      user.value    = result.data.session.user
+      await fetchRole()
+    }
+    return result
+  }
+
+  return { session, user, role, loading, isAdmin, isSaisie, isLogged, init, waitForInit, login, logout, tryRefresh }
 })

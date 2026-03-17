@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <!-- P stylisé -->
+  <rect x="8" y="8" width="9" height="44" rx="3" fill="#8C1525"/>
+  <rect x="8" y="8" width="26" height="9" rx="3" fill="#8C1525"/>
+  <rect x="8" y="28" width="26" height="9" rx="3" fill="#8C1525"/>
+  <rect x="25" y="8" width="9" height="29" rx="3" fill="#8C1525"/>
+  <!-- Texte PIVOT -->
+  <text x="50" y="43" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#8C1525" letter-spacing="-1">PIVOT</text>
+  <!-- Sous-titre -->
+  <text x="50" y="56" font-family="Arial, sans-serif" font-size="8.5" fill="#C4922A" letter-spacing="3">HANDBALL CAMEROUN</text>
+</svg>

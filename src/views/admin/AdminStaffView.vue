@@ -17,7 +17,7 @@
     <div v-if="loading" class="loading-state"><div class="spinner" /></div>
     <table v-else class="p-table">
       <thead>
-        <tr><th>Nom</th><th>Rôle</th><th>Club</th><th>Contact</th><th>Actions</th></tr>
+        <tr><th>Nom</th><th>Rôle</th><th>Club / Équipe</th><th>Contact</th><th>Actions</th></tr>
       </thead>
       <tbody>
         <tr v-for="s in staff" :key="s.id">
@@ -27,7 +27,10 @@
               {{ s.type_staff === 'COACH' ? 'Coach' : 'Président' }}
             </span>
           </td>
-          <td class="text-sub">{{ s.club?.nom ?? '—' }}</td>
+          <td class="text-sub">
+            {{ s.equipe_nationale?.nom ?? s.club?.nom ?? '—' }}
+            <span v-if="s.saison" class="p-badge p-badge-muted" style="font-size:10px;margin-left:4px">{{ s.saison }}</span>
+          </td>
           <td class="text-sub" style="font-size:12px">{{ s.email ?? s.telephone ?? '—' }}</td>
           <td class="actions-cell">
             <button class="p-btn-ghost p-btn-sm" @click="openModal(s)">Éditer</button>
@@ -59,10 +62,21 @@
                   <option value="PRESIDENT">Président</option>
                 </select>
               </div>
+              <div class="field"><label class="p-label">Saison</label>
+                <input v-model="editing.saison" class="p-input" placeholder="2025-2026" />
+              </div>
+            </div>
+            <div class="form-row">
               <div class="field"><label class="p-label">Club</label>
                 <select v-model="editing.club_id" class="p-input p-select">
                   <option value="">— Aucun club —</option>
                   <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.nom }}</option>
+                </select>
+              </div>
+              <div class="field"><label class="p-label">Équipe nationale</label>
+                <select v-model="editing.equipe_nationale_id" class="p-input p-select">
+                  <option value="">— Aucune —</option>
+                  <option v-for="e in equipes" :key="e.id" :value="e.id">{{ e.nom }}</option>
                 </select>
               </div>
             </div>
@@ -71,8 +85,8 @@
               <div class="field"><label class="p-label">Téléphone</label><input v-model="editing.telephone" class="p-input" /></div>
             </div>
             <div class="field" style="margin-bottom:12px">
-              <label class="p-label">Détails techniques (diplômes, expériences…)</label>
-              <textarea v-model="editingDetailsText" class="p-input" rows="3" style="resize:vertical" placeholder='{"diplome":"Licence IHF","experience":"5 ans D1"}'></textarea>
+              <label class="p-label">Détails (diplômes, expériences…)</label>
+              <textarea v-model="editingDetailsText" class="p-input" rows="2" style="resize:vertical" placeholder='{"diplome":"Licence IHF","experience":"5 ans D1"}'></textarea>
             </div>
             <div v-if="saveError" class="save-error">{{ saveError }}</div>
           </div>
@@ -88,10 +102,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { supabase } from '@/lib/supabaseClient'
 
+const route = useRoute()
 const staff   = ref<any[]>([])
 const clubs   = ref<any[]>([])
+const equipes = ref<any[]>([])
 const loading = ref(true)
 const modal   = ref(false)
 const saving  = ref(false)
@@ -105,11 +122,14 @@ const editingDetailsText = ref('')
 async function load() {
   loading.value = true
   let q = supabase.from('staff_club')
-    .select('*, club:clubs(id,nom)')
+    .select('*, club:clubs(id,nom), equipe_nationale:equipes_nationales(id,nom)')
     .order('nom')
   if (search.value) q = q.or(`nom.ilike.%${search.value}%,prenom.ilike.%${search.value}%`)
   if (filterClub.value) q = q.eq('club_id', filterClub.value)
   if (filterType.value) q = q.eq('type_staff', filterType.value)
+  // Filtrer par équipe nationale si paramètre URL
+  const equipeParam = route.query.equipe as string
+  if (equipeParam) q = q.eq('equipe_nationale_id', equipeParam)
   const { data } = await q
   staff.value = data ?? []
   loading.value = false
@@ -119,7 +139,10 @@ let timer: ReturnType<typeof setTimeout>
 function debouncedLoad() { clearTimeout(timer); timer = setTimeout(() => { load() }, 350) }
 
 function openModal(s: any) {
-  editing.value = s ? { ...s } : { prenom:'', nom:'', type_staff:'COACH', club_id:'', email:'', telephone:'', details_techniques: null }
+  editing.value = s ? { ...s } : {
+    prenom:'', nom:'', type_staff:'COACH', club_id:'', equipe_nationale_id:'',
+    email:'', telephone:'', saison:'2025-2026', details_techniques: null
+  }
   editingDetailsText.value = s?.details_techniques ? JSON.stringify(s.details_techniques, null, 2) : ''
   saveError.value = ''
   modal.value = true
@@ -134,9 +157,10 @@ async function saveStaff() {
     try { details = JSON.parse(editingDetailsText.value) } catch { details = { note: editingDetailsText.value } }
   }
 
-  const { id, club, ...data } = editing.value
+  const { id, club, equipe_nationale, ...data } = editing.value
   data.details_techniques = details
   if (!data.club_id) data.club_id = null
+  if (!data.equipe_nationale_id) data.equipe_nationale_id = null
 
   if (id) { await supabase.from('staff_club').update(data).eq('id', id) }
   else    { await supabase.from('staff_club').insert(data) }
@@ -151,8 +175,12 @@ async function deleteStaff(s: any) {
 }
 
 onMounted(async () => {
-  const { data } = await supabase.from('clubs').select('id,nom').eq('actif', true).order('nom')
-  clubs.value = data ?? []
+  const [{ data: c }, { data: e }] = await Promise.all([
+    supabase.from('clubs').select('id,nom').eq('actif', true).order('nom'),
+    supabase.from('equipes_nationales').select('id,nom').order('nom'),
+  ])
+  clubs.value = c ?? []
+  equipes.value = e ?? []
   load()
 })
 </script>
@@ -166,7 +194,7 @@ onMounted(async () => {
 .spinner { width:32px;height:32px;border:3px solid var(--p-border);border-top-color:var(--p-red);border-radius:50%;animation:spin 700ms linear infinite }
 @keyframes spin { to{transform:rotate(360deg)} }
 .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:1000 }
-.modal-box { background:var(--p-card);border:1px solid var(--p-border);border-radius:12px;width:min(560px,95vw);max-height:90vh;overflow-y:auto }
+.modal-box { background:var(--p-card);border:1px solid var(--p-border);border-radius:12px;width:min(580px,95vw);max-height:90vh;overflow-y:auto }
 .modal-header { display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--p-border) }
 .modal-body { padding:20px 24px;display:flex;flex-direction:column;gap:12px }
 .modal-footer { display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--p-border) }

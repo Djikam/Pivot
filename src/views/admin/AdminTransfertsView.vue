@@ -50,7 +50,7 @@
           <div class="modal-body">
             <div class="form-row">
               <div class="field"><label class="p-label">Joueur *</label>
-                <select v-model="editing.joueur_id" class="p-input p-select">
+                <select v-model="editing.joueur_id" class="p-input p-select" @change="onJoueurChange">
                   <option value="">— Sélectionner joueur —</option>
                   <option v-for="j in joueurs" :key="j.id" :value="j.id">{{ j.prenom }} {{ j.nom }}</option>
                 </select>
@@ -65,7 +65,7 @@
               </div>
             </div>
             <div class="form-row">
-              <div class="field"><label class="p-label">Club origine</label>
+              <div class="field"><label class="p-label">Club origine <span class="text-sub" style="font-size:10px">(auto-détecté)</span></label>
                 <select v-model="editing.club_origine_id" class="p-input p-select">
                   <option value="">— Aucun —</option>
                   <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.nom }}</option>
@@ -92,6 +92,12 @@
             <div class="form-row">
               <div class="field"><label class="p-label">Motif</label><input v-model="editing.motif" class="p-input" /></div>
               <div class="field"><label class="p-label">Source</label><input v-model="editing.source" class="p-input" /></div>
+            </div>
+            <div v-if="editing.fiabilite === 4 && editing.type === 'transfert' && editing.club_destination_id"
+              class="p-card" style="padding:10px 14px;border-left:3px solid var(--p-green);background:rgba(59,170,106,.06)">
+              <span style="font-size:12px;color:var(--p-green)">
+                ✓ Transfert confirmé — la licence du joueur sera automatiquement mise à jour vers ce club.
+              </span>
             </div>
             <div v-if="saveError" class="save-error">{{ saveError }}</div>
           </div>
@@ -152,17 +158,66 @@ async function loadJoueursClubs() {
 }
 
 function openModal(t: any) {
-  editing.value = t ? { ...t } : { joueur_id:'',type:'transfert',fiabilite:1,motif:'',source:'' }
+  editing.value = t ? { ...t } : { joueur_id:'', type:'transfert', fiabilite:1, motif:'', source:'', club_origine_id:'', club_destination_id:'' }
   modal.value = true; saveError.value = ''
 }
 
+// Quand on sélectionne un joueur, auto-peupler le club d'origine depuis sa licence active
+async function onJoueurChange() {
+  const joueurId = editing.value.joueur_id
+  if (!joueurId) return
+  const { data } = await supabase
+    .from('licences_saison')
+    .select('club_id')
+    .eq('joueur_id', joueurId)
+    .eq('actif', true)
+    .order('saison', { ascending: false })
+    .limit(1)
+    .single()
+  if (data?.club_id) editing.value.club_origine_id = data.club_id
+}
+
 async function saveTransfert() {
-  if (!editing.value.joueur_id || !editing.value.type || !editing.value.fiabilite) { saveError.value='Joueur, type et fiabilité requis'; return }
+  if (!editing.value.joueur_id || !editing.value.type || !editing.value.fiabilite) {
+    saveError.value = 'Joueur, type et fiabilité requis'; return
+  }
   saving.value = true; saveError.value = ''
   const { id, joueur, club_origine, club_destination, ...data } = editing.value
-  if (id) { await supabase.from('transferts').update(data).eq('id', id) }
-  else     { await supabase.from('transferts').insert(data) }
+
+  if (id) {
+    await supabase.from('transferts').update(data).eq('id', id)
+  } else {
+    await supabase.from('transferts').insert(data)
+  }
+
+  // Si fiabilité = 4 (Confirmé) + type = transfert + club_destination → mettre à jour la licence
+  if (data.fiabilite === 4 && data.type === 'transfert' && data.club_destination_id && data.joueur_id) {
+    // Désactiver l'ancienne licence
+    await supabase.from('licences_saison')
+      .update({ actif: false })
+      .eq('joueur_id', data.joueur_id)
+      .eq('actif', true)
+
+    // Créer la nouvelle licence dans le club destination
+    const saison = getSaisonCourante()
+    await supabase.from('licences_saison').upsert({
+      joueur_id: data.joueur_id,
+      club_id:   data.club_destination_id,
+      saison,
+      actif:     true,
+      type_licence: 'club',
+    }, { onConflict: 'joueur_id,saison' })
+  }
+
   saving.value = false; modal.value = false; load()
+}
+
+function getSaisonCourante(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1
+  // Saison handball : août → juillet
+  return month >= 8 ? `${year}-${year+1}` : `${year-1}-${year}`
 }
 
 async function deleteTransfert(t:any)   { if(!confirm(`Supprimer le transfert de ${t.joueur?.prenom} ${t.joueur?.nom} ?`)) return; await supabase.from('transferts').delete().eq('id',t.id); load() }

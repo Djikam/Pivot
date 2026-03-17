@@ -13,11 +13,32 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    storageKey: 'pivot-auth-token',
   },
   realtime: {
     params: { eventsPerSecond: 10 }
+  },
+  global: {
+    headers: { 'x-app': 'pivot' }
   }
 })
+
+// Rafraîchir la session quand l'onglet redevient actif (évite les redirections après inactivité)
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        // Force refresh si le token expire dans moins de 60s
+        const expiresAt = session.expires_at ?? 0
+        const now = Math.floor(Date.now() / 1000)
+        if (expiresAt - now < 60) {
+          await supabase.auth.refreshSession()
+        }
+      }
+    }
+  })
+}
 
 // Helper upload Cloudinary (remplace axios dans les vues admin)
 export async function uploadToCloudinary(file: File, folder = 'pivot'): Promise<string> {
@@ -34,7 +55,7 @@ export async function uploadToCloudinary(file: File, folder = 'pivot'): Promise<
   })
   const data = await res.json()
   if (!data.secure_url) throw new Error('Cloudinary upload échoué')
-  return data.public_id // On stocke le public_id, pas l'URL complète
+  return data.public_id
 }
 
 // Helper : générer l'URL Cloudinary depuis le public_id
@@ -45,7 +66,7 @@ export function cloudinaryUrl(publicId: string, opts?: { w?: number; h?: number;
     opts?.w ? `w_${opts.w}` : '',
     opts?.h ? `h_${opts.h}` : '',
     opts?.q ? `q_${opts.q}` : 'q_auto',
-    'f_webp', // Toujours WebP pour le poids
+    'f_webp',
   ].filter(Boolean).join(',')
   return `https://res.cloudinary.com/${cloudName}/image/upload/${transforms}/${publicId}`
 }

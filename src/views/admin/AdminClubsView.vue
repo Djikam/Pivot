@@ -110,6 +110,18 @@
           <div class="modal-body">
             <div class="club-info">
               <div class="info-section">
+                <h4>Staff ({{ staff.length }})</h4>
+                <div v-if="staff.length" class="info-list">
+                  <div v-for="s in staff" :key="s.id" class="info-item">
+                    <span class="p-badge" :class="s.type_staff === 'COACH' ? 'p-badge-blue' : 'p-badge-gold'" style="font-size:10px;margin-right:6px">{{ s.type_staff }}</span>
+                    {{ s.prenom }} {{ s.nom }}
+                    <span v-if="s.email" class="text-sub" style="font-size:11px;margin-left:4px">· {{ s.email }}</span>
+                  </div>
+                </div>
+                <p v-else class="text-sub">Aucun staff enregistré</p>
+              </div>
+
+              <div class="info-section">
                 <h4>Joueurs ({{ joueurs.length }})</h4>
                 <div v-if="joueurs.length" class="info-list">
                   <div v-for="j in joueurs" :key="j.id" class="info-item clickable" @click="viewJoueurDetails(j)">
@@ -203,9 +215,10 @@ import { supabase } from '@/lib/supabaseClient'
 
 const clubs = ref<any[]>([])
 const allClubs = ref<any[]>([]) // Pour l'autocomplete
-const joueurs = ref<any[]>([])
+const joueurs     = ref<any[]>([])
+const staff       = ref<any[]>([])
 const competitions = ref<any[]>([])
-const transferts = ref<any[]>([])
+const transferts  = ref<any[]>([])
 const loading = ref(true)
 const search = ref('')
 const filterRegion = ref('')
@@ -252,31 +265,32 @@ function debouncedLoad() { clearTimeout(timer); timer=setTimeout(load,350) }
 async function viewDetails(c: any) {
   selectedClub.value = c
   modalDetails.value = true
-  
-  // Charger les données liées
-  const [joueursRes, competitionsRes, transfertsRes] = await Promise.all([
-    supabase.from('licences_saison').select(`
-      joueur:joueurs(id,prenom,nom,poste_principal,poste_secondaire,bras_fort,taille_estimee,date_naissance_approx,statut_univ,verifie,badge_talent,score_ia)
-    `).eq('club_id', c.id).eq('saison', '2025-2026'),
-    supabase.from('competition_clubs').select(`
-      competition:competitions(id,nom,type,saison)
-    `).eq('club_id', c.id).catch(() => ({ data: [] })), // Handle if table doesn't exist
-    supabase.from('transferts').select('id,type,date_transfert').or(`club_origine_id.eq.${c.id},club_destination_id.eq.${c.id}`).order('date_transfert', { ascending: false }).limit(10)
+
+  const [joueursRes, compsRes, transfertsRes, staffRes] = await Promise.all([
+    supabase.from('licences_saison')
+      .select('joueur:joueurs(id,prenom,nom,poste_principal,poste_secondaire,bras_fort,taille_estimee,statut_univ,verifie,badge_talent,score_ia)')
+      .eq('club_id', c.id).eq('saison', '2025-2026').eq('actif', true),
+    supabase.from('participation_competitions')
+      .select('competition:competitions(id,nom,type,saison)')
+      .eq('club_id', c.id),
+    supabase.from('transferts')
+      .select('id,type,date_transfert')
+      .or(`club_origine_id.eq.${c.id},club_destination_id.eq.${c.id}`)
+      .order('date_transfert', { ascending: false }).limit(10),
+    supabase.from('staff_club')
+      .select('id,prenom,nom,type_staff,email,telephone')
+      .eq('club_id', c.id)
+      .order('type_staff'),
   ])
-  
-  // Traiter les joueurs : extraire de licences_saison et éviter doublons
+
   const joueursMap = new Map()
   joueursRes.data?.forEach((l: any) => {
-    if (l.joueur && !joueursMap.has(l.joueur.id)) {
-      joueursMap.set(l.joueur.id, l.joueur)
-    }
+    if (l.joueur && !joueursMap.has(l.joueur.id)) joueursMap.set(l.joueur.id, l.joueur)
   })
-  joueurs.value = Array.from(joueursMap.values())
-  
-  // Traiter les compétitions
-  competitions.value = competitionsRes.data?.map((cc: any) => cc.competition).filter(Boolean) || []
-  
-  transferts.value = transfertsRes.data ?? []
+  joueurs.value      = Array.from(joueursMap.values())
+  competitions.value = compsRes.data?.map((cc: any) => cc.competition).filter(Boolean) ?? []
+  transferts.value   = transfertsRes.data ?? []
+  staff.value        = staffRes.data ?? []
 }
 
 async function viewJoueurDetails(j: any) {
