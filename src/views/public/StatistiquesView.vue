@@ -102,11 +102,11 @@
               <td class="text-sub" style="font-size:12px">{{ g.club_nom ?? '—' }}</td>
               <td class="text-sub">{{ g.matchs }}</td>
               <td class="font-display" style="font-weight:700;color:var(--p-green)">{{ g.arrets }}</td>
-              <td class="text-sub">{{ g.tirs_recus }}</td>
+              <td class="text-sub">{{ g.tirs_recus || '—' }}</td>
               <td>
                 <span class="font-display" style="font-weight:700"
                   :style="{color: g.pct >= 35 ? 'var(--p-green)' : g.pct >= 28 ? 'var(--p-gold)' : 'var(--p-red)'}">
-                  {{ g.pct }}%
+                  {{ g.tirs_recus ? g.pct+'%' : '—' }}
                 </span>
               </td>
             </tr>
@@ -273,34 +273,39 @@ async function loadButeurs() {
 
 async function loadGardiens() {
   loading.value = true
-  // Stats gardiens basées sur buts concédés (discipline → pas de données arrêts directs)
-  // On utilise les matchs pour calculer les buts encaissés par équipe (gardiens = poste 'gardien')
-  let matchIds: string[] | null = null
+  let q = supabase.from('joueurs')
+    .select(`
+      id, prenom, nom, im_ihf, arrets_ihf, tirs_recus_ihf, score_ia, genre,
+      licences_saison!inner(club:clubs(nom), actif)
+    `)
+    .eq('poste_principal', 'gardien')
+    .eq('licences_saison.actif', true)
+    .gt('arrets_ihf', 0)
+    .order('arrets_ihf', { ascending: false })
+    .limit(20)
+
   if (selectedCompId.value) {
-    const { data: ph } = await supabase.from('phases').select('id').eq('competition_id', selectedCompId.value)
-    const { data: mx } = await supabase.from('matchs').select('id').in('phase_id', (ph??[]).map((p:any)=>p.id))
-    matchIds = (mx??[]).map((m:any)=>m.id)
-    if (!matchIds.length) { gardiens.value = []; loading.value=false; return }
+    const comp = competitions.value.find(c => c.id === selectedCompId.value)
+    if (comp?.genre) q = q.eq('genre', comp.genre)
   }
 
-  // Récupérer les gardiens licenciés
-  const { data: gardiensDb } = await supabase.from('joueurs')
-    .select('id,prenom,nom,licences_saison!inner(club:clubs(nom),actif,saison)')
-    .eq('poste_principal','gardien')
-    .eq('licences_saison.actif', true)
-    .limit(50)
-
-  // Pour l'instant les stats gardiens viennent des im_ihf/ig_ihf si disponibles
-  gardiens.value = (gardiensDb ?? []).map(g => ({
-    joueur_id: g.id, prenom: g.prenom, nom: g.nom,
-    club_nom: (g.licences_saison as any)?.[0]?.club?.nom ?? null,
-    arrets: (g as any).im_ihf ?? 0,
-    tirs_recus: ((g as any).im_ihf ?? 0) + ((g as any).ig_ihf ?? 0),
-    matchs: 7,
-    pct: ((g as any).im_ihf && ((g as any).im_ihf + (g as any).ig_ihf) > 0)
-      ? Math.round((g as any).im_ihf / ((g as any).im_ihf + (g as any).ig_ihf) * 100) : 0
-  })).filter(g => g.arrets > 0).sort((a,b) => b.pct - a.pct)
-
+  const { data } = await q
+  gardiens.value = (data ?? []).map(g => {
+    const arrets     = (g as any).arrets_ihf     ?? 0
+    const tirs_recus = (g as any).tirs_recus_ihf ?? 0
+    const matchs     = (g as any).im_ihf         ?? '—'
+    return {
+      joueur_id:  g.id,
+      prenom:     g.prenom,
+      nom:        g.nom,
+      score_ia:   (g as any).score_ia,
+      club_nom:   ((g as any).licences_saison?.[0]?.club as any)?.nom ?? '—',
+      arrets,
+      tirs_recus,
+      matchs,
+      pct: tirs_recus > 0 ? Math.round(arrets / tirs_recus * 100) : 0,
+    }
+  })
   loading.value = false
 }
 

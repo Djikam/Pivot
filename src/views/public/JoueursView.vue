@@ -155,14 +155,22 @@ const scoreColor = (s: number) => s >= 80 ? '#3BAA6A' : s >= 60 ? '#C4922A' : s 
 
 async function load() {
   loading.value = true
+
+  // Filtre national : utiliser la vue (index rapide)
+  let nationalIds: string[] | null = null
+  if (filters.value.statut === 'national') {
+    const { data: selIds } = await supabase.from('joueurs_nationaux').select('joueur_id')
+    nationalIds = (selIds ?? []).map((s: any) => s.joueur_id)
+    if (!nationalIds.length) { joueurs.value = []; total.value = 0; loading.value = false; return }
+  }
+
   let q = supabase
     .from('joueurs')
     .select(`
       id, prenom, nom, poste_principal, bras_fort, score_ia, badge_talent, verifie, photo_cloudinary_id, genre,
       licences_saison!inner(club_id, saison, actif, club:clubs(nom))
     `, { count: 'exact' })
-    .eq('licences_saison.saison', '2025-2026')
-    .eq('licences_saison.actif', true)
+    .eq('licences_saison.actif', true)   // ← plus de filtre saison hardcodé
     .order('score_ia', { ascending: false })
     .range(page.value * limit, (page.value + 1) * limit - 1)
 
@@ -170,23 +178,20 @@ async function load() {
   if (filters.value.poste)  q = q.eq('poste_principal', filters.value.poste)
   if (filters.value.bras)   q = q.eq('bras_fort', filters.value.bras)
   if (filters.value.genre)  q = q.eq('genre', filters.value.genre)
-  if (filters.value.statut === 'verifie') q = q.eq('verifie', true)
-  if (filters.value.statut === 'talent')  q = q.eq('badge_talent', true)
-  if (filters.value.statut === 'univ')    q = q.eq('statut_univ', true)
-  if (filters.value.statut === 'national') {
-    // Filtrer joueurs ayant une sélection nationale
-    const { data: selIds } = await supabase.from('selections_joueurs').select('joueur_id')
-    const ids = (selIds ?? []).map((s: any) => s.joueur_id)
-    if (ids.length) q = q.in('id', ids)
-    else { joueurs.value = []; total.value = 0; loading.value = false; return }
-  }
+  if (filters.value.statut === 'verifie')  q = q.eq('verifie', true)
+  if (filters.value.statut === 'talent')   q = q.eq('badge_talent', true)
+  if (filters.value.statut === 'univ')     q = q.eq('statut_univ', true)
+  if (nationalIds) q = q.in('id', nationalIds)
 
   const { data, count } = await q
-  // Dédoublonner si un joueur a plusieurs licences
   const seen = new Set<string>()
   const unique: any[] = []
   for (const j of (data ?? [])) {
-    if (!seen.has(j.id)) { seen.add(j.id); j.club_nom = j.licences_saison?.[0]?.club?.nom; unique.push(j) }
+    if (!seen.has(j.id)) {
+      seen.add(j.id)
+      j.club_nom = j.licences_saison?.[0]?.club?.nom
+      unique.push(j)
+    }
   }
   joueurs.value = unique
   total.value   = count ?? 0

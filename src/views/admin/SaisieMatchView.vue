@@ -13,7 +13,11 @@
           <div v-if="matchsAVenir.length === 0 && selectedCompetition" class="text-sub" style="padding:12px;text-align:center">Aucun match programmé.</div>
           <div v-for="m in matchsAVenir" :key="m.id" class="match-row" :class="{selected: selectedMatch?.id === m.id}" @click="selectMatch(m)">
             <span class="match-j text-sub">J{{ m.journee }}</span>
-            <span class="match-clubs">{{ m.club_domicile?.nom }} <span class="text-red">vs</span> {{ m.club_exterieur?.nom }}</span>
+            <span class="match-clubs">
+              {{ m.type_match === 'international' ? '🇨🇲 Cameroun' : m.club_domicile?.nom }}
+              <span class="text-red">vs</span>
+              {{ m.type_match === 'international' ? m.adversaire_international : m.club_exterieur?.nom }}
+            </span>
             <span class="match-date text-sub">{{ formatDate(m.date_match) }}</span>
           </div>
         </div>
@@ -206,10 +210,14 @@ const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day:
 async function loadMatchs() {
   if (!selectedCompetition.value) return
   const { data: phases } = await supabase.from('phases').select('id').eq('competition_id', selectedCompetition.value)
-  const phaseIds = (phases ?? []).map(p => p.id)
+  const phaseIds = (phases ?? []).map((p: any) => p.id)
   if (!phaseIds.length) { matchsAVenir.value = []; return }
   const { data } = await supabase.from('matchs')
-    .select('*, club_domicile:clubs!matchs_club_domicile_id_fkey(id,nom), club_exterieur:clubs!matchs_club_exterieur_id_fkey(id,nom)')
+    .select(`*, 
+      type_match, adversaire_international, equipe_nationale_id,
+      club_domicile:clubs!matchs_club_domicile_id_fkey(id,nom),
+      club_exterieur:clubs!matchs_club_exterieur_id_fkey(id,nom)
+    `)
     .in('phase_id', phaseIds)
     .in('statut', ['programme','en_cours'])
     .order('date_match')
@@ -219,17 +227,30 @@ async function loadMatchs() {
 async function selectMatch(m: any) {
   selectedMatch.value = m
   form.value = { score_dom:m.score_dom??0, score_ext:m.score_ext??0, mi_temps_dom:m.mi_temps_dom??0, mi_temps_ext:m.mi_temps_ext??0, buts:[], discipline:[] }
-  saveError.value = ''
-  saveSuccess.value = false
+  saveError.value = ''; saveSuccess.value = false
 
-  const clubIds = [m.club_domicile_id, m.club_exterieur_id]
-  const saison = '2025-2026'
-  const { data } = await supabase.from('licences_saison')
-    .select('joueur_id, club_id, joueur:joueurs(id,prenom,nom,poste_principal)')
-    .in('club_id', clubIds)
-    .eq('saison', saison)
-    .eq('actif', true)
-  licences.value = data ?? []
+  if (m.type_match === 'international' && m.equipe_nationale_id) {
+    // Pour les matchs internationaux: charger les joueurs depuis la sélection nationale
+    const { data } = await supabase.from('selections_joueurs')
+      .select('joueur_id, joueur:joueurs(id,prenom,nom,poste_principal)')
+      .eq('equipe_nationale_id', m.equipe_nationale_id)
+      .in('statut', ['titulaire', 'finaliste'])
+    // Formater comme des licences pour réutiliser la même interface
+    licences.value = (data ?? []).map((s: any) => ({
+      joueur_id: s.joueur_id,
+      club_id: null,
+      joueur: s.joueur
+    }))
+  } else {
+    const clubIds = [m.club_domicile_id, m.club_exterieur_id].filter(Boolean)
+    const saison = '2025-2026'
+    const { data } = await supabase.from('licences_saison')
+      .select('joueur_id, club_id, joueur:joueurs(id,prenom,nom,poste_principal)')
+      .in('club_id', clubIds)
+      .eq('saison', saison)
+      .eq('actif', true)
+    licences.value = data ?? []
+  }
 }
 
 async function sauvegarder() {

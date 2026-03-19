@@ -50,7 +50,6 @@
           {{ link.label }}
         </RouterLink>
         <div class="mobile-divider" />
-        <RouterLink to="/national" class="mobile-link mobile-national" @click="menuOpen = false">🇨🇲 Équipes Nationales</RouterLink>
         <RouterLink to="/education" class="mobile-link" @click="menuOpen = false">📚 Espace Éducation</RouterLink>
       </div>
     </Transition>
@@ -74,12 +73,15 @@ const navLinks = [
   { to: '/clubs',        label: 'Clubs' },
   { to: '/competitions', label: 'Compétitions' },
   { to: '/matchs',       label: 'Matchs' },
-  { to: '/national',     label: 'National 🇨🇲' },
+  { to: '/national',     label: '🇨🇲 National' },
   { to: '/statistiques', label: 'Stats' },
   { to: '/coaches',      label: 'Coaches' },
   { to: '/transferts',   label: 'Radar' },
   { to: '/self-report',  label: '+ Rejoindre' },
 ]
+
+// Liens mobiles (sans doublon National)
+const mobileLinks = navLinks
 
 const isActive = (path: string) => route.path.startsWith(path)
 

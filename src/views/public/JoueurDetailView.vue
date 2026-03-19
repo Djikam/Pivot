@@ -41,6 +41,7 @@
           <div class="score-center">
             <span class="font-display" style="font-size:1.6rem;font-weight:700" :style="{color:scoreColor(joueur.score_ia)}">{{ joueur.score_ia }}</span>
             <span style="font-size:9px;color:var(--p-sub);letter-spacing:.06em">SCORE IA</span>
+            <span class="score-ia-tooltip">Indice de performance calculé par PIVOT (0-100) basé sur les stats IHF : buts, %, assists, arrêts gardiens.</span>
           </div>
         </div>
       </div>
@@ -202,14 +203,33 @@ const posteLabel = (p: string) => postes[p] ?? p
 const scoreColor = (s: number) => s >= 80 ? '#3BAA6A' : s >= 60 ? '#C4922A' : '#3A80BE'
 
 const statsKPI = computed(() => {
-  const totalButs = butsParComp.value.reduce((a,c) => a+c.buts, 0)
+  const j = joueur.value
+  if (!j) return []
+  const totalButs   = butsParComp.value.reduce((a,c) => a+c.buts, 0)
   const totalMatchs = butsParComp.value.reduce((a,c) => a+c.matchs, 0)
-  return [
-    { label:'Buts (saison)', value: totalButs, color:'var(--p-red)' },
-    { label:'Matchs joués',  value: totalMatchs || '—' },
-    { label:'Moy. buts/match', value: totalMatchs ? (totalButs/totalMatchs).toFixed(1) : '—', color:'var(--p-gold)' },
+  const isGardien   = j.poste_principal === 'gardien'
+  const hasIhf      = (j.ig_ihf ?? 0) > 0 || (j.arrets_ihf ?? 0) > 0
+
+  const base = [
+    { label: isGardien ? 'Arrêts (IHF)' : 'Buts PIVOT', value: isGardien ? (j.arrets_ihf || '—') : (totalButs || (hasIhf ? j.ig_ihf : '—')), color:'var(--p-red)' },
+    { label: 'Matchs IHF', value: j.im_ihf || totalMatchs || '—' },
+    { label: isGardien ? '% Arrêts' : 'Moy./match', value: isGardien
+        ? (j.arrets_ihf && j.tirs_recus_ihf ? Math.round(j.arrets_ihf/j.tirs_recus_ihf*100)+'%' : '—')
+        : (totalMatchs ? (totalButs/totalMatchs).toFixed(1) : (j.im_ihf && j.ig_ihf ? (j.ig_ihf/j.im_ihf).toFixed(1) : '—')),
+      color:'var(--p-gold)' },
     { label:'Distinctions', value: distinctions.value.length, color: distinctions.value.length ? 'var(--p-gold)' : undefined },
   ]
+  // Joueurs avec stats IHF — afficher assists/turnovers
+  if (!isGardien && (j.assists_ihf || j.turnovers_ihf)) {
+    return [
+      ...base,
+      { label:'Assists (IHF)', value: j.assists_ihf || '—', color:'var(--p-blue)' },
+      { label:'Turnovers (IHF)', value: j.turnovers_ihf || '—' },
+      { label:'Steals (IHF)', value: j.steals_ihf || '—' },
+      { label:'2min IHF', value: j.susp_2min_ihf || '0' },
+    ]
+  }
+  return base
 })
 
 const disciplineSummary = computed(() => {
@@ -270,6 +290,8 @@ onMounted(async () => {
 <style scoped>
 .detail-hero { background:var(--p-card);border-bottom:1px solid var(--p-border);padding:40px 0 32px; }
 .back-btn { margin-bottom:12px; display:inline-flex; }
+.score-ia-tooltip { display:none;position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:var(--p-bg3);border:1px solid var(--p-border);border-radius:8px;padding:8px 12px;font-size:11px;width:200px;text-align:center;color:var(--p-sub);z-index:10;line-height:1.5 }
+.score-ring:hover .score-ia-tooltip { display:block }
 .hero-inner { display:flex;align-items:center;gap:24px; }
 .avatar-wrap { position:relative;flex-shrink:0; }
 .avatar-img { width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--p-border); }

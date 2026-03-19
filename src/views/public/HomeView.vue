@@ -178,27 +178,23 @@ onMounted(async () => {
     { value: '2026',                  label: 'CAN Rwanda' },
   ]
 
-  // Top buteurs réels
-  const { data: butsData } = await supabase.from('buts').select('joueur_id, match_id')
-  const butMap = new Map<string, { total:number; matchs:Set<string> }>()
-  for (const b of (butsData ?? [])) {
-    if (!butMap.has(b.joueur_id)) butMap.set(b.joueur_id, { total:0, matchs:new Set() })
-    const e = butMap.get(b.joueur_id)!; e.total++; e.matchs.add(b.match_id)
-  }
-  const topIds = [...butMap.entries()].sort((a,b) => b[1].total - a[1].total).slice(0,5).map(([id]) => id)
-  if (topIds.length) {
-    const { data: joueurs } = await supabase
-      .from('joueurs').select('id,prenom,nom')
-      .in('id', topIds)
+  // Top buteurs via vue SQL agrégée (performance)
+  const { data: topData } = await supabase
+    .from('top_buteurs_view')
+    .select('joueur_id,prenom,nom,total_buts,matchs_joues,genre,score_ia')
+    .limit(5)
+  if (topData?.length) {
+    const topIds = topData.map(t => t.joueur_id)
     const { data: licences } = await supabase
       .from('licences_saison').select('joueur_id, club:clubs(nom)')
-      .in('joueur_id', topIds).eq('saison','2025-2026').eq('actif', true)
-    topButeurs.value = topIds.map(id => ({
-      id,
-      prenom: joueurs?.find(j => j.id === id)?.prenom ?? '',
-      nom:    joueurs?.find(j => j.id === id)?.nom ?? '',
-      club:   (licences?.find(l => l.joueur_id === id)?.club as any)?.nom ?? '—',
-      buts:   butMap.get(id)?.total ?? 0,
+      .in('joueur_id', topIds).eq('actif', true).limit(20)
+    topButeurs.value = topData.map(t => ({
+      id:    t.joueur_id,
+      prenom: t.prenom,
+      nom:    t.nom,
+      genre:  t.genre,
+      club:   (licences?.find(l => l.joueur_id === t.joueur_id)?.club as any)?.nom ?? '—',
+      buts:   t.total_buts,
     }))
   }
 

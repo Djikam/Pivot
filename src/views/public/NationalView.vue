@@ -96,26 +96,45 @@
 
         <!-- Stats individuelles -->
         <div v-if="tab === 'stats'">
-          <div class="stats-note p-card" style="padding:16px;margin-bottom:20px;border-left:3px solid var(--p-gold)">
-            <p class="text-sub" style="font-size:13px">Statistiques issues des matchs CAN Rwanda 2026 saisis dans PIVOT. Données déclaratives.</p>
+          <p class="text-sub" style="font-size:12px;margin-bottom:16px">
+            Source : IHF — {{ selected?.nom }}. IG = buts marqués, IM = matchs joués IHF.
+          </p>
+          <div style="overflow-x:auto">
+            <table class="p-table">
+              <thead>
+                <tr>
+                  <th>Joueur</th><th>Poste</th><th>Matchs</th>
+                  <th>Buts</th><th>Assists</th><th>TO</th>
+                  <th>Steals</th><th>2min</th><th>Score IA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="sel in joueurs.filter(j => j.joueur && (j.joueur?.ig_ihf ?? 0) > 0 || (j.joueur?.assists_ihf ?? 0) > 0 || (j.joueur?.arrets_ihf ?? 0) > 0)" :key="sel.id">
+                  <td><RouterLink :to="'/joueurs/'+sel.joueur_id" style="font-weight:600">{{ sel.joueur?.prenom }} {{ sel.joueur?.nom }}</RouterLink></td>
+                  <td><span class="poste-badge">{{ posteLabel(sel.joueur?.poste_principal ?? '') }}</span></td>
+                  <td class="text-sub">{{ sel.joueur?.im_ihf || '—' }}</td>
+                  <td class="font-display" style="font-weight:700;color:var(--p-red)">
+                    {{ sel.joueur?.poste_principal === 'gardien' ? (sel.joueur?.arrets_ihf || '—') : (sel.joueur?.ig_ihf || '—') }}
+                  </td>
+                  <td class="text-sub">{{ sel.joueur?.assists_ihf || '—' }}</td>
+                  <td class="text-sub">{{ sel.joueur?.turnovers_ihf || '—' }}</td>
+                  <td class="text-sub">{{ sel.joueur?.steals_ihf || '—' }}</td>
+                  <td class="text-sub">{{ sel.joueur?.susp_2min_ihf || '—' }}</td>
+                  <td>
+                    <span class="font-display" style="font-weight:700;font-size:1rem"
+                      :style="{color:scoreColor(sel.joueur?.score_ia ?? 50)}">
+                      {{ sel.joueur?.score_ia }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="!joueurs.some(j => (j.joueur?.ig_ihf ?? 0) > 0)">
+                  <td colspan="9" class="text-sub" style="text-align:center;padding:24px">
+                    Stats IHF non disponibles pour cette équipe.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <table class="p-table">
-            <thead><tr><th>Joueur</th><th>Poste</th><th>Matchs</th><th>Buts</th><th>Susp. 2min</th><th>Score IA</th></tr></thead>
-            <tbody>
-              <tr v-for="sel in joueurs.filter(j => j.joueur)" :key="sel.id">
-                <td style="font-weight:600">{{ sel.joueur?.prenom }} {{ sel.joueur?.nom }}</td>
-                <td><span class="poste-badge">{{ posteLabel(sel.joueur?.poste_principal ?? '') }}</span></td>
-                <td class="text-sub">—</td>
-                <td class="text-sub">—</td>
-                <td class="text-sub">—</td>
-                <td>
-                  <span class="font-display" style="font-weight:700;font-size:1rem" :style="{color:scoreColor(sel.joueur?.score_ia ?? 50)}">
-                    {{ sel.joueur?.score_ia }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
 
@@ -157,7 +176,7 @@ async function selectEquipe(eq: EquipeNationale) {
 
   const [{ data: sels }, { data: matchs }] = await Promise.all([
     supabase.from('selections_joueurs')
-      .select('*, joueur:joueurs(id,prenom,nom,poste_principal,score_ia,badge_talent,photo_cloudinary_id)')
+      .select('*, joueur:joueurs(id,prenom,nom,poste_principal,score_ia,badge_talent,photo_cloudinary_id,ig_ihf,im_ihf,arrets_ihf,tirs_recus_ihf,assists_ihf,turnovers_ihf,steals_ihf,susp_2min_ihf)')
       .eq('equipe_nationale_id', eq.id)
       .eq('saison', eq.saison_active)
       .order('statut'),
