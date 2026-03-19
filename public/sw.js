@@ -1,64 +1,54 @@
-// PIVOT Service Worker — v3
-// Stratégie: NE JAMAIS intercepter les assets hachés (/assets/*)
-// Seules les pages navigables sont cachées comme fallback offline
+// PIVOT SW v4 — stratégie ultra-conservative
+// RÈGLE: ne mettre en cache QUE la page d'accueil comme fallback offline
+// Ne JAMAIS intercepter les assets JS/CSS/fonts (fichiers hachés Vite)
 
-const CACHE_NAME = 'pivot-pages-v3'
-const OFFLINE_PAGES = ['/', '/joueurs', '/clubs', '/competitions', '/national']
+const CACHE = 'pivot-shell-v4'
 
-self.addEventListener('install', e => {
-  // Précacher uniquement les pages HTML (pas les assets)
-  e.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(c => c.addAll(OFFLINE_PAGES.map(p => new Request(p, { mode: 'navigate' }))))
-      .catch(() => {}) // Pas bloquant
-  )
-  self.skipWaiting()
-})
+self.addEventListener('install', () => { self.skipWaiting() })
 
 self.addEventListener('activate', e => {
-  // Supprimer les anciens caches (évite le problème CSS/JS servi depuis cache périmé)
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   )
-  self.clients.claim()
 })
 
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url)
+  const { request } = e
+  const url = new URL(request.url)
 
-  // ✅ Ne JAMAIS intercepter:
-  // - Les assets hachés (/assets/*.js, /assets/*.css)
-  // - Les appels API (supabase, anthropic)
-  // - Les méthodes non-GET
+  // 1. Ignorer tout sauf GET
+  if (request.method !== 'GET') return
+
+  // 2. Ignorer les assets hachés Vite — JAMAIS intercepter
+  if (url.pathname.startsWith('/assets/')) return
+
+  // 3. Ignorer les API externes
   if (
-    e.request.method !== 'GET' ||
-    url.pathname.startsWith('/assets/') ||
-    url.hostname.includes('supabase') ||
-    url.hostname.includes('anthropic') ||
-    url.hostname.includes('cloudinary') ||
-    url.protocol === 'chrome-extension:'
-  ) {
-    return // Laisser passer sans interception
-  }
+    url.hostname !== location.hostname ||
+    url.pathname.startsWith('/rest/') ||
+    url.pathname.startsWith('/auth/') ||
+    url.pathname.startsWith('/storage/') ||
+    url.pathname.startsWith('/realtime/')
+  ) return
 
-  // Pour les navigations (pages HTML) : network-first, fallback cache
-  if (e.request.mode === 'navigate') {
+  // 4. Navigation uniquement : network-first, fallback page d'accueil en cache
+  if (request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request)
-        .then(r => {
-          if (r.ok) {
-            const clone = r.clone()
-            caches.open(CACHE_NAME).then(c => c.put(e.request, clone))
+      fetch(request)
+        .then(res => {
+          if (res.ok && res.status === 200) {
+            const clone = res.clone()
+            caches.open(CACHE).then(c => c.put(request, clone))
           }
-          return r
+          return res
         })
         .catch(() =>
-          caches.match(e.request)
-            .then(r => r || caches.match('/'))
+          caches.match(request)
+            .then(cached => cached || caches.match('/') || fetch('/'))
         )
     )
   }
-  // Tout le reste (fonts, images publiques) : network-first sans cache
+  // 5. Tout le reste (favicon, manifest, icons): network uniquement, pas de cache
 })

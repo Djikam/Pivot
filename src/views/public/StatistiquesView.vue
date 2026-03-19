@@ -8,7 +8,7 @@
     </section>
 
     <div class="p-container" style="padding-top:24px;padding-bottom:60px">
-      <!-- Filtre compétition -->
+      <!-- Filtre compétition + genre -->
       <div class="filter-bar">
         <select v-model="selectedCompId" class="p-input p-select comp-select" @change="onCompChange">
           <option value="">Toutes compétitions confondues</option>
@@ -17,6 +17,11 @@
               {{ c.nom }} — {{ c.saison }}
             </option>
           </optgroup>
+        </select>
+        <select v-model="filterGenre" class="p-input p-select" @change="loadTab" style="max-width:160px">
+          <option value="">Tous genres</option>
+          <option value="masculin">👨 Masculin</option>
+          <option value="feminin">👩 Féminin</option>
         </select>
         <div v-if="selectedComp" class="comp-info">
           <span class="p-badge" :class="statutBadge(selectedComp.statut)">{{ statutLabel(selectedComp.statut) }}</span>
@@ -189,6 +194,7 @@ const tabs = [
 ]
 
 const selectedCompId = ref('')
+const filterGenre    = ref('')
 const competitions   = ref<any[]>([])
 const buteurs        = ref<any[]>([])
 const gardiens       = ref<any[]>([])
@@ -255,11 +261,11 @@ async function loadButeurs() {
 
   const ids = sorted.map(([id]) => id)
   const [{ data: joueurs }, { data: licences }] = await Promise.all([
-    supabase.from('joueurs').select('id,prenom,nom,poste_principal,score_ia').in('id', ids),
+    supabase.from('joueurs').select('id,prenom,nom,poste_principal,score_ia,genre').in('id', ids),
     supabase.from('licences_saison').select('joueur_id,club:clubs(nom)').in('joueur_id', ids).eq('actif',true).limit(500)
   ])
 
-  buteurs.value = sorted.map(([joueur_id, stats]) => ({
+  let result = sorted.map(([joueur_id, stats]) => ({
     joueur_id,
     total_buts:   stats.total,
     buts_penalty: stats.penalty,
@@ -268,6 +274,13 @@ async function loadButeurs() {
     joueur:  joueurs?.find(j => j.id === joueur_id),
     club_nom: (licences?.find(l => l.joueur_id === joueur_id)?.club as any)?.nom ?? null,
   }))
+
+  // Filtre genre
+  if (filterGenre.value) {
+    result = result.filter(r => r.joueur?.genre === filterGenre.value)
+  }
+
+  buteurs.value = result
   loading.value = false
 }
 

@@ -338,6 +338,7 @@ async function loadCompetitions() {
   const { data } = await supabase.from('competitions').select('id,nom,genre').order('nom')
   competitions.value = data ?? []
 }
+const competitions     = ref<any[]>([])
 const selectedCompetition = ref('')
 const matchsAVenir = ref<any[]>([])
 const selectedMatch = ref<any | null>(null)

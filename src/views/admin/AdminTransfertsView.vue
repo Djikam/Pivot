@@ -48,11 +48,29 @@
             <button @click="modal=null">✕</button>
           </div>
           <div class="modal-body">
+            <!-- Sélecteur: Joueur ou Coach -->
+            <div class="field" style="margin-bottom:12px">
+              <label class="p-label">Type de personne</label>
+              <div style="display:flex;gap:10px">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                  <input type="radio" v-model="editing.type_personne" value="joueur" /> Joueur
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                  <input type="radio" v-model="editing.type_personne" value="coach" /> Coach / Staff
+                </label>
+              </div>
+            </div>
             <div class="form-row">
-              <div class="field"><label class="p-label">Joueur *</label>
+              <div v-if="editing.type_personne !== 'coach'" class="field"><label class="p-label">Joueur *</label>
                 <select v-model="editing.joueur_id" class="p-input p-select" @change="onJoueurChange">
                   <option value="">— Sélectionner joueur —</option>
                   <option v-for="j in joueurs" :key="j.id" :value="j.id">{{ j.prenom }} {{ j.nom }}</option>
+                </select>
+              </div>
+              <div v-else class="field"><label class="p-label">Coach / Staff *</label>
+                <select v-model="editing.staff_id" class="p-input p-select">
+                  <option value="">— Sélectionner coach —</option>
+                  <option v-for="s in staffList" :key="s.id" :value="s.id">{{ s.prenom }} {{ s.nom }}</option>
                 </select>
               </div>
               <div class="field"><label class="p-label">Type *</label>
@@ -61,6 +79,8 @@
                   <option value="pret">Prêt</option>
                   <option value="fin_contrat">Fin contrat</option>
                   <option value="suspension">Suspension</option>
+                  <option value="recrutement">Recrutement (coach)</option>
+                  <option value="depart">Départ (coach)</option>
                 </select>
               </div>
             </div>
@@ -116,8 +136,9 @@ import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
 
 const transferts = ref<any[]>([])
-const joueurs = ref<any[]>([])
-const clubs = ref<any[]>([])
+const joueurs    = ref<any[]>([])
+const clubs      = ref<any[]>([])
+const staffList  = ref<any[]>([])
 const loading = ref(true)
 const search = ref('')
 const filterFiabilite = ref('')
@@ -158,7 +179,7 @@ async function loadJoueursClubs() {
 }
 
 function openModal(t: any) {
-  editing.value = t ? { ...t } : { joueur_id:'', type:'transfert', fiabilite:1, motif:'', source:'', club_origine_id:'', club_destination_id:'' }
+  editing.value = t ? { ...t, type_personne: t.staff_id ? 'coach' : 'joueur' } : { joueur_id:'', staff_id:'', type_personne:'joueur', type:'transfert', fiabilite:1, motif:'', source:'', club_origine_id:'', club_destination_id:'' }
   modal.value = true; saveError.value = ''
 }
 
@@ -178,17 +199,18 @@ async function onJoueurChange() {
 }
 
 async function saveTransfert() {
-  if (!editing.value.joueur_id || !editing.value.type || !editing.value.fiabilite) {
-    saveError.value = 'Joueur, type et fiabilité requis'; return
-  }
+  const isCoach = editing.value.type_personne === 'coach'
+  if (!isCoach && !editing.value.joueur_id) { saveError.value = 'Joueur requis'; return }
+  if (isCoach && !editing.value.staff_id)   { saveError.value = 'Coach requis'; return }
+  if (!editing.value.type || !editing.value.fiabilite) { saveError.value = 'Type et fiabilité requis'; return }
+
   saving.value = true; saveError.value = ''
   const { id, joueur, club_origine, club_destination, ...data } = editing.value
+  // Nettoyer selon type_personne
+  if (isCoach) { data.joueur_id = null } else { data.staff_id = null }
 
-  if (id) {
-    await supabase.from('transferts').update(data).eq('id', id)
-  } else {
-    await supabase.from('transferts').insert(data)
-  }
+  if (id) { await supabase.from('transferts').update(data).eq('id', id) }
+  else    { await supabase.from('transferts').insert(data) }
 
   // Si fiabilité = 4 (Confirmé) + type = transfert + club_destination → mettre à jour la licence
   if (data.fiabilite === 4 && data.type === 'transfert' && data.club_destination_id && data.joueur_id) {
@@ -224,6 +246,8 @@ async function deleteTransfert(t:any)   { if(!confirm(`Supprimer le transfert de
 
 onMounted(async () => {
   await loadJoueursClubs()
+  const { data: st } = await supabase.from('staff_club').select('id,prenom,nom,type_staff').order('nom')
+  staffList.value = st ?? []
   load()
 })
 </script>
