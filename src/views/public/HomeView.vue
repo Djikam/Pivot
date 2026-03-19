@@ -69,7 +69,7 @@
     <section class="p-section-sm">
       <div class="p-container">
         <div class="section-header">
-          <h2 class="section-title font-display">Top Buteurs D1 Douala</h2>
+          <h2 class="section-title font-display">🏆 Top Buteurs PIVOT</h2>
           <RouterLink to="/buteurs" class="p-btn-ghost p-btn-sm">Voir tout →</RouterLink>
         </div>
         <div class="buteurs-preview">

@@ -8,8 +8,12 @@ export default defineConfig({
   },
   plugins: [vue()],
   build: {
-    sourcemap: false, // Désactive les sourcemaps pour éviter l'erreur JSON.parse
-    modulePreload: { polyfill: false },
+    sourcemap: false,
+    // Désactiver module preload → corrige "Unable to preload CSS" sur Netlify
+    modulePreload: false,
+    // Désactiver le CSS code-splitting → inline CSS dans les chunks JS
+    // Évite les erreurs MIME "text/html" pour les .css lazy-loadés
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -19,6 +23,6 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 1500
+    chunkSizeWarningLimit: 2000
   }
 })

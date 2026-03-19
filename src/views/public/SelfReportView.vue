@@ -274,10 +274,12 @@ function handleFile(e: Event, type: 'cv'|'licence'|'photo') {
 }
 
 async function uploadFile(file: File, path: string): Promise<string|null> {
-  const { error: err } = await supabase.storage.from('collecte-docs').upload(path, file, { upsert: true })
-  if (err) return null
-  const { data } = supabase.storage.from('collecte-docs').getPublicUrl(path)
-  return data.publicUrl
+  try {
+    const { error: err } = await supabase.storage.from('collecte-docs').upload(path, file, { upsert: true })
+    if (err) { console.warn('Upload skipped:', err.message); return null }
+    const { data } = supabase.storage.from('collecte-docs').getPublicUrl(path)
+    return data.publicUrl
+  } catch { return null } // Upload toujours optionnel
 }
 
 async function submit() {
@@ -287,41 +289,44 @@ async function submit() {
     const ts = Date.now()
     let cv_url: string|null = null, photo_url: string|null = null
 
-    // Upload fichiers
-    if (uploads.value.cv) {
-      cv_url = await uploadFile(uploads.value.cv, `${ts}/cv.${uploads.value.cv.name.split('.').pop()}`)
-    }
-    if (uploads.value.photo) {
-      photo_url = await uploadFile(uploads.value.photo, `${ts}/photo.${uploads.value.photo.name.split('.').pop()}`)
-    }
-    if (uploads.value.licence) {
-      await uploadFile(uploads.value.licence, `${ts}/licence.${uploads.value.licence.name.split('.').pop()}`)
-    }
+    // Uploads optionnels — ne bloquent jamais la soumission
+    if (uploads.value.cv)      cv_url    = await uploadFile(uploads.value.cv,     `${ts}/cv.${uploads.value.cv.name.split('.').pop()}`)
+    if (uploads.value.photo)   photo_url = await uploadFile(uploads.value.photo,  `${ts}/photo.${uploads.value.photo.name.split('.').pop()}`)
+    if (uploads.value.licence) await uploadFile(uploads.value.licence, `${ts}/licence.${uploads.value.licence.name.split('.').pop()}`)
 
-    // Construire details_techniques
-    const detailsTech: Record<string, any> = { ...details.value, message: form.value.message, cgu_version: '2026-03' }
-    if (cv_url) detailsTech.cv_url = cv_url
+    const detailsTech: Record<string, any> = {
+      ...details.value,
+      message:     form.value.message || null,
+      cgu_version: '2026-03',
+    }
+    if (cv_url)    detailsTech.cv_url    = cv_url
+    if (photo_url) detailsTech.photo_url = photo_url
 
     const { data, error: err } = await supabase.from('collecte_profils').insert({
-      type_profil:       form.value.type_profil,
-      prenom:            form.value.prenom,
-      nom:               form.value.nom,
-      email:             form.value.email,
-      telephone:         form.value.telephone || null,
-      club_actuel_id:    form.value.club_actuel_id || null,
-      photo_url:         photo_url,
-      cv_url:            cv_url,
-      cgu_accepte:       true,
-      cgu_date:          new Date().toISOString(),
-      statut:            'A_TRAITER',
+      type_profil:        form.value.type_profil,
+      prenom:             form.value.prenom.trim(),
+      nom:                form.value.nom.trim(),
+      email:              form.value.email.trim(),
+      telephone:          form.value.telephone?.trim() || null,
+      club_actuel_id:     form.value.club_actuel_id || null,
+      photo_url,
+      cv_url,
+      cgu_accepte:        true,
+      cgu_date:           new Date().toISOString(),
+      statut:             'A_TRAITER',
       details_techniques: detailsTech,
     }).select('id').single()
 
-    if (err) throw err
+    if (err) {
+      console.error('Insert error:', err)
+      throw new Error(err.message || 'Erreur serveur')
+    }
     refId.value = (data as any)?.id?.slice(0,8).toUpperCase() ?? 'PIVOT-OK'
     sent.value = true
   } catch (e: any) {
-    error.value = e.message ?? 'Erreur lors de l\'envoi. Réessaie.'
+    error.value = e.message?.includes('row-level security')
+      ? 'Permission refusée. Contacte-nous directement sur WhatsApp.'
+      : (e.message ?? 'Erreur lors de l\'envoi. Vérifie ta connexion et réessaie.')
   } finally {
     saving.value = false
   }

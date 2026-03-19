@@ -1,7 +1,13 @@
 <template>
   <div class="saisie-view">
-    <!-- Sélection match -->
-    <div class="saisie-grid">
+    <!-- Onglets -->
+    <div class="saisie-tabs" style="margin-bottom:16px">
+      <button class="saisie-tab" :class="{active:activeTab==='saisie'}" @click="activeTab='saisie'">📋 Saisie de match</button>
+      <button class="saisie-tab" :class="{active:activeTab==='creer'}" @click="activeTab='creer'">➕ Créer compétition / match</button>
+    </div>
+
+    <!-- TAB: SAISIE -->
+    <div v-if="activeTab==='saisie'" class="saisie-grid">
       <!-- Colonne gauche : choix du match -->
       <div class="col-left">
         <div class="panel p-card">
@@ -27,7 +33,12 @@
       <div class="col-right" v-if="selectedMatch">
         <div class="panel p-card">
           <h3 class="panel-title">
-            {{ selectedMatch.club_domicile?.nom }} <span class="text-red">–</span> {{ selectedMatch.club_exterieur?.nom }}
+            <span v-if="selectedMatch.type_match==='international'">
+              🇨🇲 Cameroun <span class="text-red">–</span> {{ selectedMatch.adversaire_international }}
+            </span>
+            <span v-else>
+              {{ selectedMatch.club_domicile?.nom }} <span class="text-red">–</span> {{ selectedMatch.club_exterieur?.nom }}
+            </span>
             <span class="p-badge p-badge-muted" style="margin-left:8px">J{{ selectedMatch.journee }}</span>
           </h3>
 
@@ -149,7 +160,94 @@
           <p>Sélectionnez un match programmé pour commencer la saisie.</p>
         </div>
       </div>
+    </div><!-- fin saisie tab -->
+
+    <!-- TAB: CRÉER -->
+    <div v-if="activeTab==='creer'" class="creer-section">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
+        <!-- Créer une compétition -->
+        <div class="p-card" style="padding:20px">
+          <h3 class="panel-title">Nouvelle compétition</h3>
+          <div class="field"><label class="p-label">Nom *</label>
+            <input v-model="newComp.nom" class="p-input" placeholder="Ex: D1 Littoral 2025-2026" /></div>
+          <div class="field"><label class="p-label">Type</label>
+            <select v-model="newComp.type" class="p-input p-select">
+              <option value="regional">Régional</option><option value="national">National</option>
+              <option value="universitaire">Universitaire</option><option value="coupe">Coupe</option>
+              <option value="international">International</option>
+            </select></div>
+          <div class="field"><label class="p-label">Genre</label>
+            <select v-model="newComp.genre" class="p-input p-select">
+              <option value="masculin">Masculin</option><option value="feminin">Féminin</option>
+            </select></div>
+          <div class="field"><label class="p-label">Saison</label>
+            <input v-model="newComp.saison" class="p-input" placeholder="2025-2026" /></div>
+          <div class="field"><label class="p-label">Région</label>
+            <input v-model="newComp.region" class="p-input" placeholder="Littoral, Centre…" /></div>
+          <div v-if="compError" class="save-error">{{ compError }}</div>
+          <button class="p-btn-red" :disabled="!newComp.nom || compSaving" @click="creerComp" style="margin-top:12px;width:100%">
+            {{ compSaving ? 'Création…' : '+ Créer la compétition' }}
+          </button>
+          <div v-if="compSuccess" class="save-success">✓ Compétition créée ! Sélectionnez-la dans l'onglet Saisie pour y ajouter des matchs.</div>
+        </div>
+
+        <!-- Créer un match -->
+        <div class="p-card" style="padding:20px">
+          <h3 class="panel-title">Nouveau match</h3>
+          <div class="field"><label class="p-label">Compétition *</label>
+            <select v-model="newMatch.competition_id" class="p-input p-select" @change="loadPhasesForNew">
+              <option value="">— Choisir —</option>
+              <option v-for="c in competitions" :key="c.id" :value="c.id">{{ c.nom }}</option>
+            </select></div>
+          <div class="field"><label class="p-label">Phase *</label>
+            <select v-model="newMatch.phase_id" class="p-input p-select">
+              <option value="">— Choisir une phase —</option>
+              <option v-for="p in phasesNew" :key="p.id" :value="p.id">{{ p.nom }}</option>
+            </select>
+            <button class="p-btn-ghost p-btn-sm" style="margin-top:6px" @click="creerPhase">+ Nouvelle phase</button>
+          </div>
+          <div class="field"><label class="p-label">Type de match</label>
+            <select v-model="newMatch.type_match" class="p-input p-select">
+              <option value="club">Club vs Club</option>
+              <option value="international">Cameroun vs Adversaire</option>
+            </select></div>
+          <template v-if="newMatch.type_match === 'club'">
+            <div class="field"><label class="p-label">Club Domicile</label>
+              <select v-model="newMatch.club_dom_id" class="p-input p-select">
+                <option value="">— Sélectionner —</option>
+                <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.nom }}</option>
+              </select></div>
+            <div class="field"><label class="p-label">Club Extérieur</label>
+              <select v-model="newMatch.club_ext_id" class="p-input p-select">
+                <option value="">— Sélectionner —</option>
+                <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.nom }}</option>
+              </select></div>
+          </template>
+          <template v-else>
+            <div class="field"><label class="p-label">Équipe nationale</label>
+              <select v-model="newMatch.equipe_nationale_id" class="p-input p-select">
+                <option v-for="e in equipes" :key="e.id" :value="e.id">{{ e.nom }}</option>
+              </select></div>
+            <div class="field"><label class="p-label">Adversaire</label>
+              <input v-model="newMatch.adversaire" class="p-input" placeholder="Ex: Maroc" /></div>
+          </template>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="field"><label class="p-label">Journée</label>
+              <input v-model.number="newMatch.journee" type="number" min="1" class="p-input" /></div>
+            <div class="field"><label class="p-label">Date</label>
+              <input v-model="newMatch.date" type="datetime-local" class="p-input" /></div>
+          </div>
+          <div class="field"><label class="p-label">Lieu</label>
+            <input v-model="newMatch.lieu" class="p-input" placeholder="Salle Omnisports, Yaoundé" /></div>
+          <div v-if="matchError" class="save-error">{{ matchError }}</div>
+          <button class="p-btn-red" :disabled="!newMatch.phase_id || matchSaving" @click="creerMatch" style="margin-top:12px;width:100%">
+            {{ matchSaving ? 'Création…' : '+ Créer le match' }}
+          </button>
+          <div v-if="matchSuccess" class="save-success">✓ Match créé ! Allez dans Saisie pour entrer le score.</div>
+        </div>
+      </div>
     </div>
+
   </div>
 </template>
 
@@ -159,7 +257,87 @@ import { supabase } from '@/lib/supabaseClient'
 import DisciplineBadge from '@/components/DisciplineBadge.vue'
 import type { DisciplineType, TypeBut } from '@/lib/database.types'
 
-const competitions = ref<any[]>([])
+const activeTab = ref<'saisie'|'creer'>('saisie')
+const clubs     = ref<any[]>([])
+const equipes   = ref<any[]>([])
+const phasesNew = ref<any[]>([])
+
+// Créer compétition
+const newComp    = ref({ nom:'', type:'regional', genre:'masculin', saison:'2025-2026', region:'' })
+const compSaving = ref(false)
+const compError  = ref('')
+const compSuccess = ref(false)
+
+// Créer match
+const newMatch    = ref({ competition_id:'', phase_id:'', type_match:'club', club_dom_id:'', club_ext_id:'', equipe_nationale_id:'', adversaire:'', journee:1, date:'', lieu:'' })
+const matchSaving = ref(false)
+const matchError  = ref('')
+const matchSuccess = ref(false)
+
+async function creerComp() {
+  if (!newComp.value.nom.trim()) return
+  compSaving.value = true; compError.value = ''; compSuccess.value = false
+  const slug = newComp.value.nom.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now()
+  const { error } = await supabase.from('competitions').insert({
+    nom:    newComp.value.nom.trim(),
+    slug,
+    type:   newComp.value.type,
+    genre:  newComp.value.genre,
+    saison: newComp.value.saison,
+    region: newComp.value.region || null,
+    statut: 'a_venir',
+    niveau: newComp.value.type === 'international' ? 'international' : newComp.value.type === 'national' ? 'national' : newComp.value.type === 'universitaire' ? 'universitaire' : 'club',
+  })
+  if (error) { compError.value = error.message }
+  else { compSuccess.value = true; newComp.value = { nom:'', type:'regional', genre:'masculin', saison:'2025-2026', region:'' }; loadCompetitions() }
+  compSaving.value = false
+}
+
+async function loadPhasesForNew() {
+  if (!newMatch.value.competition_id) return
+  const { data } = await supabase.from('phases').select('id,nom').eq('competition_id', newMatch.value.competition_id).order('ordre')
+  phasesNew.value = data ?? []
+  if (phasesNew.value.length) newMatch.value.phase_id = phasesNew.value[0].id
+}
+
+async function creerPhase() {
+  const nom = prompt('Nom de la phase (ex: Phase de groupes, Finale…)')
+  if (!nom || !newMatch.value.competition_id) return
+  const { data } = await supabase.from('phases').insert({
+    competition_id: newMatch.value.competition_id,
+    nom, ordre: phasesNew.value.length + 1
+  }).select('id,nom').single()
+  if (data) { phasesNew.value.push(data); newMatch.value.phase_id = data.id }
+}
+
+async function creerMatch() {
+  if (!newMatch.value.phase_id) { matchError.value = 'Phase requise'; return }
+  matchSaving.value = true; matchError.value = ''; matchSuccess.value = false
+  const payload: any = {
+    phase_id:    newMatch.value.phase_id,
+    type_match:  newMatch.value.type_match,
+    journee:     newMatch.value.journee,
+    date_match:  newMatch.value.date || null,
+    lieu:        newMatch.value.lieu || null,
+    statut:      'programme',
+  }
+  if (newMatch.value.type_match === 'club') {
+    payload.club_domicile_id  = newMatch.value.club_dom_id || null
+    payload.club_exterieur_id = newMatch.value.club_ext_id || null
+  } else {
+    payload.equipe_nationale_id       = newMatch.value.equipe_nationale_id || null
+    payload.adversaire_international  = newMatch.value.adversaire || null
+  }
+  const { error } = await supabase.from('matchs').insert(payload)
+  if (error) { matchError.value = error.message }
+  else { matchSuccess.value = true; newMatch.value.journee++; loadCompetitions() }
+  matchSaving.value = false
+}
+
+async function loadCompetitions() {
+  const { data } = await supabase.from('competitions').select('id,nom,genre').order('nom')
+  competitions.value = data ?? []
+}
 const selectedCompetition = ref('')
 const matchsAVenir = ref<any[]>([])
 const selectedMatch = ref<any | null>(null)
@@ -297,12 +475,23 @@ async function sauvegarder() {
 }
 
 onMounted(async () => {
-  const { data } = await supabase.from('competitions').select('id,nom').in('statut', ['en_cours', 'a_venir']).order('nom')
-  competitions.value = data ?? []
+  const [{ data: comps }, { data: cl }, { data: eq }] = await Promise.all([
+    supabase.from('competitions').select('id,nom,genre').order('nom'),
+    supabase.from('clubs').select('id,nom').eq('actif', true).order('nom'),
+    supabase.from('equipes_nationales').select('id,nom').order('nom'),
+  ])
+  competitions.value = comps ?? []
+  clubs.value = cl ?? []
+  equipes.value = eq ?? []
 })
 </script>
 
 <style scoped>
+.saisie-tabs { display:flex;gap:8px;flex-wrap:wrap }
+.saisie-tab { padding:8px 16px;border-radius:8px;border:1px solid var(--p-border);cursor:pointer;font-size:13px;background:transparent;color:var(--p-sub);transition:all 150ms }
+.saisie-tab.active { border-color:var(--p-red);background:rgba(140,21,37,.1);color:var(--p-red);font-weight:600 }
+.field { display:flex;flex-direction:column;gap:4px;margin-bottom:10px }
+.save-success { margin-top:10px;padding:10px;border-radius:8px;background:rgba(59,170,106,.1);color:var(--p-green);font-size:13px }
 .saisie-grid { display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:flex-start; }
 .panel { padding:20px; }
 .panel-title { font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin-bottom:16px; }

@@ -92,7 +92,7 @@ const formatDate = (d:string) => new Date(d).toLocaleDateString('fr-FR', { day:'
 
 async function load() {
   loading.value = true
-  let q = supabase.from('session_vote').select('id,titre,type,tarif_fcfa,date_debut,date_fin,statut,payant').order('created_at', { ascending: false })
+  let q = supabase.from('sessions_vote').select('id,titre,type,tarif_fcfa,date_debut,date_fin,statut,payant').order('created_at', { ascending: false })
   if (search.value) q = q.ilike('titre', `%${search.value}%`)
   if (filterStatut.value) q = q.eq('statut', filterStatut.value)
   if (onlyPayant.value) q = q.eq('payant', true)
@@ -112,12 +112,12 @@ async function saveVote() {
   if (!editing.value.titre || !editing.value.type || !editing.value.date_debut || !editing.value.date_fin || !editing.value.statut) { saveError.value='Titre, type, dates et statut requis'; return }
   saving.value = true; saveError.value = ''
   const { id, ...data } = editing.value
-  if (id) { await supabase.from('session_vote').update(data).eq('id', id) }
-  else     { await supabase.from('session_vote').insert(data) }
+  if (id) { await supabase.from('sessions_vote').update(data).eq('id', id) }
+  else     { await supabase.from('sessions_vote').insert(data) }
   saving.value = false; modal.value = false; load()
 }
 
-async function deleteVote(v:any)   { if(!confirm(`Supprimer "${v.titre}" ?`)) return; await supabase.from('session_vote').delete().eq('id',v.id); load() }
+async function deleteVote(v:any)   { if(!confirm(`Supprimer "${v.titre}" ?`)) return; await supabase.from('sessions_vote').delete().eq('id',v.id); load() }
 
 onMounted(load)
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <aside class="sidebar" :class="{ collapsed }">
+  <aside class="sidebar" :class="{ collapsed, 'mobile-open': mobileOpen }">
     <div class="sidebar-header">
       <span class="sidebar-logo">PIVOT</span>
       <span v-if="!collapsed" class="sidebar-sub">Admin</span>
@@ -39,6 +39,7 @@ import {
 
 const auth = useAuthStore()
 const router = useRouter()
+const props = defineProps<{ mobileOpen?: boolean }>()
 const collapsed = ref(false)
 
 interface NavItem {
@@ -81,6 +82,9 @@ async function logout() {
   transition: width 200ms ease, transform 200ms ease; flex-shrink: 0;
 }
 .sidebar.collapsed { width: 56px; }
+/* En mode collapsed, le bouton reste visible et centré */
+.sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 8px; }
+.sidebar.collapsed .collapse-btn { margin-left: 0; }
 
 @media (max-width: 768px) {
   .sidebar {
@@ -89,6 +93,8 @@ async function logout() {
     box-shadow: 4px 0 24px rgba(0,0,0,.3);
   }
   .sidebar.mobile-open { transform: translateX(0); }
+  /* Sur mobile, ne jamais coller le bouton */
+  .collapse-btn { display: none; }
 }
 .sidebar-header {
   display: flex; align-items: center; gap: 8px;
