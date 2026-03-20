@@ -46,6 +46,18 @@
           <p class="text-sub" style="font-size:12px">Les données sont saisies match par match via l'admin.</p>
         </div>
         <div v-else>
+          <!-- Commentaire IA -->
+          <div v-if="iaComment" class="ia-comment-block">
+            <span class="ia-comment-icon">🤖</span>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--p-blue);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Analyse IA · PIVOT</div>
+              <div style="font-size:13px;line-height:1.6">{{ iaComment }}</div>
+            </div>
+          </div>
+          <div v-else-if="iaLoading" class="ia-comment-block" style="opacity:.6">
+            <span class="ia-comment-icon">⏳</span>
+            <div style="font-size:13px">Analyse des performances en cours…</div>
+          </div>
           <!-- Podium top 3 -->
           <div class="podium" v-if="buteurs.length >= 3">
             <div v-for="(b, i) in [buteurs[1], buteurs[0], buteurs[2]]" :key="b.joueur_id"
@@ -201,6 +213,8 @@ const gardiens       = ref<any[]>([])
 const fairplay       = ref<any[]>([])
 const statsParComp   = ref<any[]>([])
 const loading        = ref(false)
+const iaComment      = ref('')
+const iaLoading      = ref(false)
 
 const postes: Record<string,string> = { gardien:'Gardien', ailier_g:'Ailier G', ailier_d:'Ailier D', arriere_g:'Arrière G', arriere_d:'Arrière D', demi_centre:'D-C', pivot:'Pivot' }
 const posteLabel  = (p:string) => postes[p] ?? (p ?? '—')
@@ -219,7 +233,32 @@ const competitionsGrouped = computed(() => {
   })).filter(g => g.items.length > 0)
 })
 
-function onCompChange() { page.value = 0; loadTab() }
+async function genererCommentaireIA(top: any[]) {
+  iaLoading.value = true; iaComment.value = ''
+  try {
+    const context = top.slice(0,5).map((b,i) => ({
+      rang: i+1, joueur: `${b.joueur?.prenom} ${b.joueur?.nom}`,
+      poste: b.joueur?.poste_principal, buts: b.total_buts,
+      matchs: b.matchs_joues, moy: b.matchs_joues ? (b.total_buts/b.matchs_joues).toFixed(1) : '?',
+      pct_7m: b.buts_7m, genre: b.joueur?.genre
+    }))
+    const comp = selectedComp.value?.nom ?? 'toutes compétitions'
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:200,
+        messages:[{role:'user', content:
+`Tu es analyste handball pour PIVOT Cameroun. Fais un commentaire court (2-3 phrases max) et percutant sur ce classement des buteurs pour "${comp}":
+${JSON.stringify(context)}
+Note les performances remarquables, les tendances et les dominants. Ton journalistique enthousiaste. En français uniquement. Pas de markdown.`}]
+      })
+    })
+    const d = await r.json()
+    iaComment.value = d.content?.[0]?.text?.trim() ?? ''
+  } catch { iaComment.value = '' }
+  finally { iaLoading.value = false }
+}
+
+function onCompChange() { page.value = 0; iaComment.value = ''; loadTab() }
 
 const page = ref(0)
 
@@ -282,6 +321,8 @@ async function loadButeurs() {
 
   buteurs.value = result
   loading.value = false
+  // Générer commentaire IA async
+  if (result.length >= 3) genererCommentaireIA(result)
 }
 
 async function loadGardiens() {
@@ -405,6 +446,8 @@ onMounted(async () => {
 
 <style scoped>
 .filter-bar { display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap }
+.ia-comment-block { display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:10px;background:rgba(58,128,190,.07);border:1px solid rgba(58,128,190,.15);margin-bottom:20px }
+.ia-comment-icon { font-size:1.4rem;flex-shrink:0;margin-top:2px }
 .comp-select { min-width:280px;flex:1;max-width:480px }
 .comp-info { display:flex;align-items:center;gap:8px }
 .stats-tabs { display:flex;gap:8px;flex-wrap:wrap }

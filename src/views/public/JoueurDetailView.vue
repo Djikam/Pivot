@@ -161,6 +161,26 @@
             </div>
           </div>
 
+          <!-- Joueurs similaires IA -->
+          <div class="p-card sidebar-card">
+            <h4 class="sidebar-title">🤖 Joueurs similaires</h4>
+            <div v-if="loadingSimilaires" class="text-sub" style="font-size:12px;padding:8px 0">
+              Analyse en cours…
+            </div>
+            <div v-else-if="similaires.length === 0" class="text-sub" style="font-size:12px">
+              Aucun profil similaire détecté.
+            </div>
+            <div v-else>
+              <RouterLink v-for="s in similaires" :key="s.id" :to="'/joueurs/'+s.id" class="similaire-row">
+                <div class="similaire-info">
+                  <span style="font-weight:600;font-size:13px">{{ s.prenom }} {{ s.nom }}</span>
+                  <span class="text-sub" style="font-size:11px">{{ posteLabel(s.poste_principal) }}</span>
+                </div>
+                <span class="font-display" style="font-size:.9rem;font-weight:700" :style="{color:scoreColor(s.score_ia)}">{{ s.score_ia }}</span>
+              </RouterLink>
+            </div>
+          </div>
+
           <!-- Lien self-report RGPD -->
           <div class="p-card sidebar-card" style="border-left:3px solid var(--p-gold)">
             <p style="font-size:12px;color:var(--p-sub);margin-bottom:10px">Tu es ce joueur ? Tu peux demander la modification ou suppression de tes données.</p>
@@ -190,8 +210,40 @@ const route = useRoute()
 const joueur = ref<any>(null)
 const licences = ref<any[]>([])
 const licenceActive = computed(() => licences.value.find(l => l.actif))
-const selections = ref<any[]>([])
-const isNational = computed(() => selections.value.length > 0)
+const similaires       = ref<any[]>([])
+const loadingSimilaires = ref(false)
+
+async function loadSimilaires(j: any) {
+  if (!j) return
+  loadingSimilaires.value = true
+  try {
+    // Chercher joueurs même poste, même genre, score proche
+    const { data: candidats } = await supabase.from('joueurs')
+      .select('id,prenom,nom,poste_principal,score_ia,genre,taille_estimee')
+      .eq('poste_principal', j.poste_principal)
+      .eq('genre', j.genre ?? 'masculin')
+      .neq('id', j.id)
+      .order('score_ia', { ascending: false })
+      .limit(20)
+    if (!candidats?.length) { similaires.value = []; loadingSimilaires.value = false; return }
+
+    // Appel IA pour trouver les 3 plus similaires
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:300,
+        messages:[{ role:'user', content:
+`Joueur de référence: ${j.prenom} ${j.nom}, ${j.poste_principal}, ${j.taille_estimee}cm, score_ia=${j.score_ia}, bras=${j.bras_fort}, IG=${j.ig_ihf}
+Candidats: ${JSON.stringify(candidats.map(c=>({id:c.id,prenom:c.prenom,nom:c.nom,poste:c.poste_principal,score:c.score_ia,taille:c.taille_estimee})))}
+Retourne les 3 IDs les plus similaires en profil. JSON uniquement: ["id1","id2","id3"]`}]})
+    })
+    const d = await r.json()
+    const text = d.content?.[0]?.text ?? '[]'
+    let ids: string[] = []
+    try { ids = JSON.parse(text.replace(/```json?|```/g,'').trim()) } catch { ids = candidats.slice(0,3).map((c:any)=>c.id) }
+    similaires.value = ids.map(id => candidats.find((c:any)=>c.id===id)).filter(Boolean).slice(0,3)
+  } catch { similaires.value = [] }
+  finally { loadingSimilaires.value = false }
+}
 const disciplineEvents = ref<any[]>([])
 const distinctions = ref<any[]>([])
 const butsParComp = ref<any[]>([])
@@ -284,6 +336,7 @@ onMounted(async () => {
     .sort((a, b) => b.buts - a.buts)
 
   loading.value = false
+  loadSimilaires(j) // IA async — ne bloque pas le rendu
 })
 </script>
 
@@ -292,6 +345,9 @@ onMounted(async () => {
 .back-btn { margin-bottom:12px; display:inline-flex; }
 .score-ia-tooltip { display:none;position:absolute;bottom:105%;left:50%;transform:translateX(-50%);background:var(--p-bg3);border:1px solid var(--p-border);border-radius:8px;padding:8px 12px;font-size:11px;width:200px;text-align:center;color:var(--p-sub);z-index:10;line-height:1.5 }
 .score-ring:hover .score-ia-tooltip { display:block }
+.similaire-row { display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;background:var(--p-bg2);margin-bottom:6px;cursor:pointer;transition:background 150ms }
+.similaire-row:hover { background:var(--p-bg3) }
+.similaire-info { display:flex;flex-direction:column;gap:2px }
 .hero-inner { display:flex;align-items:center;gap:24px; }
 .avatar-wrap { position:relative;flex-shrink:0; }
 .avatar-img { width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--p-border); }

@@ -35,6 +35,7 @@
           <button class="p-tab" :class="{active:tab==='roster'}" @click="tab='roster'">Effectif ({{ joueurs.length }})</button>
           <button class="p-tab" :class="{active:tab==='matchs'}" @click="tab='matchs'">Matchs ({{ matchs.length }})</button>
           <button class="p-tab" :class="{active:tab==='stats'}" @click="tab='stats'">Stats individuelles</button>
+          <button class="p-tab" :class="{active:tab==='ia'}" @click="tab='ia'; genererRecommandation()">🤖 Recommandations IA</button>
         </div>
 
         <!-- Roster par poste -->
@@ -116,6 +117,20 @@
             </tbody>
           </table>
         </div>
+        <!-- Recommandations IA -->
+        <div v-if="tab==='ia'" style="padding-top:20px">
+          <div v-if="iaLoading" class="empty-state"><span>⏳</span><p>L'IA analyse la composition…</p></div>
+          <div v-else-if="!iaAnalyse" class="empty-state"><span>🤖</span><p>Clique sur l'onglet pour générer une analyse.</p></div>
+          <div v-else class="ia-rapport p-card">
+            <div class="ia-rapport-header">
+              <span class="ia-badge">🤖 Analyse PIVOT IA</span>
+              <span class="text-sub" style="font-size:11px">{{ equipe?.nom }}</span>
+            </div>
+            <div class="ia-rapport-body" v-html="iaAnalyseHtml" />
+            <button class="p-btn-ghost p-btn-sm" style="margin-top:12px" @click="genererRecommandation">🔄 Régénérer</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -137,7 +152,53 @@ const joueurs = ref<any[]>([])
 const matchs  = ref<any[]>([])
 const statsJoueurs = ref<any[]>([])
 const loading = ref(true)
-const tab = ref<'roster'|'matchs'|'stats'>('roster')
+const tab = ref<'roster'|'matchs'|'stats'|'ia'>('roster')
+const iaAnalyse     = ref('')
+const iaAnalyseHtml = ref('')
+const iaLoading     = ref(false)
+
+async function genererRecommandation() {
+  if (!equipe.value || iaLoading.value) return
+  iaLoading.value = true
+  try {
+    const titulaires = joueurs.value.filter(j => j.statut === 'titulaire')
+    const stats = statsJoueurs.value.slice(0,10)
+    const matchsData = matchs.value.map(m => ({
+      adv: m.adversaire_international ?? `${m.club_domicile?.nom} vs ${m.club_exterieur?.nom}`,
+      score: `${m.score_cam ?? m.score_dom}-${m.score_adv ?? m.score_ext}`,
+      result: (m.score_cam ?? m.score_dom) > (m.score_adv ?? m.score_ext) ? 'V' : 'D'
+    }))
+
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
+        messages:[{role:'user', content:
+`Tu es un analyste handball expert pour PIVOT Cameroun.
+Analyse cette sélection nationale et fournis des recommandations concrètes.
+
+Équipe: ${equipe.value.nom} (${equipe.value.categorie})
+Effectif titulaires (${titulaires.length}): ${titulaires.map((j:any) => `${j.joueur?.prenom} ${j.joueur?.nom} (${j.joueur?.poste_principal}, score=${j.joueur?.score_ia})`).join(', ')}
+Résultats: ${JSON.stringify(matchsData)}
+Top performers: ${JSON.stringify(stats.map(s=>({nom:s.nom, buts:s.buts_total, poste:s.poste})))}
+
+Fournis:
+1. **Forces** de cette équipe (2-3 points)
+2. **Points d'amélioration** (2-3 points)
+3. **Joueurs à surveiller** (1-2 noms avec justification)
+4. **Recommandation tactique** (1 recommandation concrète)
+
+Format HTML avec <strong> pour les titres. En français. Concis et percutant.`}]
+      })
+    })
+    const d = await r.json()
+    iaAnalyse.value = d.content?.[0]?.text ?? ''
+    // Formater le texte en HTML basique
+    iaAnalyseHtml.value = iaAnalyse.value
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n\n/g, '<br/><br/>').replace(/\n/g, '<br/>')
+  } catch(e) { iaAnalyse.value = 'Erreur lors de la génération. Réessaie.' }
+  finally { iaLoading.value = false }
+}
 
 const postes: Record<string,string> = { gardien:'Gardien',ailier_g:'Ailier G',ailier_d:'Ailier D',arriere_g:'Arrière G',arriere_d:'Arrière D',demi_centre:'Demi-Centre',pivot:'Pivot' }
 const posteLabel  = (p:string) => postes[p] ?? p
@@ -280,8 +341,13 @@ onMounted(async () => {
 .poste-badge{padding:2px 7px;border-radius:99px;background:rgba(140,21,37,.1);color:var(--p-red);font-size:11px;font-weight:600}
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:12px;padding:60px 0;color:var(--p-sub)}
 .empty-state span{font-size:2rem}
+.ia-rapport{padding:20px}
+.ia-rapport-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--p-border)}
+.ia-badge{font-size:12px;font-weight:700;color:var(--p-blue);background:rgba(58,128,190,.1);padding:4px 10px;border-radius:99px}
+.ia-rapport-body{font-size:14px;line-height:1.7;color:var(--p-text)}
 .loading-state{display:flex;justify-content:center;align-items:center}
 .spinner{width:32px;height:32px;border:3px solid var(--p-border);border-top-color:var(--p-red);border-radius:50%;animation:spin 700ms linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:700px){.hero-inner{flex-direction:column;text-align:center}.match-body{grid-template-columns:1fr}.match-team-right{text-align:left}}
 </style>
+
