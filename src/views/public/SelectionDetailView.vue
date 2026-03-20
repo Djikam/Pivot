@@ -145,6 +145,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase, cloudinaryUrl } from '@/lib/supabaseClient'
+import { callIA, callIAJson } from '@/lib/iaClient'
 
 const route  = useRoute()
 const equipe = ref<any>(null)
@@ -169,7 +170,7 @@ async function genererRecommandation() {
       result: (m.score_cam ?? m.score_dom) > (m.score_adv ?? m.score_ext) ? 'V' : 'D'
     }))
 
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ia-proxy`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
         messages:[{role:'user', content:

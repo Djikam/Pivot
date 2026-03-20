@@ -202,6 +202,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase, cloudinaryUrl } from '@/lib/supabaseClient'
+import { callIA, callIAJson } from '@/lib/iaClient'
 import KenteDivider from '@/components/KenteDivider.vue'
 import DisciplineBadge from '@/components/DisciplineBadge.vue'
 import type { DisciplineType } from '@/lib/database.types'
@@ -228,7 +229,7 @@ async function loadSimilaires(j: any) {
     if (!candidats?.length) { similaires.value = []; loadingSimilaires.value = false; return }
 
     // Appel IA pour trouver les 3 plus similaires
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ia-proxy`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:300,
         messages:[{ role:'user', content:

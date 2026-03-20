@@ -152,6 +152,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { callIA, callIAJson } from '@/lib/iaClient'
 import {
   Users, Building, Trophy, ArrowRightLeft, BookOpen, Shield,
   Calendar, UserPlus, Upload, Heart, Flag, Gavel
@@ -208,7 +209,7 @@ async function loadIAInsights() {
       nb_matchs:     metrics.value.nb_matchs_termines,
       nb_transferts: metrics.value.nb_transferts,
     }
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ia-proxy`, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({

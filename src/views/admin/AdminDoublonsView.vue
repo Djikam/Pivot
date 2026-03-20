@@ -73,6 +73,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { callIA, callIAJson } from '@/lib/iaClient'
 
 const doublons   = ref<any[]>([])
 const iaClusters = ref<any[]>([])
@@ -124,9 +125,9 @@ async function scannerIA() {
       club: (j.licences_saison as any)?.[0]?.club?.nom ?? null
     }))
 
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ia-proxy`, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','apikey':import.meta.env.VITE_SUPABASE_ANON_KEY??''},
       body: JSON.stringify({
         model:'claude-sonnet-4-20250514', max_tokens:2000,
         messages:[{role:'user', content:

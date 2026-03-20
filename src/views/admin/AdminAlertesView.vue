@@ -93,6 +93,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { callIA, callIAJson } from '@/lib/iaClient'
 
 const selfReports = ref<any[]>([])
 const cartonsBleu = ref<any[]>([])
@@ -116,9 +117,9 @@ async function analyserIA(alerte: any) {
       .limit(5)
 
     // Appel IA pour analyse
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ia-proxy`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY??'' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 500,

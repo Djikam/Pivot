@@ -122,6 +122,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { callIA, callIAJson } from '@/lib/iaClient'
 
 const articles = ref<any[]>([])
 const showGenModal  = ref(false)
@@ -171,9 +172,9 @@ ${match.mi_temps_dom !== null ? `- Mi-temps: ${match.score_dom > match.score_ext
 Structure: titre accrocheur + 2-3 paragraphes.
 Format: JSON {"titre":"...","contenu":"..."}`
 
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ia-proxy`, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','apikey':import.meta.env.VITE_SUPABASE_ANON_KEY??''},
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:800, messages:[{role:'user',content:prompt}] })
     })
     const d = await r.json()

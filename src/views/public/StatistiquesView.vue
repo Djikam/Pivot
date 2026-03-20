@@ -195,6 +195,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { supabase } from '@/lib/supabaseClient'
+import { callIA, callIAJson } from '@/lib/iaClient'
 import KenteDivider from '@/components/KenteDivider.vue'
 
 const tab = ref('buteurs')
@@ -243,7 +244,7 @@ async function genererCommentaireIA(top: any[]) {
       pct_7m: b.buts_7m, genre: b.joueur?.genre
     }))
     const comp = selectedComp.value?.nom ?? 'toutes compétitions'
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ia-proxy`, {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:200,
         messages:[{role:'user', content:
