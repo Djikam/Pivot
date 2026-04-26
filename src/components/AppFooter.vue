@@ -1,10 +1,10 @@
 <template>
   <footer class="pivot-footer">
-    <div class="kente-divider"><span v-for="i in 10" :key="i" /></div>
+    <div class="footer-gold-line"/>
     <div class="footer-inner p-container">
       <div class="footer-brand">
-        <span class="footer-logo">PIVOT</span>
-        <p class="footer-slogan">"Le Pivot du handball camerounais."</p>
+        <div class="footer-brand-logo"><img src="/pivotlogo.jpg" alt="Pivot Hball 237" class="footer-logo-img" /><div><span class="footer-logo-main">PIVOT</span><span class="footer-logo-sub">HBALL 237</span></div></div>
+        <p class="footer-slogan">"Le référentiel du handball camerounais."</p>
         <p class="footer-desc">Plateforme indépendante de données, de statistiques et de suivi du handball camerounais. Indépendant de la FecaHand.</p>
       </div>
       <div class="footer-col">
@@ -18,8 +18,8 @@
       </div>
       <div class="footer-col">
         <h4>Découvrir</h4>
-        <RouterLink to="/national">🇨🇲 Équipes Nationales</RouterLink>
-        <RouterLink to="/education">📚 Espace Éducation</RouterLink>
+        <RouterLink to="/national"> Équipes Nationales</RouterLink>
+        <RouterLink to="/education"> Espace Éducation</RouterLink>
         <RouterLink to="/arbitres">Arbitres</RouterLink>
         <RouterLink to="/classement">Classements</RouterLink>
         <RouterLink to="/buteurs">Top Buteurs</RouterLink>
@@ -45,6 +45,11 @@ const year = new Date().getFullYear()
 </script>
 
 <style scoped>
+.footer-gold-line { height:1px; background:linear-gradient(90deg, transparent, rgba(201,162,39,0.5) 30%, rgba(201,162,39,0.5) 70%, transparent); }
+.footer-brand-logo { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.footer-logo-img { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--p-gold); }
+.footer-logo-main { display:block; font-family:var(--font-display); font-size:1.3rem; color:var(--p-gold); letter-spacing:0.12em; }
+.footer-logo-sub { display:block; font-size:9px; font-weight:700; color:var(--p-sub); letter-spacing:0.2em; text-transform:uppercase; }
 .pivot-footer {
   background: var(--p-card); border-top: 1px solid var(--p-border);
   margin-top: 80px;

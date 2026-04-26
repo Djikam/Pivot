@@ -3,25 +3,25 @@
     <!-- Hero -->
     <section class="detail-hero adinkra-watermark">
       <div class="p-container" style="padding-bottom:8px">
-        <button class="p-btn-ghost p-btn-sm back-btn" @click="$router.back()">← Retour</button>
+        <button class="p-btn-ghost p-btn-sm back-btn" @click="$router.back()"> Retour</button>
       </div>
       <div class="p-container hero-inner">
         <div class="avatar-wrap">
           <img v-if="joueur.photo_cloudinary_id" :src="cloudinaryUrl(joueur.photo_cloudinary_id,{w:120,h:120})" class="avatar-img" />
           <div v-else class="avatar-placeholder font-display">{{ joueur.prenom[0] }}{{ joueur.nom[0] }}</div>
-          <span v-if="joueur.verifie" class="verified-badge" title="Profil vérifié">✓</span>
+          <span v-if="joueur.verifie" class="verified-badge" title="Profil vérifié"></span>
         </div>
         <div class="hero-info">
           <div class="hero-badges">
-            <span v-if="joueur.badge_talent" class="p-badge p-badge-gold">⭐ Talent à surveiller</span>
+            <span v-if="joueur.badge_talent" class="p-badge p-badge-gold"> Talent à surveiller</span>
             <span v-if="joueur.statut_univ" class="p-badge p-badge-blue"><svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg> Universitaire</span>
-            <span v-if="isNational" class="p-badge p-badge-green">🇨🇲 Sélectionné</span>
+            <span v-if="isNational" class="p-badge p-badge-green"> Sélectionné</span>
           </div>
           <h1 class="font-display" style="font-size:2.4rem;font-weight:700;margin:8px 0 4px">{{ joueur.prenom }} {{ joueur.nom }}</h1>
           <div class="hero-meta">
             <span class="poste-chip">{{ posteLabel(joueur.poste_principal) }}</span>
             <span v-if="joueur.poste_secondaire" class="poste-chip secondary">{{ posteLabel(joueur.poste_secondaire) }}</span>
-            <span class="text-sub" v-if="joueur.bras_fort !== 'droitier'">{{ joueur.bras_fort === 'gaucher' ? '✋ Gaucher' : '🤲 Ambidextre' }}</span>
+            <span class="text-sub" v-if="joueur.bras_fort !== 'droitier'">{{ joueur.bras_fort === 'gaucher' ? ' Gaucher' : ' Ambidextre' }}</span>
             <span class="text-sub" v-if="joueur.taille_estimee">{{ joueur.taille_estimee }} cm</span>
           </div>
           <div class="hero-club" v-if="licenceActive">
@@ -110,7 +110,7 @@
                 </tbody>
               </table>
             </div>
-            <div v-else class="text-sub" style="padding:20px;text-align:center">Aucune sanction enregistrée ✓</div>
+            <div v-else class="text-sub" style="padding:20px;text-align:center">Aucune sanction enregistrée </div>
           </div>
 
           <!-- Historique clubs -->
@@ -149,12 +149,12 @@
             <div class="info-row" v-if="joueur.poste_secondaire"><span class="text-sub">Poste secondaire</span><span>{{ posteLabel(joueur.poste_secondaire) }}</span></div>
             <div class="info-row"><span class="text-sub">Bras fort</span><span class="capitalize">{{ joueur.bras_fort }}</span></div>
             <div class="info-row" v-if="joueur.taille_estimee"><span class="text-sub">Taille estimée</span><span>{{ joueur.taille_estimee }} cm</span></div>
-            <div class="info-row"><span class="text-sub">Profil</span><span :class="joueur.verifie ? 'text-green':'text-sub'">{{ joueur.verifie ? '✓ Vérifié' : 'Non vérifié' }}</span></div>
+            <div class="info-row"><span class="text-sub">Profil</span><span :class="joueur.verifie ? 'text-green':'text-sub'">{{ joueur.verifie ? ' Vérifié' : 'Non vérifié' }}</span></div>
           </div>
 
           <!-- Sélection nationale -->
           <div class="p-card sidebar-card p-card-cam" v-if="selections.length">
-            <h4 class="sidebar-title" style="color:var(--cam-green)">🇨🇲 Sélection nationale</h4>
+            <h4 class="sidebar-title" style="color:var(--cam-green)"> Sélection nationale</h4>
             <div v-for="s in selections" :key="s.id" style="margin-bottom:8px">
               <div style="font-weight:700;font-size:13px">{{ s.equipe_nationale?.nom }}</div>
               <div class="text-sub" style="font-size:12px">{{ s.saison }} · {{ s.statut }}</div>
@@ -163,7 +163,7 @@
 
           <!-- Joueurs similaires IA -->
           <div class="p-card sidebar-card">
-            <h4 class="sidebar-title">🤖 Joueurs similaires</h4>
+            <h4 class="sidebar-title"> Joueurs similaires</h4>
             <div v-if="loadingSimilaires" class="text-sub" style="font-size:12px;padding:8px 0">
               Analyse en cours…
             </div>
@@ -184,7 +184,7 @@
           <!-- Lien self-report RGPD -->
           <div class="p-card sidebar-card" style="border-left:3px solid var(--p-gold)">
             <p style="font-size:12px;color:var(--p-sub);margin-bottom:10px">Tu es ce joueur ? Tu peux demander la modification ou suppression de tes données.</p>
-            <RouterLink :to="'/self-report?joueur_id=' + joueur.id" class="p-btn-ghost p-btn-sm" style="width:100%;justify-content:center">✏️ Modifier / Supprimer mes données</RouterLink>
+            <RouterLink :to="'/self-report?joueur_id=' + joueur.id" class="p-btn-ghost p-btn-sm" style="width:100%;justify-content:center">️ Modifier / Supprimer mes données</RouterLink>
           </div>
         </div>
       </div>
@@ -193,7 +193,7 @@
 
   <div v-else-if="!loading" class="p-container" style="padding:80px 0;text-align:center">
     <p class="text-sub">Joueur introuvable.</p>
-    <RouterLink to="/joueurs" class="p-btn-ghost p-btn-sm" style="margin-top:12px;display:inline-flex">← Retour</RouterLink>
+    <RouterLink to="/joueurs" class="p-btn-ghost p-btn-sm" style="margin-top:12px;display:inline-flex"> Retour</RouterLink>
   </div>
   <div v-else class="loading-state"><div class="spinner" /></div>
 </template>

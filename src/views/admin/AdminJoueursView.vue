@@ -2,7 +2,7 @@
   <div class="admin-joueurs">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher…" @input="debouncedLoad" />
       <select v-model="filterPoste" class="p-input p-select" @change="applyFilters">
         <option value="">Tous postes</option>
         <option v-for="p in postes" :key="p.value" :value="p.value">{{ p.label }}</option>
@@ -21,10 +21,10 @@
           <td><span class="poste-badge">{{ posteLabel(j.poste_principal) }}</span></td>
           <td><span class="font-display" style="font-weight:700" :style="{color:scoreColor(j.score_ia)}">{{ j.score_ia }}</span></td>
           <td>
-            <button class="toggle-btn" :class="{on:j.verifie}" @click="toggleVerifie(j)">{{ j.verifie ? '✓' : '○' }}</button>
+            <button class="toggle-btn" :class="{on:j.verifie}" @click="toggleVerifie(j)">{{ j.verifie ? '' : '○' }}</button>
           </td>
           <td>
-            <button class="toggle-btn" :class="{gold:j.badge_talent}" @click="toggleTalent(j)">{{ j.badge_talent ? '⭐' : '☆' }}</button>
+            <button class="toggle-btn" :class="{gold:j.badge_talent}" @click="toggleTalent(j)">{{ j.badge_talent ? '' : '' }}</button>
           </td>
           <td class="actions-cell">
             <button class="p-btn-ghost p-btn-sm" @click="openModal(j)">Éditer</button>
@@ -35,9 +35,9 @@
     </table>
 
     <div class="pagination" v-if="!loading && total > limit">
-      <button class="p-btn-ghost p-btn-sm" :disabled="page === 0" @click="prevPage">← Précédent</button>
+      <button class="p-btn-ghost p-btn-sm" :disabled="page === 0" @click="prevPage"> Précédent</button>
       <span class="text-sub">Page {{ page + 1 }} / {{ Math.ceil(total / limit) }}</span>
-      <button class="p-btn-ghost p-btn-sm" :disabled="(page + 1) * limit >= total" @click="nextPage">Suivant →</button>
+      <button class="p-btn-ghost p-btn-sm" :disabled="(page + 1) * limit >= total" @click="nextPage">Suivant </button>
     </div>
 
     <!-- Modal ajout/édition -->
@@ -46,7 +46,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing?.id ? 'Modifier joueur' : 'Ajouter joueur' }}</h3>
-            <button @click="modal=null">✕</button>
+            <button @click="modal=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">
@@ -122,7 +122,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">Créer nouveau club</h3>
-            <button @click="modalClub=null">✕</button>
+            <button @click="modalClub=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">

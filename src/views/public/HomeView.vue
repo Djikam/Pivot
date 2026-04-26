@@ -38,7 +38,7 @@
             <p class="can-sub">Résultats, statistiques individuelles et classement du tournoi maintenant sur PIVOT.</p>
           </div>
           <div class="can-actions">
-            <RouterLink to="/national" class="p-btn-gold">Voir les stats CAN →</RouterLink>
+            <RouterLink to="/national" class="p-btn-gold">Voir les stats CAN </RouterLink>
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@
               <h3 class="module-name">{{ mod.name }}</h3>
               <p class="module-desc text-sub">{{ mod.desc }}</p>
             </div>
-            <span class="module-arrow">→</span>
+            <span class="module-arrow"></span>
           </RouterLink>
         </div>
       </div>
@@ -69,8 +69,8 @@
     <section class="p-section-sm">
       <div class="p-container">
         <div class="section-header">
-          <h2 class="section-title font-display">🏆 Top Buteurs PIVOT</h2>
-          <RouterLink to="/buteurs" class="p-btn-ghost p-btn-sm">Voir tout →</RouterLink>
+          <h2 class="section-title font-display">Top Buteurs PIVOT</h2>
+          <RouterLink to="/buteurs" class="p-btn-ghost p-btn-sm">Voir tout </RouterLink>
         </div>
         <div class="buteurs-preview">
           <div v-for="(j, idx) in topButeurs" :key="j.id" class="buteur-row p-card" :class="'rank-preview-' + (idx+1)">
@@ -96,7 +96,7 @@
       <div class="p-container">
         <div class="section-header">
           <h2 class="section-title font-display">RADAR — Derniers Mouvements</h2>
-          <RouterLink to="/transferts" class="p-btn-ghost p-btn-sm">Voir tout →</RouterLink>
+          <RouterLink to="/transferts" class="p-btn-ghost p-btn-sm">Voir tout </RouterLink>
         </div>
         <div class="transferts-grid">
           <div v-for="t in dernierTransferts" :key="t.id" class="transfert-card p-card">
@@ -107,7 +107,7 @@
             <div class="transfert-joueur">{{ t.joueur }}</div>
             <div class="transfert-clubs">
               <span class="club-depart text-sub">{{ t.depart }}</span>
-              <span class="transfert-arrow text-red">→</span>
+              <span class="transfert-arrow text-red"></span>
               <span class="club-arrivee">{{ t.arrivee }}</span>
             </div>
           </div>
@@ -124,7 +124,7 @@
             <h3 class="font-display" style="font-size:1.5rem;margin-bottom:8px">Espace Éducation Handball</h3>
             <p class="text-sub">Règles du jeu, droits des joueurs, guide arbitrage, documents officiels IHF/CAHB/FecaHand — téléchargeables en PDF, XLSX et CSV.</p>
           </div>
-          <RouterLink to="/education" class="p-btn-gold" style="flex-shrink:0">Accéder →</RouterLink>
+          <RouterLink to="/education" class="p-btn-gold" style="flex-shrink:0">Accéder </RouterLink>
         </div>
       </div>
     </section>

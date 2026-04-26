@@ -5,11 +5,11 @@
       <div class="cam-stripe" />
       <div class="p-container hero-inner">
         <div class="hero-content">
-          <span class="p-badge p-badge-green" style="margin-bottom:14px">🇨🇲 ÉQUIPES NATIONALES</span>
+          <span class="p-badge p-badge-green" style="margin-bottom:14px"> ÉQUIPES NATIONALES</span>
           <h1 class="font-display hero-title">Lions Indomptables<br><span class="text-gold">Handball Cameroun</span></h1>
           <p class="text-sub hero-sub">CAN Rwanda 2026 · U20 Masculin 2026 · Données officielles saisies par l'équipe PIVOT</p>
         </div>
-        <div class="cam-emblem">🇨🇲</div>
+        <div class="cam-emblem"></div>
       </div>
       <div class="cam-stripe" />
     </section>
@@ -22,7 +22,7 @@
           <span class="eq-cat p-badge" :class="getCatBadge(eq.categorie)">{{ eq.categorie.toUpperCase() }}</span>
           <span class="eq-nom">{{ eq.nom }}</span>
           <span class="eq-saison text-sub">{{ eq.saison_active }}</span>
-          <RouterLink :to="'/national/'+eq.id" class="eq-detail-link text-sub" @click.stop>Détails →</RouterLink>
+          <RouterLink :to="'/national/'+eq.id" class="eq-detail-link text-sub" @click.stop>Détails </RouterLink>
         </button>
       </div>
 
@@ -67,7 +67,7 @@
         <!-- Matchs -->
         <div v-if="tab === 'matchs'">
           <div v-if="matchsInternationaux.length === 0" class="empty-state">
-            <span>📅</span><p>Aucun match enregistré pour cette sélection.</p>
+            <span></span><p>Aucun match enregistré pour cette sélection.</p>
           </div>
           <table v-else class="p-table">
             <thead><tr><th>Date</th><th>Adversaire</th><th>Score</th><th>Type</th><th>Statut</th></tr></thead>
@@ -188,7 +188,7 @@ async function selectEquipe(eq: EquipeNationale) {
   ])
 
   joueurs.value = sels ?? []
-  // Normaliser les champs pour l'affichage (score_dom → score_cam, adversaire_international → adversaire)
+  // Normaliser les champs pour l'affichage (score_dom  score_cam, adversaire_international  adversaire)
   matchsInternationaux.value = (matchs ?? []).map(m => ({
     ...m,
     adversaire: m.adversaire_international,

@@ -12,8 +12,8 @@
       </div>
       <div class="genre-tabs" style="margin-top:10px">
         <button class="genre-tab" :class="{active:filterGenre===''}" @click="filterGenre=''">Tous</button>
-        <button class="genre-tab" :class="{active:filterGenre==='masculin'}" @click="filterGenre='masculin'">👨 Masculin</button>
-        <button class="genre-tab" :class="{active:filterGenre==='feminin'}" @click="filterGenre='feminin'">👩 Féminin</button>
+        <button class="genre-tab" :class="{active:filterGenre==='masculin'}" @click="filterGenre='masculin'"> Masculin</button>
+        <button class="genre-tab" :class="{active:filterGenre==='feminin'}" @click="filterGenre='feminin'"> Féminin</button>
       </div>
       <KenteDivider :my="20" />
       <div v-if="loading" class="loading-state"><div class="spinner" /></div>

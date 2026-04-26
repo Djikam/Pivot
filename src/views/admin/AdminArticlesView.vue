@@ -1,51 +1,99 @@
 <template>
   <div class="admin-articles">
+
+    <!-- Onglets -->
+    <div class="admin-tabs">
+      <button class="admin-tab" :class="{ active: activeTab==='articles' }" @click="activeTab='articles'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+        Articles <span class="tab-count">{{ articles.length }}</span>
+      </button>
+      <button class="admin-tab" :class="{ active: activeTab==='comments' }" @click="switchToComments">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Commentaires <span class="tab-count" :class="{ 'tab-count-warn': allComments.length > 0 }">{{ allComments.length }}</span>
+      </button>
+    </div>
+
+    <!-- ══ TAB ARTICLES ══ -->
+    <template v-if="activeTab==='articles'">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher…" @input="debouncedLoad" />
-      <select v-model="filterCategorie" class="p-input p-select" @change="load">
+      <div class="search-wrap-admin">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="s-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input v-model="search" class="p-input" style="padding-left:34px" placeholder="Rechercher un article…" @input="debouncedLoad" />
+      </div>
+      <select v-model="filterCategorie" class="p-input p-select" @change="load" style="max-width:180px">
         <option value="">Toutes catégories</option>
         <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
       </select>
-      <label class="toggle-label"><input type="checkbox" v-model="onlyIA" @change="load" /> Générés par IA</label>
-      <button class="p-btn-red" @click="openModal(null)">+ Nouvel article</button>
+      <label class="toggle-label"><input type="checkbox" v-model="onlyIA" @change="load" /> IA uniquement</label>
+      <button class="p-btn-red" @click="openModal(null)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouvel article
+      </button>
       <button class="p-btn-ghost" @click="showGenModal=true" style="display:flex;align-items:center;gap:6px">
-        🤖 Générer depuis match
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Générer via IA
       </button>
     </div>
 
     <div v-if="loading" class="loading-state"><div class="spinner" /></div>
-    <table v-else class="p-table">
-      <thead><tr><th>Titre</th><th>Catégorie</th><th>Auteur</th><th>IA</th><th>Publié</th><th>Actions</th></tr></thead>
-      <tbody>
-        <tr v-for="a in articles" :key="a.id">
-          <td style="font-weight:600">{{ a.titre }}</td>
-          <td>{{ a.categorie }}</td>
-          <td>{{ a.auteur || '—' }}</td>
-          <td>{{ a.genere_par_ia ? (a.fournisseur_ia ? a.fournisseur_ia.toUpperCase() : 'IA') : 'Humain' }}</td>
-          <td class="text-sub">{{ new Date(a.publie_le).toLocaleDateString('fr-FR') }}</td>
-          <td class="actions-cell">
-            <button class="p-btn-ghost p-btn-sm" @click="openModal(a)">Éditer</button>
-            <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteArticle(a)">Suppr.</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div v-else class="table-wrap">
+      <table class="p-table">
+        <thead><tr><th>Titre</th><th>Catégorie</th><th>Auteur</th><th>IA</th><th>Vues</th><th>Publié</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr v-for="a in articles" :key="a.id">
+            <td style="font-weight:600;max-width:280px"><p class="truncate-2">{{ a.titre }}</p></td>
+            <td><span class="p-badge p-badge-muted" style="font-size:10px">{{ a.categorie }}</span></td>
+            <td class="text-sub">{{ a.auteur || "—" }}</td>
+            <td><span v-if="a.genere_par_ia" class="p-badge p-badge-blue" style="font-size:10px">{{ (a.fournisseur_ia||"IA").toUpperCase() }}</span><span v-else class="text-sub" style="font-size:12px">—</span></td>
+            <td class="text-sub">{{ a.vues ?? 0 }}</td>
+            <td class="text-sub">{{ new Date(a.publie_le).toLocaleDateString("fr-FR") }}</td>
+            <td class="actions-cell">
+              <RouterLink :to="'/actualites/'+a.slug" target="_blank" class="p-btn-ghost p-btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></RouterLink>
+              <button class="p-btn-ghost p-btn-sm" @click="openModal(a)">Éditer</button>
+              <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteArticle(a)">Suppr.</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </template>
+
+    <!-- ══ TAB COMMENTAIRES ══ -->
+    <template v-if="activeTab==='comments'">
+      <div v-if="loadingComments" class="loading-state"><div class="spinner"/></div>
+      <div v-else-if="!allComments.length" class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p>Aucun commentaire.</p></div>
+      <div v-else class="table-wrap">
+        <table class="p-table">
+          <thead><tr><th>Pseudo</th><th>Commentaire</th><th>Article</th><th>Type</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr v-for="c in allComments" :key="c.id">
+              <td style="font-weight:600;white-space:nowrap">{{ c.pseudo || "Anonyme" }}</td>
+              <td style="max-width:340px"><p class="truncate-2" style="font-size:13px">{{ c.contenu }}</p></td>
+              <td class="text-sub" style="font-size:12px">{{ articleTitle(c.article_id) }}</td>
+              <td><span v-if="c.parent_id" class="p-badge p-badge-muted" style="font-size:10px">Réponse</span><span v-else class="p-badge p-badge-gold" style="font-size:10px">Principal</span></td>
+              <td class="text-sub" style="white-space:nowrap">{{ new Date(c.created_at).toLocaleDateString("fr-FR") }}</td>
+              <td><button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteCommentAdmin(c)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Suppr.</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
 
     <!-- Modal génération IA depuis match -->
     <Teleport to="body">
       <div v-if="showGenModal" class="modal-backdrop" @click.self="showGenModal=false">
         <div class="modal-box">
           <div class="modal-header">
-            <h3 class="font-display">🤖 Générer un article depuis un match</h3>
-            <button @click="showGenModal=false">✕</button>
+            <h3 class="font-display">Générer un article via IA depuis un match</h3>
+            <button @click="showGenModal=false"></button>
           </div>
           <div class="modal-body">
             <div class="field"><label class="p-label">Choisir un match *</label>
               <select v-model="genMatchId" class="p-input p-select">
                 <option value="">— Sélectionner un match terminé —</option>
                 <option v-for="m in matchsTermines" :key="m.id" :value="m.id">
-                  {{ m.type_match==='international' ? '🇨🇲 Cameroun vs '+m.adversaire_international : (m.club_domicile?.nom+' vs '+m.club_exterieur?.nom) }}
+                  {{ m.type_match==='international' ? ' Cameroun vs '+m.adversaire_international : (m.club_domicile?.nom+' vs '+m.club_exterieur?.nom) }}
                   — {{ m.score_dom }}-{{ m.score_ext }} ({{ new Date(m.date_match).toLocaleDateString('fr-FR') }})
                 </option>
               </select>
@@ -66,7 +114,7 @@
           <div class="modal-footer">
             <button class="p-btn-ghost" @click="showGenModal=false">Annuler</button>
             <button class="p-btn-red" :disabled="!genMatchId || genLoading" @click="genererArticle">
-              {{ genLoading ? 'Génération…' : '🤖 Générer' }}
+              {{ genLoading ? 'Génération…' : 'Générer' }}
             </button>
           </div>
         </div>
@@ -76,8 +124,8 @@
       <div v-if="modal" class="modal-backdrop" @click.self="modal=null">
         <div class="modal-box">
           <div class="modal-header">
-            <h3 class="font-display">{{ editing?.id ? 'Modifier article' : 'Nouvel article' }}</h3>
-            <button @click="modal=null">✕</button>
+            <h3 class="font-display">{{ editing?.id ? "Modifier article" : "Nouvel article" }}</h3>
+            <button @click="modal=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">
@@ -106,7 +154,9 @@
                 </select>
               </div>
             </div>
-            <div class="field"><label class="p-label">Contenu *</label><textarea v-model="editing.contenu" class="p-input" rows="8" placeholder="Contenu de l'article..."></textarea></div>
+            <div class="field"><label class="p-label">URL Image (optionnel)</label><input v-model="editing.image_url" class="p-input" placeholder="https://… (Cloudinary, etc.)" /></div>
+            <div class="field"><label class="p-label">Tags (séparés par virgule)</label><input v-model="tagsInput" class="p-input" placeholder="handball, cameroun, can2026" /></div>
+            <div class="field"><label class="p-label">Contenu *</label><textarea v-model="editing.contenu" class="p-input" rows="10" placeholder="Contenu de l'article..."></textarea></div>
             <div v-if="saveError" class="save-error">{{ saveError }}</div>
           </div>
           <div class="modal-footer">
@@ -205,9 +255,13 @@ const search = ref('')
 const filterCategorie = ref('')
 const onlyIA = ref(false)
 const modal = ref(false)
+const activeTab = ref<'articles'|'comments'>('articles')
+const allComments = ref<any[]>([])
+const loadingComments = ref(false)
 const editing = ref<any>({})
 const saving = ref(false)
 const saveError = ref('')
+const tagsInput = ref('')
 
 const categories = ['Actualité', 'Résumé match', 'Interview', 'Analyse', 'Transfert', 'National']
 
@@ -234,13 +288,17 @@ async function loadCompetitions() {
 }
 
 function openModal(a: any) {
-  editing.value = a ? { ...a } : { titre:'',slug:'',contenu:'',categorie:'',genere_par_ia:false,auteur:'',publie_le:new Date().toISOString().slice(0,16) }
+  editing.value = a ? { ...a } : { titre:'',slug:'',contenu:'',categorie:'',genere_par_ia:false,auteur:'',publie_le:new Date().toISOString().slice(0,16),image_url:'' }
+  tagsInput.value = a?.tags?.join(', ') || ''
   modal.value = true; saveError.value = ''
 }
 
 async function saveArticle() {
   if (!editing.value.titre || !editing.value.slug || !editing.value.contenu || !editing.value.categorie || !editing.value.publie_le) { saveError.value='Titre, slug, contenu, catégorie et date requis'; return }
   saving.value = true; saveError.value = ''
+  if (tagsInput.value.trim()) {
+    editing.value.tags = tagsInput.value.split(',').map((t:string) => t.trim()).filter(Boolean)
+  }
   const { id, ...data } = editing.value
   if (id) { await supabase.from('articles').update(data).eq('id', id) }
   else     { await supabase.from('articles').insert(data) }
@@ -249,6 +307,30 @@ async function saveArticle() {
 
 async function deleteArticle(a:any)   { if(!confirm(`Supprimer "${a.titre}" ?`)) return; await supabase.from('articles').delete().eq('id',a.id); load() }
 
+async function switchToComments() {
+  activeTab.value = 'comments'
+  if (allComments.value.length === 0) {
+    loadingComments.value = true
+    const { data } = await supabase.from('article_commentaires')
+      .select('id,article_id,parent_id,pseudo,contenu,created_at')
+      .order('created_at', { ascending: false })
+      .limit(200)
+    allComments.value = data ?? []
+    loadingComments.value = false
+  }
+}
+
+function articleTitle(articleId: string) {
+  const a = articles.value.find(x => x.id === articleId)
+  return a ? a.titre.slice(0, 40) + (a.titre.length > 40 ? '…' : '') : articleId.slice(0,8)+'…'
+}
+
+async function deleteCommentAdmin(c: any) {
+  if (!confirm('Supprimer ce commentaire ?')) return
+  await supabase.from('article_commentaires').delete().eq('id', c.id)
+  allComments.value = allComments.value.filter(x => x.id !== c.id)
+}
+
 onMounted(async () => {
   await loadCompetitions()
   load()
@@ -256,6 +338,15 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.admin-tabs { display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--p-border);padding-bottom:0; }
+.admin-tab { display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--radius-md) var(--radius-md) 0 0;font-size:13px;font-weight:600;color:var(--p-sub);border:1px solid transparent;border-bottom:none;cursor:pointer;font-family:inherit;transition:color 130ms,background 130ms;position:relative;top:1px; }
+.admin-tab:hover { color:var(--p-text); }
+.admin-tab.active { color:var(--p-gold);background:var(--p-card);border-color:var(--p-border); }
+.tab-count { padding:1px 7px;border-radius:99px;background:var(--p-bg3);border:1px solid var(--p-border);font-size:11px;font-weight:700;color:var(--p-muted); }
+.tab-count-warn { background:rgba(206,17,38,0.1);border-color:rgba(206,17,38,0.3);color:var(--p-red); }
+.table-wrap { overflow-x:auto; }
+.search-wrap-admin { position:relative;flex:1;min-width:180px; }
+.s-icon { position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--p-muted);pointer-events:none; }
 .admin-toolbar { display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap; }
 .filter-input { flex:1;min-width:180px; }
 .toggle-label { display:flex;align-items:center;gap:6px;font-size:13px;color:var(--p-sub);cursor:pointer;white-space:nowrap; }

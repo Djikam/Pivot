@@ -2,7 +2,7 @@
   <div class="admin-competitions">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher…" @input="debouncedLoad" />
       <select v-model="filterType" class="p-input p-select" @change="load">
         <option value="">Tous types</option>
         <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
@@ -41,7 +41,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing?.id ? 'Modifier compétition' : 'Ajouter compétition' }}</h3>
-            <button @click="modal=null">✕</button>
+            <button @click="modal=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">
@@ -98,7 +98,7 @@
         <div class="modal-box modal-large">
           <div class="modal-header">
             <h3 class="font-display">Gérer compétition — {{ selectedCompetition?.nom }}</h3>
-            <button @click="manageModal=false">✕</button>
+            <button @click="manageModal=false"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">

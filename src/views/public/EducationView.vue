@@ -3,11 +3,11 @@
     <section class="edu-hero adinkra-watermark">
       <div class="p-container" style="padding:40px 0 32px">
         <div class="kente-chip-row">
-          <span class="kente-chip-badge">📚 ESPACE ÉDUCATION</span>
+          <span class="kente-chip-badge"> ESPACE ÉDUCATION</span>
         </div>
         <h1 class="font-display" style="font-size:2.2rem;font-weight:700;margin:12px 0 8px">Handball — Formation & Droits</h1>
         <p class="text-sub" style="font-size:15px;max-width:600px">Documents officiels IHF · CAHB · FecaHand. Règles du jeu, droits des joueurs, guide arbitrage. Téléchargeables en PDF, XLSX et CSV.</p>
-        <input v-model="search" class="p-input" style="max-width:400px;margin-top:20px" placeholder="🔍 Rechercher un document…" @input="debouncedFilter" />
+        <input v-model="search" class="p-input" style="max-width:400px;margin-top:20px" placeholder=" Rechercher un document…" @input="debouncedFilter" />
       </div>
     </section>
 
@@ -37,7 +37,7 @@
 
         <!-- Discipline handball spéciale -->
         <div class="discipline-guide p-card" style="padding:24px;margin-top:24px">
-          <h3 class="font-display" style="font-size:1.3rem;margin-bottom:16px">🟡🟠🔴🔵 Système de sanctions IHF</h3>
+          <h3 class="font-display" style="font-size:1.3rem;margin-bottom:16px"> Système de sanctions IHF</h3>
           <p class="text-sub" style="font-size:13px;margin-bottom:16px">Au handball, il n'y a pas de carton vert. Le système de sanctions comporte 5 niveaux officiels.</p>
           <div class="sanctions-list">
             <div v-for="s in sanctions" :key="s.type" class="sanction-row">
@@ -56,7 +56,7 @@
       <div v-if="loading" class="loading-state"><div class="spinner" /><span class="text-sub">Chargement…</span></div>
       <div v-else>
         <div v-if="filteredDocs.length === 0" class="empty-state">
-          <span style="font-size:2rem">📄</span>
+          <span style="font-size:2rem"></span>
           <p>Aucun document disponible pour cette catégorie.</p>
         </div>
         <div v-else class="docs-grid">
@@ -98,17 +98,17 @@ const search    = ref('')
 const activeCat = ref('all')
 
 const categories = [
-  { value:'all',          label:'Tous',           icon:'📁' },
-  { value:'regles',       label:'Règles du jeu',  icon:'📋' },
-  { value:'droits_joueur',label:'Droits joueurs',  icon:'👤' },
-  { value:'droits_club',  label:'Droits clubs',    icon:'🏠' },
-  { value:'arbitrage',    label:'Arbitrage',       icon:'🟡' },
-  { value:'officiel',     label:'Docs officiels',  icon:'📜' },
+  { value:'all',          label:'Tous',           icon:'' },
+  { value:'regles',       label:'Règles du jeu',  icon:'' },
+  { value:'droits_joueur',label:'Droits joueurs',  icon:'' },
+  { value:'droits_club',  label:'Droits clubs',    icon:'' },
+  { value:'arbitrage',    label:'Arbitrage',       icon:'' },
+  { value:'officiel',     label:'Docs officiels',  icon:'' },
   { value:'pedagogue',    label:'Pédagogie',       icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>' },
 ]
 
 const catLabel = (c: string) => categories.find(x => x.value === c)?.label ?? c
-const catIcon  = (c: string) => categories.find(x => x.value === c)?.icon ?? '📄'
+const catIcon  = (c: string) => categories.find(x => x.value === c)?.icon ?? ''
 const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' })
 
 const filteredDocs = computed(() => {
@@ -133,7 +133,7 @@ const reglesBase = [
   { num:'06', titre:'La règle des 3 pas', desc:'3 pas maximum sans dribbler. Dribble illimité mais interdit de reprendre après un arrêt.' },
   { num:'07', titre:'Les tirs au but (7m)', desc:'Accordé en cas de faute sur un tireur en situation de but manifeste.' },
   { num:'08', titre:'Gardien de but', desc:'Peut toucher le ballon avec toutes les parties du corps. Ne peut sortir avec la balle au-delà de la ligne de 9m.' },
-  { num:'09', titre:'Fautes et sanctions', desc:'Contact illicite = jet franc. 5 niveaux de sanctions : avertissement → carton jaune → suspension 2min → rouge → bleu.' },
+  { num:'09', titre:'Fautes et sanctions', desc:'Contact illicite = jet franc. 5 niveaux de sanctions : avertissement  carton jaune  suspension 2min  rouge  bleu.' },
   { num:'10', titre:'Cumul suspensions', desc:'3 suspensions de 2min = exclusion définitive (sans carton rouge supplémentaire). Équipe joue à 5 pendant 2 min.' },
 ]
 
@@ -142,7 +142,7 @@ const sanctions: { type: DisciplineType; nom: string; desc: string }[] = [
   { type:'carton_jaune',   nom:'Carton jaune',  desc:'Avertissement officiel. 1 seul par joueur par match.' },
   { type:'suspension_2min',nom:'Suspension 2 min', desc:'Exclusion temporaire. 3 cumuls = exclusion définitive.' },
   { type:'carton_rouge',   nom:'Carton rouge',  desc:'Exclusion définitive du match. Équipe à 5 pendant 2 min.' },
-  { type:'carton_bleu',    nom:'Carton bleu',   desc:'Infraction grave. Rapport disciplinaire → commission. Suspension potentielle.' },
+  { type:'carton_bleu',    nom:'Carton bleu',   desc:'Infraction grave. Rapport disciplinaire  commission. Suspension potentielle.' },
 ]
 
 onMounted(async () => {
