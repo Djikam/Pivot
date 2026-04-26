@@ -1,7 +1,7 @@
 <template>
   <div class="admin-staff">
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher staff…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher staff…" @input="debouncedLoad" />
       <select v-model="filterClub" class="p-input p-select" @change="load">
         <option value="">Tous les clubs</option>
         <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.nom }}</option>
@@ -48,7 +48,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing.id ? 'Modifier' : 'Ajouter' }} staff</h3>
-            <button @click="modal=false">✕</button>
+            <button @click="modal=false"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">

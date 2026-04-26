@@ -2,7 +2,7 @@
   <div class="admin-clubs">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher…" @input="debouncedLoad" />
       <select v-model="filterRegion" class="p-input p-select" @change="load">
         <option value="">Toutes régions</option>
         <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
@@ -21,10 +21,10 @@
           <td>{{ c.pays === 'Cameroun' ? c.region : c.pays }}</td>
           <td>{{ c.ville }}</td>
           <td>
-            <button class="toggle-btn" :class="{on:c.universitaire}" @click="toggleUniversitaire(c)">{{ c.universitaire ? '✓' : '○' }}</button>
+            <button class="toggle-btn" :class="{on:c.universitaire}" @click="toggleUniversitaire(c)">{{ c.universitaire ? '' : '○' }}</button>
           </td>
           <td>
-            <button class="toggle-btn" :class="{on:c.actif}" @click="toggleActif(c)">{{ c.actif ? '✓' : '○' }}</button>
+            <button class="toggle-btn" :class="{on:c.actif}" @click="toggleActif(c)">{{ c.actif ? '' : '○' }}</button>
           </td>
           <td class="actions-cell">
             <button class="p-btn-ghost p-btn-sm" @click="viewDetails(c)">Détails</button>
@@ -41,7 +41,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing?.id ? 'Modifier club' : 'Ajouter club' }}</h3>
-            <button @click="modal=null">✕</button>
+            <button @click="modal=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">
@@ -105,7 +105,7 @@
         <div class="modal-box modal-large">
           <div class="modal-header">
             <h3 class="font-display">Détails — {{ selectedClub?.nom }}</h3>
-            <button @click="modalDetails=null">✕</button>
+            <button @click="modalDetails=null"></button>
           </div>
           <div class="modal-body">
             <div class="club-info">
@@ -162,7 +162,7 @@
         <div class="modal-box modal-large">
           <div class="modal-header">
             <h3 class="font-display">Détails — {{ selectedJoueur?.prenom }} {{ selectedJoueur?.nom }}</h3>
-            <button @click="modalJoueur=null">✕</button>
+            <button @click="modalJoueur=null"></button>
           </div>
           <div class="modal-body" v-if="selectedJoueur">
             <div class="joueur-info">

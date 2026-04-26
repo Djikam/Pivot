@@ -8,7 +8,7 @@
     </section>
     <div class="p-container" style="padding-top:24px;padding-bottom:60px">
       <div class="type-tabs">
-        <button v-for="t in types" :key="t.value" class="type-tab" :class="{active:filterType===t.value}" @click="filterType=t.value"><component :is="t.icon" class="w-4 h-4 mr-1" /> {{ t.label }}</button>
+        <button v-for="t in types" :key="t.value" class="type-tab" :class="{active:filterType===t.value}" @click="filterType=t.value"><component :is="t.icon" width="16" height="16" /> {{ t.label }}</button>
       </div>
       <div class="genre-tabs" style="margin-top:10px">
         <button class="genre-tab" :class="{active:filterGenre===''}" @click="filterGenre=''">Tous</button>
@@ -23,7 +23,7 @@
             <span class="p-badge" :class="statutBadge(c.statut)">{{ statutLabel(c.statut) }}</span>
             <span class="p-badge p-badge-muted">{{ c.saison }}</span>
           </div>
-          <div class="comp-type-icon"><component :is="typeIcon(c.type)" class="w-4 h-4" /></div>
+          <div class="comp-type-icon"><component :is="typeIcon(c.type)" width="16" height="16" /></div>
           <h3 class="comp-nom">{{ c.nom }}</h3>
           <div class="comp-meta text-sub">
             <span v-if="c.region"><MapPin class="inline w-3 h-3 mr-1" /> {{ c.region }}</span>

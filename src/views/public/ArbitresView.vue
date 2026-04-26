@@ -3,7 +3,7 @@
   <div class="p-container" style="padding-top:24px;padding-bottom:60px">
     <div v-if="loading" class="loading-state"><div class="spinner" /></div>
     <table v-else class="p-table"><thead><tr><th>Nom</th><th>Niveau</th><th>Région</th><th>Statut</th></tr></thead>
-    <tbody><tr v-for="a in arbitres" :key="a.id"><td style="font-weight:600">{{ a.prenom }} {{ a.nom }}</td><td><span class="p-badge p-badge-muted">{{ a.niveau }}</span></td><td class="text-sub">{{ a.region }}</td><td><span v-if="a.verifie" class="p-badge p-badge-green">✓ Vérifié</span></td></tr></tbody></table>
+    <tbody><tr v-for="a in arbitres" :key="a.id"><td style="font-weight:600">{{ a.prenom }} {{ a.nom }}</td><td><span class="p-badge p-badge-muted">{{ a.niveau }}</span></td><td class="text-sub">{{ a.region }}</td><td><span v-if="a.verifie" class="p-badge p-badge-green"> Vérifié</span></td></tr></tbody></table>
   </div></div>
 </template>
 <script setup lang="ts">

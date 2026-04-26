@@ -15,7 +15,7 @@
           <div class="password-row">
             <input v-model="password" :type="showPassword ? 'text' : 'password'" class="p-input" placeholder="••••••••" required autocomplete="current-password" />
             <button type="button" class="password-toggle" @click="showPassword = !showPassword" :title="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
-              {{ showPassword ? '👁️‍🗨️' : '👁️' }}
+              {{ showPassword ? '️‍️' : '️' }}
             </button>
           </div>
         </div>
@@ -26,7 +26,7 @@
         </button>
       </form>
 
-      <RouterLink to="/" class="back-link text-sub">← Retour au site</RouterLink>
+      <RouterLink to="/" class="back-link text-sub"> Retour au site</RouterLink>
       <div class="kente-divider" style="margin-top:24px"><span v-for="i in 10" :key="i" /></div>
     </div>
   </div>

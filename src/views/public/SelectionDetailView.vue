@@ -7,7 +7,7 @@
         <div class="cam-stripe" />
         <div class="p-container hero-inner">
           <div>
-            <RouterLink to="/national" class="p-btn-ghost p-btn-sm back-link">← Équipes nationales</RouterLink>
+            <RouterLink to="/national" class="p-btn-ghost p-btn-sm back-link"> Équipes nationales</RouterLink>
             <div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px;flex-wrap:wrap">
               <span class="p-badge" :class="getCatBadge(equipe.categorie)">{{ equipe.categorie.toUpperCase() }}</span>
               <span class="p-badge p-badge-muted">{{ equipe.genre }}</span>
@@ -18,7 +18,7 @@
               Sélectionneur : <strong>{{ equipe.selectionneur }}</strong>
             </p>
           </div>
-          <div class="cam-emblem">🇨🇲</div>
+          <div class="cam-emblem"></div>
         </div>
         <div class="cam-stripe" />
       </section>
@@ -35,12 +35,12 @@
           <button class="p-tab" :class="{active:tab==='roster'}" @click="tab='roster'">Effectif ({{ joueurs.length }})</button>
           <button class="p-tab" :class="{active:tab==='matchs'}" @click="tab='matchs'">Matchs ({{ matchs.length }})</button>
           <button class="p-tab" :class="{active:tab==='stats'}" @click="tab='stats'">Stats individuelles</button>
-          <button class="p-tab" :class="{active:tab==='ia'}" @click="tab='ia'; genererRecommandation()">🤖 Recommandations IA</button>
+          <button class="p-tab" :class="{active:tab==='ia'}" @click="tab='ia'; genererRecommandation()"> Recommandations IA</button>
         </div>
 
         <!-- Roster par poste -->
         <div v-if="tab==='roster'">
-          <div v-if="joueurs.length === 0" class="empty-state"><span>👥</span><p>Aucun joueur sélectionné.</p></div>
+          <div v-if="joueurs.length === 0" class="empty-state"><span></span><p>Aucun joueur sélectionné.</p></div>
           <div v-else>
             <div v-for="groupe in rosterParPoste" :key="groupe.poste" class="poste-group">
               <h3 class="poste-group-title">{{ groupe.poste }} <span class="text-sub">({{ groupe.joueurs.length }})</span></h3>
@@ -67,7 +67,7 @@
 
         <!-- Matchs groupés par phase -->
         <div v-if="tab==='matchs'">
-          <div v-if="matchs.length === 0" class="empty-state"><span>📅</span><p>Aucun match enregistré.</p></div>
+          <div v-if="matchs.length === 0" class="empty-state"><span></span><p>Aucun match enregistré.</p></div>
           <div v-else>
             <div v-for="groupe in matchsParPhase" :key="groupe.phase" class="match-phase-group">
               <h3 class="match-phase-title">{{ groupe.phase }}</h3>
@@ -75,10 +75,10 @@
                 <div v-for="m in groupe.matchs" :key="m.id" class="match-intl-card p-card">
                   <div class="match-header">
                     <span class="text-sub" style="font-size:11px">{{ formatDate(m.date_match) }}</span>
-                    <span v-if="m.lieu" class="text-sub" style="font-size:11px">📍 {{ m.lieu }}</span>
+                    <span v-if="m.lieu" class="text-sub" style="font-size:11px"> {{ m.lieu }}</span>
                   </div>
                   <div class="match-body">
-                    <span class="match-team">🇨🇲 Cameroun</span>
+                    <span class="match-team"> Cameroun</span>
                     <div class="match-score-block" :class="getResultClass(m)">
                       <span v-if="m.statut === 'termine'" class="font-display score-big">{{ m.score_dom }} – {{ m.score_ext }}</span>
                       <span v-else class="text-sub" style="font-size:13px">À venir</span>
@@ -100,7 +100,7 @@
           <div class="stats-note p-card" style="padding:14px 16px;margin-bottom:20px;border-left:3px solid var(--p-gold)">
             <p class="text-sub" style="font-size:12px">Statistiques issues des matchs saisis dans PIVOT.</p>
           </div>
-          <div v-if="statsJoueurs.length === 0" class="empty-state"><span>📊</span><p>Aucune statistique disponible.</p></div>
+          <div v-if="statsJoueurs.length === 0" class="empty-state"><span></span><p>Aucune statistique disponible.</p></div>
           <table v-else class="p-table">
             <thead><tr><th>#</th><th>Joueur</th><th>Poste</th><th>Buts</th><th>Pén.</th><th>7m</th><th>Susp. 2'</th><th>Score IA</th></tr></thead>
             <tbody>
@@ -120,14 +120,14 @@
         <!-- Recommandations IA -->
         <div v-if="tab==='ia'" style="padding-top:20px">
           <div v-if="iaLoading" class="empty-state"><span>⏳</span><p>L'IA analyse la composition…</p></div>
-          <div v-else-if="!iaAnalyse" class="empty-state"><span>🤖</span><p>Clique sur l'onglet pour générer une analyse.</p></div>
+          <div v-else-if="!iaAnalyse" class="empty-state"><span></span><p>Clique sur l'onglet pour générer une analyse.</p></div>
           <div v-else class="ia-rapport p-card">
             <div class="ia-rapport-header">
-              <span class="ia-badge">🤖 Analyse PIVOT IA</span>
+              <span class="ia-badge"> Analyse PIVOT IA</span>
               <span class="text-sub" style="font-size:11px">{{ equipe?.nom }}</span>
             </div>
             <div class="ia-rapport-body" v-html="iaAnalyseHtml" />
-            <button class="p-btn-ghost p-btn-sm" style="margin-top:12px" @click="genererRecommandation">🔄 Régénérer</button>
+            <button class="p-btn-ghost p-btn-sm" style="margin-top:12px" @click="genererRecommandation"> Régénérer</button>
           </div>
         </div>
 
@@ -136,7 +136,7 @@
 
     <div v-else class="p-container" style="padding:80px 0;text-align:center">
       <p class="text-sub">Équipe introuvable.</p>
-      <RouterLink to="/national" class="p-btn-ghost p-btn-sm" style="margin-top:12px;display:inline-flex">← Retour</RouterLink>
+      <RouterLink to="/national" class="p-btn-ghost p-btn-sm" style="margin-top:12px;display:inline-flex"> Retour</RouterLink>
     </div>
   </div>
 </template>

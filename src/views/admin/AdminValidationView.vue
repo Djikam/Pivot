@@ -18,7 +18,7 @@
 
     <div v-if="loading" class="loading-state"><div class="spinner" /></div>
     <div v-else-if="items.length === 0" class="empty-state">
-      <span>✓</span><p>Aucune demande {{ filterStatut === 'A_TRAITER' ? 'en attente' : '' }}.</p>
+      <span></span><p>Aucune demande {{ filterStatut === 'A_TRAITER' ? 'en attente' : '' }}.</p>
     </div>
 
     <div v-else class="items-list">
@@ -30,15 +30,15 @@
             <span class="text-sub" style="font-size:11px">{{ formatDate(item.created_at) }}</span>
           </div>
           <div v-if="item.statut === 'A_TRAITER'" class="item-actions">
-            <button class="p-btn-ghost p-btn-sm" style="color:var(--p-green)" @click="valider(item)">✓ Valider</button>
-            <button class="p-btn-ghost p-btn-sm btn-danger" @click="rejeter(item)">✕ Rejeter</button>
+            <button class="p-btn-ghost p-btn-sm" style="color:var(--p-green)" @click="valider(item)"> Valider</button>
+            <button class="p-btn-ghost p-btn-sm btn-danger" @click="rejeter(item)"> Rejeter</button>
           </div>
         </div>
         <div class="item-body">
           <div class="item-name font-display">{{ item.prenom }} {{ item.nom }}</div>
           <div class="item-contacts text-sub">
-            <span v-if="item.email">✉ {{ item.email }}</span>
-            <span v-if="item.telephone">📱 {{ item.telephone }}</span>
+            <span v-if="item.email"> {{ item.email }}</span>
+            <span v-if="item.telephone"> {{ item.telephone }}</span>
           </div>
           <div class="item-details" v-if="item.details_techniques">
             <div v-if="item.details_techniques.poste_principal" class="detail-chip">
@@ -58,8 +58,8 @@
             "{{ item.details_techniques.message }}"
           </div>
           <div class="item-docs" v-if="item.cv_url || item.photo_url">
-            <a v-if="item.cv_url" :href="item.cv_url" target="_blank" class="p-btn-ghost p-btn-sm">📄 CV</a>
-            <a v-if="item.photo_url" :href="item.photo_url" target="_blank" class="p-btn-ghost p-btn-sm">📸 Photo</a>
+            <a v-if="item.cv_url" :href="item.cv_url" target="_blank" class="p-btn-ghost p-btn-sm"> CV</a>
+            <a v-if="item.photo_url" :href="item.photo_url" target="_blank" class="p-btn-ghost p-btn-sm"> Photo</a>
           </div>
           <!-- Créer le joueur directement -->
           <div v-if="item.statut === 'VALIDE' && item.type_profil === 'JOUEUR' && !item.joueur_cree" class="create-action">

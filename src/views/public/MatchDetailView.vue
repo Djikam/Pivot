@@ -2,13 +2,13 @@
   <div v-if="match">
     <section class="match-hero">
       <div class="p-container" style="padding-bottom:8px">
-        <button class="p-btn-ghost p-btn-sm" style="display:inline-flex" @click="$router.back()">← Retour</button>
+        <button class="p-btn-ghost p-btn-sm" style="display:inline-flex" @click="$router.back()"> Retour</button>
       </div>
       <div class="p-container">
         <div class="match-header-meta">
           <span class="p-badge" :class="statutBadge(match.statut)">{{ statutLabel(match.statut) }}</span>
           <span class="text-sub">{{ match.phase?.competition?.nom }} · J{{ match.journee }} · {{ formatDate(match.date_match) }}</span>
-          <span v-if="match.lieu" class="text-sub">📍 {{ match.lieu }}</span>
+          <span v-if="match.lieu" class="text-sub"> {{ match.lieu }}</span>
         </div>
         <div class="match-scoreboard">
           <!-- Côté domicile / Cameroun -->
@@ -16,7 +16,7 @@
             v-bind="match.type_match === 'club' ? { to: '/clubs/'+match.club_domicile_id } : {}"
             class="team-block">
             <div class="team-logo">
-              <span v-if="match.type_match === 'international'" style="font-size:2rem">🇨🇲</span>
+              <span v-if="match.type_match === 'international'" style="font-size:2rem"></span>
               <span v-else class="font-display">{{ match.club_domicile?.nom?.slice(0,2).toUpperCase() }}</span>
             </div>
             <div class="team-name">{{ match.type_match === 'international' ? 'Cameroun' : match.club_domicile?.nom }}</div>
@@ -31,7 +31,7 @@
             v-bind="match.type_match === 'club' ? { to: '/clubs/'+match.club_exterieur_id } : {}"
             class="team-block team-right">
             <div class="team-logo">
-              <span v-if="match.type_match === 'international'" style="font-size:1.6rem">🌍</span>
+              <span v-if="match.type_match === 'international'" style="font-size:1.6rem"></span>
               <span v-else class="font-display">{{ match.club_exterieur?.nom?.slice(0,2).toUpperCase() }}</span>
             </div>
             <div class="team-name">{{ match.type_match === 'international' ? match.adversaire_international : match.club_exterieur?.nom }}</div>
@@ -44,17 +44,17 @@
       <div class="events-layout">
         <!-- Buteurs -->
         <div class="events-col">
-          <h3 class="font-display" style="font-size:1.1rem;font-weight:700;margin-bottom:14px"><svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg> Buts</h3>
+          <h3 class="font-display" style="font-size:1.1rem;font-weight:700;margin-bottom:14px"><svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg> Buts</h3>
           <div v-if="buts.length === 0" class="text-sub" style="font-size:13px">Non renseigné.</div>
           <div v-else class="events-list">
             <div v-for="b in buts" :key="b.id" class="event-item" :class="b.equipe">
               <span class="event-min text-sub">{{ b.minute }}'</span>
-              <span class="event-icon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg></span>
+              <span class="event-icon"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg></span>
               <RouterLink :to="'/joueurs/'+b.joueur_id" class="event-name">{{ b.joueur?.prenom }} {{ b.joueur?.nom }}</RouterLink>
               <span v-if="b.type !== 'normal'" class="p-badge p-badge-muted">{{ typeButLabel(b.type) }}</span>
               <span class="event-equipe text-sub">
                 {{ match.type_match === 'international'
-                  ? (b.equipe === 'dom' ? '🇨🇲' : '🌍')
+                  ? (b.equipe === 'dom' ? '' : '')
                   : (b.equipe === 'dom' ? 'DOM' : 'EXT') }}
               </span>
             </div>
@@ -62,7 +62,7 @@
         </div>
         <!-- Discipline -->
         <div class="events-col">
-          <h3 class="font-display" style="font-size:1.1rem;font-weight:700;margin-bottom:14px">🟡 Discipline</h3>
+          <h3 class="font-display" style="font-size:1.1rem;font-weight:700;margin-bottom:14px"> Discipline</h3>
           <div v-if="discipline.length === 0" class="text-sub" style="font-size:13px">Aucune sanction enregistrée.</div>
           <div v-else class="events-list">
             <div v-for="d in discipline" :key="d.id" class="event-item">
@@ -95,7 +95,7 @@ const typeButLabel = (t: string) => ({
   'pivot': 'Pivot', 'fastbreak': 'CB', 'breakthrough': 'Percée'
 }[t] ?? t)
 const statutBadge = (s:string) => ({ en_cours:'p-badge-live',termine:'p-badge-muted',programme:'p-badge-gold' }[s]??'p-badge-muted')
-const statutLabel = (s:string) => ({ en_cours:'🔴 En cours',termine:'Terminé',programme:'Programmé' }[s]??s)
+const statutLabel = (s:string) => ({ en_cours:' En cours',termine:'Terminé',programme:'Programmé' }[s]??s)
 const formatDate = (d:string) => new Date(d).toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})
 
 onMounted(async () => {

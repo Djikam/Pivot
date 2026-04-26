@@ -2,7 +2,7 @@
   <div class="admin-distinctions">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher joueur/club…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher joueur/club…" @input="debouncedLoad" />
       <select v-model="filterSaison" class="p-input p-select" @change="load">
         <option value="">Toutes saisons</option>
         <option v-for="s in saisons" :key="s" :value="s">{{ s }}</option>
@@ -38,7 +38,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing?.id ? 'Modifier distinction' : 'Ajouter distinction' }}</h3>
-            <button @click="modal=null">✕</button>
+            <button @click="modal=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">

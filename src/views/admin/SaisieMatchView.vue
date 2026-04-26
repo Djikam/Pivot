@@ -2,8 +2,8 @@
   <div class="saisie-view">
     <!-- Onglets -->
     <div class="saisie-tabs" style="margin-bottom:16px">
-      <button class="saisie-tab" :class="{active:activeTab==='saisie'}" @click="activeTab='saisie'">📋 Saisie de match</button>
-      <button class="saisie-tab" :class="{active:activeTab==='creer'}" @click="activeTab='creer'">➕ Créer compétition / match</button>
+      <button class="saisie-tab" :class="{active:activeTab==='saisie'}" @click="activeTab='saisie'"> Saisie de match</button>
+      <button class="saisie-tab" :class="{active:activeTab==='creer'}" @click="activeTab='creer'"> Créer compétition / match</button>
     </div>
 
     <!-- TAB: SAISIE -->
@@ -20,7 +20,7 @@
           <div v-for="m in matchsAVenir" :key="m.id" class="match-row" :class="{selected: selectedMatch?.id === m.id}" @click="selectMatch(m)">
             <span class="match-j text-sub">J{{ m.journee }}</span>
             <span class="match-clubs">
-              {{ m.type_match === 'international' ? '🇨🇲 Cameroun' : m.club_domicile?.nom }}
+              {{ m.type_match === 'international' ? ' Cameroun' : m.club_domicile?.nom }}
               <span class="text-red">vs</span>
               {{ m.type_match === 'international' ? m.adversaire_international : m.club_exterieur?.nom }}
             </span>
@@ -34,7 +34,7 @@
         <div class="panel p-card">
           <h3 class="panel-title">
             <span v-if="selectedMatch.type_match==='international'">
-              🇨🇲 Cameroun <span class="text-red">–</span> {{ selectedMatch.adversaire_international }}
+               Cameroun <span class="text-red">–</span> {{ selectedMatch.adversaire_international }}
             </span>
             <span v-else>
               {{ selectedMatch.club_domicile?.nom }} <span class="text-red">–</span> {{ selectedMatch.club_exterieur?.nom }}
@@ -69,7 +69,7 @@
           <!-- Buteurs -->
           <div class="section-block">
             <div class="section-block-header">
-              <h4 class="block-title"><svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg> Buteurs</h4>
+              <h4 class="block-title"><svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg> Buteurs</h4>
               <div class="equipe-toggle">
                 <button class="p-btn-ghost p-btn-sm" :class="{active: buteurEquipe==='dom'}" @click="buteurEquipe='dom'">DOM</button>
                 <button class="p-btn-ghost p-btn-sm" :class="{active: buteurEquipe==='ext'}" @click="buteurEquipe='ext'">EXT</button>
@@ -95,18 +95,18 @@
             <div class="events-list">
               <div v-for="(b, i) in form.buts" :key="i" class="event-row">
                 <span class="event-min text-sub">{{ b.minute }}'</span>
-                <span class="event-icon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg></span>
+                <span class="event-icon"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg></span>
                 <span class="event-name">{{ joueurNom(b.joueur_id) }}</span>
                 <span class="p-badge p-badge-muted" v-if="b.type !== 'normal'">{{ b.type === '7m' ? '7m' : 'Pén.' }}</span>
                 <span class="event-equipe text-sub">{{ b.equipe === 'dom' ? 'DOM' : 'EXT' }}</span>
-                <button class="del-btn" @click="form.buts.splice(i,1)"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button class="del-btn" @click="form.buts.splice(i,1)"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
               </div>
             </div>
           </div>
 
           <!-- Discipline IHF -->
           <div class="section-block">
-            <h4 class="block-title">🟡 Discipline (IHF)</h4>
+            <h4 class="block-title"> Discipline (IHF)</h4>
             <div class="add-row">
               <select v-model="newDisc.joueur_id" class="p-input p-select" style="flex:1">
                 <option value="">Joueur…</option>
@@ -119,7 +119,7 @@
                 <option value="carton_jaune">Carton jaune</option>
                 <option value="suspension_2min">Suspension 2 min</option>
                 <option value="carton_rouge">Carton rouge</option>
-                <option value="carton_bleu">Carton bleu ⚠️</option>
+                <option value="carton_bleu">Carton bleu ️</option>
               </select>
               <input v-model.number="newDisc.minute" type="number" min="1" max="60" placeholder="Min." class="p-input" style="width:70px" />
               <button class="p-btn-red p-btn-sm" @click="addDisc">+</button>
@@ -127,7 +127,7 @@
 
             <!-- Alerte carton bleu -->
             <div v-if="hasCartonBleu" class="carton-bleu-alerte p-card" style="padding:12px;margin-top:10px;border-left:3px solid #3A2A8A;background:rgba(58,42,138,.08)">
-              <span style="font-size:13px;color:#8A7AFF;font-weight:600">⚠️ Carton bleu enregistré — Un rapport disciplinaire doit être transmis à la commission compétente.</span>
+              <span style="font-size:13px;color:#8A7AFF;font-weight:600">️ Carton bleu enregistré — Un rapport disciplinaire doit être transmis à la commission compétente.</span>
             </div>
 
             <div class="events-list">
@@ -135,7 +135,7 @@
                 <span class="event-min text-sub">{{ d.minute }}'</span>
                 <DisciplineBadge :type="d.type" />
                 <span class="event-name">{{ joueurNom(d.joueur_id) }}</span>
-                <button class="del-btn" @click="form.discipline.splice(i,1)">✕</button>
+                <button class="del-btn" @click="form.discipline.splice(i,1)"></button>
               </div>
             </div>
           </div>
@@ -145,18 +145,18 @@
             <button class="p-btn-ghost" @click="selectedMatch = null">Annuler</button>
             <button class="p-btn-red" :disabled="saving" @click="sauvegarder">
               <span v-if="saving" class="spinner-sm" />
-              {{ saving ? 'Enregistrement…' : '✓ Enregistrer le match' }}
+              {{ saving ? 'Enregistrement…' : ' Enregistrer le match' }}
             </button>
           </div>
 
           <div v-if="saveError" class="save-error">{{ saveError }}</div>
-          <div v-if="saveSuccess" class="save-success">✓ Match enregistré avec succès !</div>
+          <div v-if="saveSuccess" class="save-success"> Match enregistré avec succès !</div>
         </div>
       </div>
 
       <div v-else class="col-right col-empty">
         <div class="empty-hint p-card">
-          <span style="font-size:2.5rem">👈</span>
+          <span style="font-size:2.5rem"></span>
           <p>Sélectionnez un match programmé pour commencer la saisie.</p>
         </div>
       </div>
@@ -188,7 +188,7 @@
           <button class="p-btn-red" :disabled="!newComp.nom || compSaving" @click="creerComp" style="margin-top:12px;width:100%">
             {{ compSaving ? 'Création…' : '+ Créer la compétition' }}
           </button>
-          <div v-if="compSuccess" class="save-success">✓ Compétition créée ! Sélectionnez-la dans l'onglet Saisie pour y ajouter des matchs.</div>
+          <div v-if="compSuccess" class="save-success"> Compétition créée ! Sélectionnez-la dans l'onglet Saisie pour y ajouter des matchs.</div>
         </div>
 
         <!-- Créer un match -->
@@ -243,7 +243,7 @@
           <button class="p-btn-red" :disabled="!newMatch.phase_id || matchSaving" @click="creerMatch" style="margin-top:12px;width:100%">
             {{ matchSaving ? 'Création…' : '+ Créer le match' }}
           </button>
-          <div v-if="matchSuccess" class="save-success">✓ Match créé ! Allez dans Saisie pour entrer le score.</div>
+          <div v-if="matchSuccess" class="save-success"> Match créé ! Allez dans Saisie pour entrer le score.</div>
         </div>
       </div>
     </div>

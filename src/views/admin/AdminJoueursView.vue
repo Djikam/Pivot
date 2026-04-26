@@ -122,7 +122,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">Créer nouveau club</h3>
-            <button @click="modalClub=null"></button>
+            <button @click="modalClub=null" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid var(--p-border);color:var(--p-sub)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div class="modal-body">
             <div class="form-row">
@@ -276,10 +276,15 @@ function openClubModal() {
 }
 
 async function saveClub() {
-  if (!editingClub.value.nom || !editingClub.value.ville) { saveError.value='Nom et ville requis'; return }
+  if (!editingClub.value.nom || !editingClub.value.ville) { saveError.value = 'Nom et ville requis'; return }
   saving.value = true; saveError.value = ''
-  const { data } = await supabase.from('clubs').insert(editingClub.value).select('id,nom,ville').single()
+  const { data, error } = await supabase.from('clubs').insert(editingClub.value).select('id,nom,ville').single()
+  if (error || !data) {
+    saveError.value = error?.message || 'Erreur lors de la création du club'
+    saving.value = false; return
+  }
   clubs.value.push(data)
+  clubs.value.sort((a:any, b:any) => a.nom.localeCompare(b.nom))
   editing.value.club_id = data.id
   saving.value = false; modalClub.value = false
 }

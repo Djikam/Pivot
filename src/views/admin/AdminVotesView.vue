@@ -2,7 +2,7 @@
   <div class="admin-votes">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher…" @input="debouncedLoad" />
       <select v-model="filterStatut" class="p-input p-select" @change="load">
         <option value="">Tous statuts</option>
         <option value="brouillon">Brouillon</option>
@@ -22,7 +22,7 @@
           <td>{{ v.type }}</td>
           <td><span class="statut-badge" :class="'statut-' + v.statut">{{ statutLabel(v.statut) }}</span></td>
           <td>{{ v.payant ? `${v.tarif_fcfa} FCFA` : 'Gratuit' }}</td>
-          <td class="text-sub" style="font-size:12px">{{ formatDate(v.date_debut) }} → {{ formatDate(v.date_fin) }}</td>
+          <td class="text-sub" style="font-size:12px">{{ formatDate(v.date_debut) }}  {{ formatDate(v.date_fin) }}</td>
           <td class="actions-cell">
             <button class="p-btn-ghost p-btn-sm" @click="openModal(v)">Éditer</button>
             <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteVote(v)">Suppr.</button>
@@ -37,7 +37,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing?.id ? 'Modifier vote' : 'Créer vote' }}</h3>
-            <button @click="modal=null">✕</button>
+            <button @click="modal=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">

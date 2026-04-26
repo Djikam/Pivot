@@ -10,7 +10,7 @@
     <div class="p-container" style="padding-top:24px;padding-bottom:60px">
       <!-- Filtres -->
       <div class="filters-bar">
-        <input v-model="search" class="p-input" placeholder="🔍 Rechercher un coach…"
+        <input v-model="search" class="p-input" placeholder=" Rechercher un coach…"
           style="flex:1;max-width:300px" @input="debouncedLoad" />
         <select v-model="filterType" class="p-input p-select" @change="load">
           <option value="">Tous rôles</option>
@@ -29,7 +29,7 @@
       <!-- Section Équipes Nationales -->
       <div v-else>
         <div v-if="staffNational.length && (filterScope === '' || filterScope === 'national')" class="section-block">
-          <h2 class="section-title font-display">🇨🇲 Staff Équipes Nationales</h2>
+          <h2 class="section-title font-display"> Staff Équipes Nationales</h2>
           <div class="staff-grid">
             <div v-for="s in staffNational" :key="s.id" class="staff-card p-card p-card-cam">
               <div class="staff-avatar">
@@ -51,7 +51,7 @@
                   {{ s.details_techniques.role }}
                 </div>
                 <div v-if="s.details_techniques?.certif" class="staff-certif" style="font-size:11px;color:var(--p-gold);margin-top:4px">
-                  🏅 {{ s.details_techniques.certif }}
+                   {{ s.details_techniques.certif }}
                 </div>
               </div>
             </div>
@@ -60,7 +60,7 @@
 
         <!-- Section Clubs -->
         <div v-if="staffClubs.length && (filterScope === '' || filterScope === 'club')" class="section-block">
-          <h2 class="section-title font-display">🏟️ Staff Clubs</h2>
+          <h2 class="section-title font-display">️ Staff Clubs</h2>
           <div class="staff-grid">
             <div v-for="s in staffClubs" :key="s.id" class="staff-card p-card">
               <div class="staff-avatar">
@@ -79,14 +79,14 @@
                 </RouterLink>
                 <span v-else class="staff-entity text-sub">—</span>
                 <div v-if="s.details_techniques?.certif || s.details_techniques?.diplome" class="staff-certif" style="font-size:11px;color:var(--p-gold);margin-top:4px">
-                  🏅 {{ s.details_techniques?.certif ?? s.details_techniques?.diplome }}
+                   {{ s.details_techniques?.certif ?? s.details_techniques?.diplome }}
                 </div>
                 <div v-if="s.details_techniques?.experience" class="text-sub" style="font-size:11px;margin-top:2px">
                   {{ s.details_techniques.experience }}
                 </div>
                 <div v-if="s.cv_url" style="margin-top:8px">
                   <a :href="s.cv_url" target="_blank" class="p-btn-ghost p-btn-sm" style="font-size:11px">
-                    📄 Voir CV
+                     Voir CV
                   </a>
                 </div>
               </div>
@@ -95,7 +95,7 @@
         </div>
 
         <div v-if="!staffNational.length && !staffClubs.length" class="empty-state">
-          <span>👨‍💼</span>
+          <span>‍</span>
           <p>Aucun coach enregistré pour ces critères.</p>
           <RouterLink to="/self-report?type=COACH" class="p-btn-ghost p-btn-sm">
             + Enregistrer un coach

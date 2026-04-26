@@ -3,7 +3,7 @@
     <section class="edu-hero adinkra-watermark">
       <div class="p-container" style="padding:40px 0 32px">
         <div class="kente-chip-row">
-          <span class="kente-chip-badge"> ESPACE ÉDUCATION</span>
+          <span class="kente-chip-badge">ESPACE ÉDUCATION</span>
         </div>
         <h1 class="font-display" style="font-size:2.2rem;font-weight:700;margin:12px 0 8px">Handball — Formation & Droits</h1>
         <p class="text-sub" style="font-size:15px;max-width:600px">Documents officiels IHF · CAHB · FecaHand. Règles du jeu, droits des joueurs, guide arbitrage. Téléchargeables en PDF, XLSX et CSV.</p>
@@ -15,8 +15,7 @@
       <!-- Catégories -->
       <div class="cat-tabs">
         <button v-for="cat in categories" :key="cat.value" class="cat-tab" :class="{active: activeCat === cat.value}" @click="activeCat = cat.value">
-          <span>{{ cat.icon }}</span>
-          <span>{{ cat.label }}</span>
+          {{ cat.label }}
         </button>
       </div>
 
@@ -37,7 +36,7 @@
 
         <!-- Discipline handball spéciale -->
         <div class="discipline-guide p-card" style="padding:24px;margin-top:24px">
-          <h3 class="font-display" style="font-size:1.3rem;margin-bottom:16px"> Système de sanctions IHF</h3>
+          <h3 class="font-display" style="font-size:1.3rem;margin-bottom:16px">Système de sanctions IHF</h3>
           <p class="text-sub" style="font-size:13px;margin-bottom:16px">Au handball, il n'y a pas de carton vert. Le système de sanctions comporte 5 niveaux officiels.</p>
           <div class="sanctions-list">
             <div v-for="s in sanctions" :key="s.type" class="sanction-row">
@@ -56,7 +55,7 @@
       <div v-if="loading" class="loading-state"><div class="spinner" /><span class="text-sub">Chargement…</span></div>
       <div v-else>
         <div v-if="filteredDocs.length === 0" class="empty-state">
-          <span style="font-size:2rem"></span>
+
           <p>Aucun document disponible pour cette catégorie.</p>
         </div>
         <div v-else class="docs-grid">
@@ -65,7 +64,7 @@
               <span class="doc-format-badge" :class="'format-' + doc.format">{{ doc.format.toUpperCase() }}</span>
               <span class="doc-version text-sub">{{ doc.version }}</span>
             </div>
-            <div class="doc-cat-icon">{{ catIcon(doc.categorie) }}</div>
+
             <h3 class="doc-titre">{{ doc.titre }}</h3>
             <p v-if="doc.description" class="doc-desc text-sub">{{ doc.description }}</p>
             <div class="doc-meta text-sub">
@@ -98,17 +97,17 @@ const search    = ref('')
 const activeCat = ref('all')
 
 const categories = [
-  { value:'all',          label:'Tous',           icon:'' },
-  { value:'regles',       label:'Règles du jeu',  icon:'' },
-  { value:'droits_joueur',label:'Droits joueurs',  icon:'' },
-  { value:'droits_club',  label:'Droits clubs',    icon:'' },
-  { value:'arbitrage',    label:'Arbitrage',       icon:'' },
-  { value:'officiel',     label:'Docs officiels',  icon:'' },
-  { value:'pedagogue',    label:'Pédagogie',       icon:'<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg>' },
+  { value:'all',           label:'Tous'           },
+  { value:'regles',        label:'Règles du jeu'  },
+  { value:'droits_joueur', label:'Droits joueurs' },
+  { value:'droits_club',   label:'Droits clubs'   },
+  { value:'arbitrage',     label:'Arbitrage'      },
+  { value:'officiel',      label:'Docs officiels' },
+  { value:'pedagogue',     label:'Pédagogie'      },
 ]
 
-const catLabel = (c: string) => categories.find(x => x.value === c)?.label ?? c
-const catIcon  = (c: string) => categories.find(x => x.value === c)?.icon ?? ''
+const catLabel = (c: string) => categories.find((x:any) => x.value === c)?.label ?? c
+const catIcon  = (_c: string) => ''
 const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' })
 
 const filteredDocs = computed(() => {

@@ -11,7 +11,7 @@
     <div class="p-container" style="padding-top:28px">
       <!-- Filtres -->
       <div class="filters-bar">
-        <input v-model="search" class="p-input filter-search" placeholder="🔍 Rechercher un joueur…" @input="debouncedLoad" />
+        <input v-model="search" class="p-input filter-search" placeholder=" Rechercher un joueur…" @input="debouncedLoad" />
         <select v-model="filters.poste" class="p-input p-select" @change="load">
           <option value="">Tous les postes</option>
           <option v-for="p in postes" :key="p.value" :value="p.value">{{ p.label }}</option>
@@ -29,10 +29,10 @@
         </select>
         <select v-model="filters.statut" class="p-input p-select" @change="load">
           <option value="">Tous statuts</option>
-          <option value="verifie">✓ Vérifiés</option>
-          <option value="talent">⭐ Talents</option>
+          <option value="verifie"> Vérifiés</option>
+          <option value="talent"> Talents</option>
           <option value="univ"><svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg> Universitaires</option>
-          <option value="national">🇨🇲 Sélectionnés</option>
+          <option value="national"> Sélectionnés</option>
         </select>
         <button class="p-btn-ghost p-btn-sm view-toggle" @click="gridMode = !gridMode">
           <svg v-if="gridMode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
@@ -54,14 +54,14 @@
               <span v-else class="avatar-initials">{{ j.prenom[0] }}{{ j.nom[0] }}</span>
             </div>
             <div class="card-badges">
-              <span v-if="j.verifie" class="p-badge p-badge-green">✓ Vérifié</span>
-              <span v-if="j.badge_talent" class="p-badge p-badge-gold">⭐ Talent</span>
+              <span v-if="j.verifie" class="p-badge p-badge-green"> Vérifié</span>
+              <span v-if="j.badge_talent" class="p-badge p-badge-gold"> Talent</span>
             </div>
           </div>
           <div class="joueur-name">{{ j.prenom }} {{ j.nom }}</div>
           <div class="joueur-meta text-sub">
             <span class="poste-badge">{{ posteLabel(j.poste_principal) }}</span>
-            <span>{{ j.bras_fort === 'gaucher' ? '✋ Gaucher' : j.bras_fort === 'ambidextre' ? '🤲 Ambidextre' : '' }}</span>
+            <span>{{ j.bras_fort === 'gaucher' ? ' Gaucher' : j.bras_fort === 'ambidextre' ? ' Ambidextre' : '' }}</span>
           </div>
           <div class="score-bar">
             <span class="score-label text-sub">Score IA</span>
@@ -102,8 +102,8 @@
                 </div>
               </td>
               <td>
-                <span v-if="j.verifie" class="p-badge p-badge-green">✓</span>
-                <span v-if="j.badge_talent" class="p-badge p-badge-gold">⭐</span>
+                <span v-if="j.verifie" class="p-badge p-badge-green"></span>
+                <span v-if="j.badge_talent" class="p-badge p-badge-gold"></span>
               </td>
             </tr>
           </tbody>
@@ -112,14 +112,14 @@
 
       <!-- Pagination -->
       <div v-if="!loading && joueurs.length > 0" class="pagination">
-        <button class="p-btn-ghost p-btn-sm" :disabled="page === 0" @click="prevPage">← Précédent</button>
+        <button class="p-btn-ghost p-btn-sm" :disabled="page === 0" @click="prevPage"> Précédent</button>
         <span class="text-sub">Page {{ page+1 }}</span>
-        <button class="p-btn-ghost p-btn-sm" :disabled="joueurs.length < limit" @click="nextPage">Suivant →</button>
+        <button class="p-btn-ghost p-btn-sm" :disabled="joueurs.length < limit" @click="nextPage">Suivant </button>
       </div>
 
       <!-- Vide -->
       <div v-if="!loading && joueurs.length === 0" class="empty-state">
-        <span style="font-size:2rem">🔍</span>
+        <span style="font-size:2rem"></span>
         <p>Aucun joueur trouvé pour ces filtres.</p>
         <button class="p-btn-ghost p-btn-sm" @click="resetFilters">Réinitialiser</button>
       </div>
@@ -170,7 +170,7 @@ async function load() {
       id, prenom, nom, poste_principal, bras_fort, score_ia, badge_talent, verifie, photo_cloudinary_id, genre,
       licences_saison!inner(club_id, saison, actif, club:clubs(nom))
     `, { count: 'exact' })
-    .eq('licences_saison.actif', true)   // ← plus de filtre saison hardcodé
+    .eq('licences_saison.actif', true)   //  plus de filtre saison hardcodé
     .order('score_ia', { ascending: false })
     .range(page.value * limit, (page.value + 1) * limit - 1)
 

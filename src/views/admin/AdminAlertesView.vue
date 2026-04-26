@@ -23,35 +23,35 @@
           <!-- Analyse IA similarité -->
           <div v-if="a.ia_analyse" class="ia-analysis">
             <div class="ia-badge" :class="a.ia_score >= 0.8 ? 'ia-high' : a.ia_score >= 0.5 ? 'ia-medium' : 'ia-low'">
-              🤖 IA: {{ a.ia_analyse.verdict }}
+               IA: {{ a.ia_analyse.verdict }}
             </div>
             <div v-if="a.ia_analyse.doublon" class="ia-doublon">
-              ⚠️ Doublon potentiel: 
+              ️ Doublon potentiel: 
               <RouterLink :to="'/joueurs/'+a.ia_analyse.doublon_id" class="text-red" style="font-weight:700">
                 {{ a.ia_analyse.doublon_nom }}
               </RouterLink>
               ({{ Math.round((a.ia_score??0)*100) }}% de similarité)
             </div>
             <div v-if="a.ia_analyse.suggestion" class="text-sub" style="font-size:12px;margin-top:4px">
-              💡 {{ a.ia_analyse.suggestion }}
+               {{ a.ia_analyse.suggestion }}
             </div>
           </div>
           <div v-else class="ia-pending text-sub">
             <span v-if="analysing===a.id">⏳ Analyse IA en cours…</span>
-            <button v-else class="p-btn-ghost p-btn-sm" @click="analyserIA(a)">🤖 Analyser avec IA</button>
+            <button v-else class="p-btn-ghost p-btn-sm" @click="analyserIA(a)"> Analyser avec IA</button>
           </div>
         </div>
         <div class="sr-actions">
-          <RouterLink :to="'/admin/validation'" class="p-btn-ghost p-btn-sm">Voir détail →</RouterLink>
-          <button class="p-btn-ghost p-btn-sm" style="color:var(--p-green)" @click="traiterAlerte(a.id,'traite')">✓ Traité</button>
-          <button class="p-btn-ghost p-btn-sm btn-danger" @click="traiterAlerte(a.id,'rejete')">✕ Rejeter</button>
+          <RouterLink :to="'/admin/validation'" class="p-btn-ghost p-btn-sm">Voir détail </RouterLink>
+          <button class="p-btn-ghost p-btn-sm" style="color:var(--p-green)" @click="traiterAlerte(a.id,'traite')"> Traité</button>
+          <button class="p-btn-ghost p-btn-sm btn-danger" @click="traiterAlerte(a.id,'rejete')"> Rejeter</button>
         </div>
       </div>
     </div>
 
     <!-- CARTONS BLEUS -->
     <div class="p-card alerte-block" v-if="cartonsBleu.length">
-      <h4 class="alerte-title" style="color:#8A7AFF">🔵 Cartons bleus — Rapports en attente ({{ cartonsBleu.length }})</h4>
+      <h4 class="alerte-title" style="color:#8A7AFF"> Cartons bleus — Rapports en attente ({{ cartonsBleu.length }})</h4>
       <table class="p-table">
         <thead><tr><th>Joueur</th><th>Date</th><th>Action</th></tr></thead>
         <tbody>
@@ -66,7 +66,7 @@
 
     <!-- SUSPICIONS TRANSFERTS -->
     <div class="p-card alerte-block" v-if="suspicions.length">
-      <h4 class="alerte-title" style="color:var(--p-red)">🎯 Suspicions RADAR ({{ suspicions.length }})</h4>
+      <h4 class="alerte-title" style="color:var(--p-red)"> Suspicions RADAR ({{ suspicions.length }})</h4>
       <table class="p-table">
         <thead><tr><th>Joueur</th><th>Origine</th><th>Date</th><th>Actions</th></tr></thead>
         <tbody>
@@ -75,7 +75,7 @@
             <td class="text-sub">{{ (t.club_origine as any)?.nom ?? '—' }}</td>
             <td class="text-sub" style="font-size:12px">{{ fd(t.created_at) }}</td>
             <td style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="p-btn-red p-btn-sm" @click="upgradeTransfert(t.id,2)">→ Rumeur</button>
+              <button class="p-btn-red p-btn-sm" @click="upgradeTransfert(t.id,2)"> Rumeur</button>
               <button class="p-btn-ghost p-btn-sm btn-danger" @click="supprimerTransfert(t.id)">Suppr.</button>
             </td>
           </tr>
@@ -85,7 +85,7 @@
 
     <!-- Rien à traiter -->
     <div v-if="!selfReports.length && !cartonsBleu.length && !suspicions.length" class="empty-state">
-      <span>✅</span><p>Aucune alerte en attente.</p>
+      <span></span><p>Aucune alerte en attente.</p>
     </div>
   </div>
 </template>

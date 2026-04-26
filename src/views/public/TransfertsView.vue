@@ -36,13 +36,13 @@
           </div>
           <div class="t-clubs">
             <span class="t-club text-sub">{{ t.club_origine?.nom ?? 'Inconnu' }}</span>
-            <span class="t-arrow" :class="fiabiliteArrowColor(t.fiabilite)">→</span>
+            <span class="t-arrow" :class="fiabiliteArrowColor(t.fiabilite)"></span>
             <span class="t-club" style="font-weight:700">{{ t.club_destination?.nom ?? 'Inconnu' }}</span>
           </div>
           <div v-if="t.motif" class="t-motif text-sub">{{ t.motif }}</div>
         </RouterLink>
       </div>
-      <div v-if="!loading && transferts.length===0" class="empty-state"><Target class="w-8 h-8" /><p>Aucun mouvement enregistré.</p></div>
+      <div v-if="!loading && transferts.length===0" class="empty-state"><Target width="32" height="32" /><p>Aucun mouvement enregistré.</p></div>
     </div>
   </div>
 </template>

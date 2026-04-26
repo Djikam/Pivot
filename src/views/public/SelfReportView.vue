@@ -2,7 +2,7 @@
   <div class="self-report-page">
     <section class="p-hero" style="padding:40px 0 32px">
       <div class="p-container">
-        <RouterLink to="/" class="p-btn-ghost p-btn-sm" style="display:inline-flex;margin-bottom:16px">← Accueil</RouterLink>
+        <RouterLink to="/" class="p-btn-ghost p-btn-sm" style="display:inline-flex;margin-bottom:16px"> Accueil</RouterLink>
         <h1 class="font-display" style="font-size:2rem;font-weight:700;margin-bottom:8px">
           Rejoindre / Modifier mes données
         </h1>
@@ -119,20 +119,20 @@
         <div class="uploads-grid">
           <div class="upload-zone" @click="triggerUpload('cv')" :class="{loaded: uploads.cv}">
             <input type="file" ref="cvInput" accept=".pdf,.doc,.docx" style="display:none" @change="handleFile($event,'cv')" />
-            <span class="upload-icon">📄</span>
-            <span class="upload-label">{{ uploads.cv ? '✓ CV joint' : 'Déposer CV' }}</span>
+            <span class="upload-icon"></span>
+            <span class="upload-label">{{ uploads.cv ? ' CV joint' : 'Déposer CV' }}</span>
             <span class="upload-hint">PDF, DOC (max 5Mo)</span>
           </div>
           <div class="upload-zone" @click="triggerUpload('licence')" :class="{loaded: uploads.licence}">
             <input type="file" ref="licenceInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none" @change="handleFile($event,'licence')" />
             <span class="upload-icon">🪪</span>
-            <span class="upload-label">{{ uploads.licence ? '✓ Licence jointe' : 'Licence FecaHand' }}</span>
+            <span class="upload-label">{{ uploads.licence ? ' Licence jointe' : 'Licence FecaHand' }}</span>
             <span class="upload-hint">PDF, JPG, PNG (max 5Mo)</span>
           </div>
           <div class="upload-zone" @click="triggerUpload('photo')" :class="{loaded: uploads.photo}">
             <input type="file" ref="photoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none" @change="handleFile($event,'photo')" />
-            <span class="upload-icon">📸</span>
-            <span class="upload-label">{{ uploads.photo ? '✓ Photo jointe' : 'Photo identité' }}</span>
+            <span class="upload-icon"></span>
+            <span class="upload-label">{{ uploads.photo ? ' Photo jointe' : 'Photo identité' }}</span>
             <span class="upload-hint">JPG, PNG (max 3Mo)</span>
           </div>
         </div>
@@ -180,20 +180,20 @@
           :disabled="!canSubmit || saving"
           @click="submit">
           <span v-if="saving" class="spinner-sm" />
-          {{ saving ? 'Envoi en cours…' : '✓ Soumettre ma demande' }}
+          {{ saving ? 'Envoi en cours…' : ' Soumettre ma demande' }}
         </button>
       </div>
 
       <!-- Succès -->
       <div v-if="sent" class="p-card success-card">
-        <div class="success-icon">✓</div>
+        <div class="success-icon"></div>
         <h2 class="font-display">Demande reçue !</h2>
         <p class="text-sub">Notre équipe traitera ta demande sous <strong>7 jours ouvrables</strong>. Tu recevras une réponse par email ou WhatsApp.</p>
         <p class="text-sub" style="font-size:12px;margin-top:12px">
           Référence : <code style="background:var(--p-bg3);padding:2px 6px;border-radius:4px">{{ refId }}</code>
         </p>
         <div style="display:flex;gap:10px;margin-top:20px;justify-content:center;flex-wrap:wrap">
-          <RouterLink to="/" class="p-btn-ghost p-btn-sm">← Accueil</RouterLink>
+          <RouterLink to="/" class="p-btn-ghost p-btn-sm"> Accueil</RouterLink>
           <RouterLink to="/joueurs" class="p-btn-ghost p-btn-sm">Voir les joueurs</RouterLink>
         </div>
       </div>
@@ -224,9 +224,9 @@ const uploads = ref<{ cv: File | null; licence: File | null; photo: File | null 
 })
 
 const types = [
-  { value: 'JOUEUR',    label: 'Joueur',    icon: '🏐' },
-  { value: 'COACH',     label: 'Coach',     icon: '📋' },
-  { value: 'PRESIDENT', label: 'Président', icon: '🏢' },
+  { value: 'JOUEUR',    label: 'Joueur',    icon: '' },
+  { value: 'COACH',     label: 'Coach',     icon: '' },
+  { value: 'PRESIDENT', label: 'Président', icon: '' },
 ]
 const postes = [
   {value:'gardien', label:'Gardien'}, {value:'ailier_g', label:'Ailier Gauche'},

@@ -2,7 +2,7 @@
   <div class="admin-transferts">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher joueur…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher joueur…" @input="debouncedLoad" />
       <select v-model="filterFiabilite" class="p-input p-select" @change="load">
         <option value="">Toutes fiabilités</option>
         <option value="4">Confirmé</option>
@@ -45,7 +45,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing?.id ? 'Modifier transfert' : 'Ajouter transfert' }}</h3>
-            <button @click="modal=null">✕</button>
+            <button @click="modal=null"></button>
           </div>
           <div class="modal-body">
             <!-- Sélecteur: Joueur ou Coach -->
@@ -116,7 +116,7 @@
             <div v-if="editing.fiabilite === 4 && editing.type === 'transfert' && editing.club_destination_id"
               class="p-card" style="padding:10px 14px;border-left:3px solid var(--p-green);background:rgba(59,170,106,.06)">
               <span style="font-size:12px;color:var(--p-green)">
-                ✓ Transfert confirmé — la licence du joueur sera automatiquement mise à jour vers ce club.
+                 Transfert confirmé — la licence du joueur sera automatiquement mise à jour vers ce club.
               </span>
             </div>
             <div v-if="saveError" class="save-error">{{ saveError }}</div>
@@ -212,7 +212,7 @@ async function saveTransfert() {
   if (id) { await supabase.from('transferts').update(data).eq('id', id) }
   else    { await supabase.from('transferts').insert(data) }
 
-  // Si fiabilité = 4 (Confirmé) + type = transfert + club_destination → mettre à jour la licence
+  // Si fiabilité = 4 (Confirmé) + type = transfert + club_destination  mettre à jour la licence
   if (data.fiabilite === 4 && data.type === 'transfert' && data.club_destination_id && data.joueur_id) {
     // Désactiver l'ancienne licence
     await supabase.from('licences_saison')
@@ -238,7 +238,7 @@ function getSaisonCourante(): string {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth() + 1
-  // Saison handball : août → juillet
+  // Saison handball : août  juillet
   return month >= 8 ? `${year}-${year+1}` : `${year-1}-${year}`
 }
 

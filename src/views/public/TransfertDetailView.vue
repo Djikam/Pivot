@@ -1,6 +1,6 @@
 <template>
   <div v-if="transfert" class="p-container" style="padding-top:40px;padding-bottom:60px;max-width:700px">
-    <RouterLink to="/transferts" class="p-btn-ghost p-btn-sm" style="margin-bottom:24px;display:inline-flex">← RADAR</RouterLink>
+    <RouterLink to="/transferts" class="p-btn-ghost p-btn-sm" style="margin-bottom:24px;display:inline-flex"> RADAR</RouterLink>
     <div class="p-card" style="padding:28px">
       <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
         <span class="p-badge" :class="fiabiliteColor(transfert.fiabilite)">{{ fiabiliteLabel(transfert.fiabilite) }}</span>
@@ -11,7 +11,7 @@
       </h1>
       <div style="display:flex;align-items:center;gap:14px;font-size:16px;margin-bottom:20px">
         <span class="text-sub">{{ transfert.club_origine?.nom ?? 'Inconnu' }}</span>
-        <span style="color:var(--p-red);font-weight:700;font-size:1.4rem">→</span>
+        <span style="color:var(--p-red);font-weight:700;font-size:1.4rem"></span>
         <span style="font-weight:700">{{ transfert.club_destination?.nom ?? 'Inconnu' }}</span>
       </div>
       <div v-if="transfert.motif" class="text-sub" style="font-size:14px;font-style:italic;margin-bottom:16px">{{ transfert.motif }}</div>

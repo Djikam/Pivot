@@ -31,7 +31,7 @@
     <section class="p-section-sm">
       <div class="p-container">
         <div class="can-banner p-card-cam">
-          <div class="can-flag"><Flag class="w-6 h-6" /></div>
+          <div class="can-flag"><Flag width="24" height="24" /></div>
           <div class="can-info">
             <span class="can-label p-badge p-badge-green">DONNÉES DISPONIBLES</span>
             <h2 class="can-title font-display">CAN Rwanda 2026 — Lions Indomptables</h2>
@@ -51,7 +51,7 @@
         <p class="section-sub text-sub">PIVOT couvre l'intégralité de l'écosystème handball camerounais.</p>
         <div class="modules-grid">
           <RouterLink v-for="mod in modules" :key="mod.to" :to="mod.to" class="module-card p-card" :class="mod.class">
-            <div class="module-icon"><component :is="mod.icon" class="w-5 h-5" /></div>
+            <div class="module-icon"><component :is="mod.icon" width="20" height="20" /></div>
             <div class="module-body">
               <span class="module-tag text-red">{{ mod.tag }}</span>
               <h3 class="module-name">{{ mod.name }}</h3>

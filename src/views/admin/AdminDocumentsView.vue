@@ -1,7 +1,7 @@
 <template>
   <div class="admin-docs">
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher…" @input="debouncedLoad" />
       <select v-model="filterCat" class="p-input p-select" @change="load">
         <option value="">Toutes catégories</option>
         <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.icon }} {{ c.label }}</option>
@@ -20,10 +20,10 @@
           <td class="text-sub">{{ d.version }}</td>
           <td class="text-sub" style="font-size:12px">{{ formatDate(d.publie_le) }}</td>
           <td>
-            <button class="toggle-btn" :class="{on:d.actif}" @click="toggleActif(d)">{{ d.actif?'✓':'○' }}</button>
+            <button class="toggle-btn" :class="{on:d.actif}" @click="toggleActif(d)">{{ d.actif?'':'○' }}</button>
           </td>
           <td class="actions-cell">
-            <a :href="d.fichier_url" target="_blank" class="p-btn-ghost p-btn-sm">↓ Voir</a>
+            <a :href="d.fichier_url" target="_blank" class="p-btn-ghost p-btn-sm"> Voir</a>
             <button class="p-btn-ghost p-btn-sm" @click="openModal(d)">Éditer</button>
             <button class="p-btn-ghost p-btn-sm btn-danger" @click="deleteDoc(d)">Suppr.</button>
           </td>
@@ -37,7 +37,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing?.id ? 'Modifier document' : 'Ajouter document' }}</h3>
-            <button @click="modal=false">✕</button>
+            <button @click="modal=false"></button>
           </div>
           <div class="modal-body">
             <div class="field"><label class="p-label">Titre *</label><input v-model="editing.titre" class="p-input" /></div>
@@ -114,16 +114,16 @@ const editing = ref<any>({})
 const saving = ref(false)
 
 const categories = [
-  { value:'regles',       label:'Règles du jeu',    icon:'📘' },
-  { value:'droits_joueur',label:'Droits joueur',    icon:'⚖️' },
-  { value:'droits_club',  label:'Droits club',      icon:'🏢' },
-  { value:'arbitrage',    label:'Arbitrage',        icon:'🟡' },
-  { value:'officiel',     label:'Officiel',         icon:'📋' },
-  { value:'pedagogue',    label:'Pédagogie',        icon:'🎓' },
+  { value:'regles',       label:'Règles du jeu',    icon:'' },
+  { value:'droits_joueur',label:'Droits joueur',    icon:'️' },
+  { value:'droits_club',  label:'Droits club',      icon:'' },
+  { value:'arbitrage',    label:'Arbitrage',        icon:'' },
+  { value:'officiel',     label:'Officiel',         icon:'' },
+  { value:'pedagogue',    label:'Pédagogie',        icon:'' },
 ]
 
 const catLabel    = (v:string) => categories.find(c => c.value === v)?.label ?? v
-const formatIcon  = (f:string) => ({ pdf:'📄', xlsx:'📊', csv:'📉', html:'🌐', docx:'📝' }[f] ?? '📄')
+const formatIcon  = (f:string) => ({ pdf:'', xlsx:'', csv:'', html:'', docx:'' }[f] ?? '')
 const formatBadge = (f:string) => ({ pdf:'p-badge-red', xlsx:'p-badge-green', csv:'p-badge-blue', html:'p-badge-gold' }[f] ?? 'p-badge-muted')
 const formatDate  = (d:string) => d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) : '—'
 

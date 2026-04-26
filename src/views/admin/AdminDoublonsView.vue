@@ -7,14 +7,14 @@
       </div>
       <button class="p-btn-red" :disabled="scanLoading" @click="scannerIA">
         <span v-if="scanLoading">⏳ Scan en cours…</span>
-        <span v-else>🤖 Scanner avec IA</span>
+        <span v-else> Scanner avec IA</span>
       </button>
     </div>
 
     <!-- Résultats scan IA -->
     <div v-if="iaClusters.length" class="ia-results">
       <div class="ia-header">
-        <span>🤖 L'IA a détecté {{ iaClusters.length }} groupe(s) de doublons potentiels</span>
+        <span> L'IA a détecté {{ iaClusters.length }} groupe(s) de doublons potentiels</span>
       </div>
       <div v-for="cluster in iaClusters" :key="cluster.id" class="cluster-card p-card">
         <div class="cluster-header">
@@ -34,23 +34,23 @@
         </div>
         <div class="cluster-actions">
           <button class="p-btn-red p-btn-sm" @click="fusionnerCluster(cluster)">
-            ⚡ Fusionner (garder le premier)
+             Fusionner (garder le premier)
           </button>
           <button class="p-btn-ghost p-btn-sm" @click="ignorerCluster(cluster.id)">
             Ignorer
           </button>
         </div>
         <div v-if="cluster.merging" class="cluster-merging text-sub">Fusion en cours…</div>
-        <div v-if="cluster.merged" class="cluster-merged">✅ Fusionné !</div>
+        <div v-if="cluster.merged" class="cluster-merged"> Fusionné !</div>
       </div>
     </div>
 
     <!-- Doublons licences (plusieurs licences actives) -->
     <div class="section-block">
-      <h4 class="section-title font-display">📋 Doublons de licences actives</h4>
+      <h4 class="section-title font-display"> Doublons de licences actives</h4>
       <div v-if="loading" class="loading-state"><div class="spinner" /></div>
       <div v-else-if="doublons.length === 0" class="empty-state">
-        <span>✅</span><p>Aucun doublon de licence détecté.</p>
+        <span></span><p>Aucun doublon de licence détecté.</p>
       </div>
       <table v-else class="p-table">
         <thead><tr><th>Joueur</th><th>Saison</th><th>Nb licences</th><th>Clubs</th><th>Actions</th></tr></thead>

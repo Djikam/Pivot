@@ -7,7 +7,7 @@
       </div>
     </section>
     <div class="p-container" style="padding-top:24px;padding-bottom:60px">
-      <RouterLink to="/statistiques" class="p-btn-ghost p-btn-sm" style="margin-bottom:20px;display:inline-flex">← Statistiques</RouterLink>
+      <RouterLink to="/statistiques" class="p-btn-ghost p-btn-sm" style="margin-bottom:20px;display:inline-flex"> Statistiques</RouterLink>
       <!-- Réutilise le composant stats avec onglet buteurs actif -->
     </div>
   </div>

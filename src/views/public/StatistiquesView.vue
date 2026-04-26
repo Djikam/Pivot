@@ -20,8 +20,8 @@
         </select>
         <select v-model="filterGenre" class="p-input p-select" @change="loadTab" style="max-width:160px">
           <option value="">Tous genres</option>
-          <option value="masculin">👨 Masculin</option>
-          <option value="feminin">👩 Féminin</option>
+          <option value="masculin"> Masculin</option>
+          <option value="feminin"> Féminin</option>
         </select>
         <div v-if="selectedComp" class="comp-info">
           <span class="p-badge" :class="statutBadge(selectedComp.statut)">{{ statutLabel(selectedComp.statut) }}</span>
@@ -41,14 +41,14 @@
       <div v-if="tab==='buteurs'">
         <div v-if="loading" class="loading-state"><div class="spinner" /></div>
         <div v-else-if="buteurs.length === 0" class="empty-state">
-          <span>⚽</span>
+          <span></span>
           <p>Aucun buteur enregistré{{ selectedComp ? ' pour ' + selectedComp.nom : '' }}.</p>
           <p class="text-sub" style="font-size:12px">Les données sont saisies match par match via l'admin.</p>
         </div>
         <div v-else>
           <!-- Commentaire IA -->
           <div v-if="iaComment" class="ia-comment-block">
-            <span class="ia-comment-icon">🤖</span>
+            <span class="ia-comment-icon"></span>
             <div>
               <div style="font-size:11px;font-weight:700;color:var(--p-blue);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Analyse IA · PIVOT</div>
               <div style="font-size:13px;line-height:1.6">{{ iaComment }}</div>
@@ -68,7 +68,7 @@
               <div class="podium-name">{{ b.joueur?.prenom }} {{ b.joueur?.nom }}</div>
               <div class="podium-buts font-display">{{ b.total_buts }} <span style="font-size:12px">buts</span></div>
               <div class="podium-bar" />
-              <div class="podium-rank">{{ i===1?'🥇':i===0?'🥈':'🥉' }}</div>
+              <div class="podium-rank">{{ i===1?'':i===0?'':'' }}</div>
             </div>
           </div>
 
@@ -106,7 +106,7 @@
       <div v-if="tab==='gardiens'">
         <div v-if="loading" class="loading-state"><div class="spinner" /></div>
         <div v-else-if="gardiens.length === 0" class="empty-state">
-          <span>🧤</span><p>Aucune statistique gardien disponible.</p>
+          <span></span><p>Aucune statistique gardien disponible.</p>
         </div>
         <table v-else class="p-table">
           <thead>
@@ -135,7 +135,7 @@
       <div v-if="tab==='fairplay'">
         <div v-if="loading" class="loading-state"><div class="spinner" /></div>
         <div v-else-if="fairplay.length === 0" class="empty-state">
-          <span>🟡</span><p>Aucune donnée disciplinaire enregistrée.</p>
+          <span></span><p>Aucune donnée disciplinaire enregistrée.</p>
         </div>
         <div v-else>
           <p class="text-sub" style="margin-bottom:16px;font-size:13px">
@@ -171,7 +171,7 @@
                 <h3 class="font-display" style="font-size:1.1rem;font-weight:700">{{ comp.nom }}</h3>
                 <span class="text-sub" style="font-size:12px">{{ comp.saison }} · {{ comp.nb_matchs }} matchs · {{ comp.total_buts }} buts</span>
               </div>
-              <RouterLink :to="'/competitions/'+comp.slug" class="p-btn-ghost p-btn-sm">Voir →</RouterLink>
+              <RouterLink :to="'/competitions/'+comp.slug" class="p-btn-ghost p-btn-sm">Voir </RouterLink>
             </div>
             <div class="comp-top-scorers">
               <div v-for="(s, i) in comp.top3" :key="s.joueur_id" class="scorer-row">
@@ -184,7 +184,7 @@
             </div>
           </div>
           <div v-if="statsParComp.length===0" class="empty-state">
-            <span>📊</span><p>Aucune compétition avec des buts enregistrés.</p>
+            <span></span><p>Aucune compétition avec des buts enregistrés.</p>
           </div>
         </div>
       </div>
@@ -276,7 +276,7 @@ async function loadButeurs() {
   let q = supabase.from('buts').select('joueur_id, type, match_id, match:matchs(phase:phases(competition_id))')
 
   if (selectedCompId.value) {
-    // Via jointure phases → competition
+    // Via jointure phases  competition
     const { data: phaseIds } = await supabase.from('phases').select('id').eq('competition_id', selectedCompId.value)
     const { data: matchIds } = await supabase.from('matchs').select('id').in('phase_id', (phaseIds??[]).map((p:any)=>p.id))
     if (!matchIds?.length) { buteurs.value = []; loading.value = false; return }

@@ -4,7 +4,7 @@
     <div class="kpi-grid">
       <RouterLink v-for="k in kpis" :key="k.label" :to="k.to" class="kpi-card p-card">
         <div class="kpi-icon-wrap" :style="{background: k.bg}">
-          <component :is="k.icon" class="w-5 h-5" />
+          <component :is="k.icon" width="20" height="20" />
         </div>
         <div class="kpi-body">
           <span class="kpi-value font-display">{{ metrics[k.key] ?? '—' }}</span>
@@ -16,16 +16,16 @@
 
     <!-- Alertes prioritaires -->
     <div v-if="metrics.nb_alertes > 0 || metrics.nb_rgpd_attente > 0 || metrics.nb_cartons_bleu > 0" class="alert-banner">
-      <span class="alert-icon">⚠️</span>
+      <span class="alert-icon">️</span>
       <div class="alert-items">
         <RouterLink v-if="metrics.nb_rgpd_attente > 0" to="/admin/validation" class="alert-chip">
-          📋 {{ metrics.nb_rgpd_attente }} demande(s) RGPD en attente
+           {{ metrics.nb_rgpd_attente }} demande(s) RGPD en attente
         </RouterLink>
         <RouterLink v-if="metrics.nb_alertes > 0" to="/admin/alertes" class="alert-chip">
-          🔔 {{ metrics.nb_alertes }} alerte(s) non lue(s)
+           {{ metrics.nb_alertes }} alerte(s) non lue(s)
         </RouterLink>
         <RouterLink v-if="metrics.nb_cartons_bleu > 0" to="/admin/alertes" class="alert-chip" style="border-color:#8A7AFF;color:#8A7AFF">
-          🔵 {{ metrics.nb_cartons_bleu }} rapport(s) disciplinaire(s) à transmettre
+           {{ metrics.nb_cartons_bleu }} rapport(s) disciplinaire(s) à transmettre
         </RouterLink>
       </div>
     </div>
@@ -34,7 +34,7 @@
       <!-- Derniers matchs -->
       <div class="widget p-card">
         <div class="widget-header">
-          <h3 class="widget-title">⚽ Derniers matchs saisis</h3>
+          <h3 class="widget-title"> Derniers matchs saisis</h3>
           <RouterLink to="/admin/matchs" class="p-btn-ghost p-btn-sm">+ Saisir</RouterLink>
         </div>
         <div v-if="loadingMatchs" class="loading-mini"><div class="spinner" /></div>
@@ -43,7 +43,7 @@
           <tbody>
             <tr v-for="m in dernierMatchs" :key="m.id">
               <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                <span v-if="m.type_match==='international'">🇨🇲 vs {{ m.adversaire_international }}</span>
+                <span v-if="m.type_match==='international'"> vs {{ m.adversaire_international }}</span>
                 <span v-else>{{ m.club_domicile?.nom }} vs {{ m.club_exterieur?.nom }}</span>
               </td>
               <td class="font-display" style="font-weight:700">
@@ -59,10 +59,10 @@
       <!-- Self-Reports / Demandes RGPD -->
       <div class="widget p-card">
         <div class="widget-header">
-          <h3 class="widget-title">📋 Demandes RGPD / Self-Reports</h3>
-          <RouterLink to="/admin/validation" class="p-btn-ghost p-btn-sm">Gérer →</RouterLink>
+          <h3 class="widget-title"> Demandes RGPD / Self-Reports</h3>
+          <RouterLink to="/admin/validation" class="p-btn-ghost p-btn-sm">Gérer </RouterLink>
         </div>
-        <div v-if="collecteDemandes.length === 0" class="empty-mini text-sub">✓ Aucune demande en attente</div>
+        <div v-if="collecteDemandes.length === 0" class="empty-mini text-sub"> Aucune demande en attente</div>
         <div v-else class="alertes-list">
           <div v-for="d in collecteDemandes" :key="d.id" class="alerte-row">
             <span class="p-badge" :class="typeBadge(d.type_profil)">{{ d.type_profil }}</span>
@@ -75,8 +75,8 @@
       <!-- Top buteurs récents -->
       <div class="widget p-card">
         <div class="widget-header">
-          <h3 class="widget-title">🏆 Top Buteurs PIVOT</h3>
-          <RouterLink to="/statistiques" class="p-btn-ghost p-btn-sm">Voir stats →</RouterLink>
+          <h3 class="widget-title"> Top Buteurs PIVOT</h3>
+          <RouterLink to="/statistiques" class="p-btn-ghost p-btn-sm">Voir stats </RouterLink>
         </div>
         <div v-if="topButeurs.length === 0" class="empty-mini text-sub">Aucune donnée buteur.</div>
         <div v-else class="buteurs-list">
@@ -93,7 +93,7 @@
       <!-- Activité récente IA -->
       <div class="widget p-card">
         <div class="widget-header">
-          <h3 class="widget-title">🤖 Insights IA</h3>
+          <h3 class="widget-title"> Insights IA</h3>
         </div>
         <div v-if="loadingIA" class="loading-mini"><div class="spinner" /></div>
         <div v-else class="ia-insights">
@@ -111,25 +111,25 @@
       <!-- Transferts récents -->
       <div class="widget p-card">
         <div class="widget-header">
-          <h3 class="widget-title">🔄 RADAR — Transferts</h3>
-          <RouterLink to="/admin/transferts" class="p-btn-ghost p-btn-sm">Gérer →</RouterLink>
+          <h3 class="widget-title"> RADAR — Transferts</h3>
+          <RouterLink to="/admin/transferts" class="p-btn-ghost p-btn-sm">Gérer </RouterLink>
         </div>
         <div v-if="transfertsRecents.length === 0" class="empty-mini text-sub">Aucun transfert récent.</div>
         <div v-else class="alertes-list">
           <div v-for="t in transfertsRecents" :key="t.id" class="alerte-row">
             <span class="p-badge" :class="fiabBadge(t.fiabilite)">{{ fiabLabel(t.fiabilite) }}</span>
             <span style="font-size:13px">{{ t.joueur?.prenom }} {{ t.joueur?.nom }}</span>
-            <span class="text-sub" style="font-size:11px">→ {{ t.club_destination?.nom ?? '?' }}</span>
+            <span class="text-sub" style="font-size:11px"> {{ t.club_destination?.nom ?? '?' }}</span>
           </div>
         </div>
       </div>
 
       <!-- Actions rapides -->
       <div class="widget p-card">
-        <h3 class="widget-title" style="margin-bottom:16px">⚡ Actions rapides</h3>
+        <h3 class="widget-title" style="margin-bottom:16px"> Actions rapides</h3>
         <div class="quick-actions">
           <RouterLink v-for="a in quickActions" :key="a.to" :to="a.to" class="quick-action">
-            <component :is="a.icon" class="w-5 h-5" style="color:var(--p-red)" />
+            <component :is="a.icon" width="20" height="20" style="color:var(--p-red)" />
             <span class="qa-label">{{ a.label }}</span>
           </RouterLink>
         </div>
@@ -138,7 +138,7 @@
 
     <!-- Stat BD santé -->
     <div class="health-bar p-card">
-      <div class="health-title font-display">📊 Santé de la base de données</div>
+      <div class="health-title font-display"> Santé de la base de données</div>
       <div class="health-grid">
         <div v-for="h in healthStats" :key="h.label" class="health-item">
           <div class="health-val" :style="{color: h.color}">{{ h.val }}</div>

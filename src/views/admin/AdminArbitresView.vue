@@ -1,7 +1,7 @@
 <template>
   <div class="admin-arbitres">
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher arbitre…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher arbitre…" @input="debouncedLoad" />
       <select v-model="filterNiveau" class="p-input p-select" @change="load">
         <option value="">Tous niveaux</option>
         <option value="regional">Régional</option>
@@ -29,7 +29,7 @@
           <td class="text-sub">{{ a.region ?? '—' }}</td>
           <td>
             <button class="toggle-btn" :class="{on:a.verifie}" @click="toggleVerifie(a)">
-              {{ a.verifie ? '✓' : '○' }}
+              {{ a.verifie ? '' : '○' }}
             </button>
           </td>
           <td class="actions-cell">
@@ -48,7 +48,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editing.id ? 'Modifier' : 'Ajouter' }} arbitre</h3>
-            <button @click="modal=false">✕</button>
+            <button @click="modal=false"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">

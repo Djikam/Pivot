@@ -2,7 +2,7 @@
   <div class="admin-national">
     <!-- Toolbar -->
     <div class="admin-toolbar">
-      <input v-model="search" class="p-input filter-input" placeholder="🔍 Rechercher équipe…" @input="debouncedLoad" />
+      <input v-model="search" class="p-input filter-input" placeholder=" Rechercher équipe…" @input="debouncedLoad" />
       <select v-model="filterCategorie" class="p-input p-select" @change="load">
         <option value="">Toutes catégories</option>
         <option value="senior">Senior</option>
@@ -59,7 +59,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editingEquipe?.id ? 'Modifier équipe' : 'Créer équipe' }}</h3>
-            <button @click="modalEquipe=null">✕</button>
+            <button @click="modalEquipe=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">
@@ -102,7 +102,7 @@
         <div class="modal-box modal-large">
           <div class="modal-header">
             <h3 class="font-display">Gérer sélection — {{ currentEquipe?.nom }}</h3>
-            <button @click="closeModalSelection">✕</button>
+            <button @click="closeModalSelection"></button>
           </div>
           <div class="modal-body">
             <div class="selection-toolbar">
@@ -155,7 +155,7 @@
         <div class="modal-box">
           <div class="modal-header">
             <h3 class="font-display">{{ editingSelection?.id ? 'Modifier sélection' : 'Ajouter à la sélection' }}</h3>
-            <button @click="modalJoueur=null">✕</button>
+            <button @click="modalJoueur=null"></button>
           </div>
           <div class="modal-body">
             <div class="form-row">

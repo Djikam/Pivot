@@ -33,11 +33,11 @@
             <div class="match-comp text-sub">{{ m.phase?.competition?.nom }} · J{{ m.journee }}</div>
             <div class="match-main">
               <span class="match-club text-right">
-                {{ m.type_match === 'international' ? '🇨🇲 Cameroun' : m.club_domicile?.nom }}
+                {{ m.type_match === 'international' ? ' Cameroun' : m.club_domicile?.nom }}
               </span>
               <div class="match-score-box">
                 <span v-if="m.statut==='termine'" class="font-display score-txt">{{ m.score_dom }} – {{ m.score_ext }}</span>
-                <span v-else-if="m.statut==='en_cours'" class="p-badge p-badge-live">🔴 LIVE</span>
+                <span v-else-if="m.statut==='en_cours'" class="p-badge p-badge-live"> LIVE</span>
                 <span v-else class="match-heure text-sub">{{ formatHeure(m.date_match) }}</span>
               </div>
               <span class="match-club">
@@ -45,15 +45,15 @@
               </span>
             </div>
             <div v-if="m.type_match === 'international'" class="match-intl-badge">
-              <span class="p-badge p-badge-green" style="font-size:10px">🌍 International</span>
+              <span class="p-badge p-badge-green" style="font-size:10px"> International</span>
             </div>
           </RouterLink>
         </div>
-        <div v-if="grouped.length===0" class="empty-state"><span>📅</span><p>Aucun match trouvé.</p></div>
+        <div v-if="grouped.length===0" class="empty-state"><span></span><p>Aucun match trouvé.</p></div>
         <div class="pagination">
-          <button class="p-btn-ghost p-btn-sm" :disabled="page===0" @click="page--;load()">← Précédent</button>
+          <button class="p-btn-ghost p-btn-sm" :disabled="page===0" @click="page--;load()"> Précédent</button>
           <span class="text-sub">Page {{ page+1 }}</span>
-          <button class="p-btn-ghost p-btn-sm" :disabled="matchs.length < limit" @click="page++;load()">Suivant →</button>
+          <button class="p-btn-ghost p-btn-sm" :disabled="matchs.length < limit" @click="page++;load()">Suivant </button>
         </div>
       </div>
     </div>

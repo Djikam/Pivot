@@ -1,11 +1,11 @@
 <template>
   <div class="pagination" v-if="totalPages > 1 || page > 0">
-    <button class="p-btn-ghost p-btn-sm" :disabled="page === 0" @click="$emit('prev')">← Précédent</button>
+    <button class="p-btn-ghost p-btn-sm" :disabled="page === 0" @click="$emit('prev')"> Précédent</button>
     <div class="page-info">
       <span class="text-sub">Page {{ page + 1 }}</span>
       <span v-if="total" class="text-sub total-count">sur {{ Math.ceil(total / limit) }} · {{ total }} résultats</span>
     </div>
-    <button class="p-btn-ghost p-btn-sm" :disabled="isLastPage" @click="$emit('next')">Suivant →</button>
+    <button class="p-btn-ghost p-btn-sm" :disabled="isLastPage" @click="$emit('next')">Suivant </button>
   </div>
 </template>
 

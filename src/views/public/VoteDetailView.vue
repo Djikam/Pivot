@@ -1,10 +1,10 @@
 <template>
   <div v-if="session" class="p-container" style="padding-top:40px;padding-bottom:60px;max-width:700px">
-    <RouterLink to="/votes" class="p-btn-ghost p-btn-sm" style="margin-bottom:24px;display:inline-flex">← PULSE</RouterLink>
+    <RouterLink to="/votes" class="p-btn-ghost p-btn-sm" style="margin-bottom:24px;display:inline-flex"> PULSE</RouterLink>
     <div class="p-card" style="padding:28px">
       <span class="p-badge" :class="session.statut==='actif'?'p-badge-live':'p-badge-muted'" style="margin-bottom:12px">{{ session.statut==='actif'?'ACTIF':'TERMINÉ' }}</span>
       <h1 class="font-display" style="font-size:1.8rem;font-weight:700;margin:10px 0 6px">{{ session.titre }}</h1>
-      <div class="text-sub" style="font-size:13px;margin-bottom:24px">{{ formatDate(session.date_debut) }} → {{ formatDate(session.date_fin) }}</div>
+      <div class="text-sub" style="font-size:13px;margin-bottom:24px">{{ formatDate(session.date_debut) }}  {{ formatDate(session.date_fin) }}</div>
       <KenteDivider :my="0" />
       <div style="margin-top:20px">
         <div v-for="c in candidats" :key="c.id" class="candidat-row p-card" style="padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:14px">
@@ -13,7 +13,7 @@
             <div :style="{width:pct(c.nb_votes)+'%',height:'100%',background:'var(--p-red)',borderRadius:'4px',transition:'width .6s ease'}" />
           </div>
           <span class="font-display" style="font-weight:700;color:var(--p-red);min-width:30px;text-align:right">{{ c.nb_votes }}</span>
-          <button v-if="session.statut==='actif'" class="p-btn-red p-btn-sm" @click="voter(c.id)" :disabled="voted===c.id">{{ voted===c.id?'✓ Voté':'Voter' }}</button>
+          <button v-if="session.statut==='actif'" class="p-btn-red p-btn-sm" @click="voter(c.id)" :disabled="voted===c.id">{{ voted===c.id?' Voté':'Voter' }}</button>
         </div>
         <div v-if="candidats.length===0" class="text-sub" style="padding:20px;text-align:center">Aucun candidat encore ajouté.</div>
       </div>

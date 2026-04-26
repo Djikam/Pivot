@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar" :class="{ collapsed, 'mobile-open': mobileOpen }">
     <div class="sidebar-header">
-      <span class="sidebar-logo">PIVOT</span>
+      <span class="sidebar-logo font-display" style="color:var(--p-gold);letter-spacing:.1em">PIVOT</span>
       <span v-if="!collapsed" class="sidebar-sub">Admin</span>
       <button class="collapse-btn" @click="collapsed = !collapsed">
         <component :is="collapsed ? ChevronRight : ChevronLeft" width="16" height="16" />
@@ -61,6 +61,7 @@ const navItems: NavItem[] = [
   { to: '/admin/arbitres',    label: 'Arbitres',      icon: Gavel },
   { to: '/admin/votes',       label: 'PULSE',         icon: Heart },
   { to: '/admin/articles',    label: 'FEED',          icon: Newspaper },
+  { to: '/admin/tv',          label: 'HBall237 TV',   icon: Tv },
   { to: '/admin/education',   label: 'Éducation',     icon: BookOpen },
   { to: '/admin/distinctions',label: 'Distinctions',  icon: Star },
   { to: '/admin/validation',  label: 'RGPD',          icon: Shield },

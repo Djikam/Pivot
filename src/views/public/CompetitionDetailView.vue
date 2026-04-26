@@ -2,7 +2,7 @@
   <div v-if="competition">
     <section class="p-hero" style="padding:36px 0 28px">
       <div class="p-container">
-        <button class="p-btn-ghost p-btn-sm" style="display:inline-flex;margin-bottom:12px" @click="$router.back()">← Retour</button>
+        <button class="p-btn-ghost p-btn-sm" style="display:inline-flex;margin-bottom:12px" @click="$router.back()"> Retour</button>
         <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
           <span class="p-badge" :class="statutBadge(competition.statut)">{{ statutLabel(competition.statut) }}</span>
           <span class="p-badge p-badge-muted">{{ competition.saison }}</span>
@@ -69,13 +69,13 @@
                 <span class="text-sub"> — </span>
                 <span :class="m.score_ext > m.score_dom ? 'score-win':'score-lose'">{{ m.score_ext }}</span>
               </span>
-              <span v-else class="p-badge p-badge-gold">{{ m.statut === 'en_cours' ? '🔴 LIVE' : formatShortDate(m.date_match) }}</span>
+              <span v-else class="p-badge p-badge-gold">{{ m.statut === 'en_cours' ? ' LIVE' : formatShortDate(m.date_match) }}</span>
               <span class="match-club text-right">{{ m.club_exterieur?.nom }}</span>
             </div>
             <div v-if="m.mi_temps_dom !== null" class="match-mi text-sub">Mi-temps : {{ m.mi_temps_dom }}–{{ m.mi_temps_ext }}</div>
           </div>
           <div v-if="matchsByJournee.length === 0" class="text-sub" style="padding:20px;text-align:center">Aucun résultat disponible.</div>
-          <RouterLink :to="'/matchs?competition='+competition.slug" class="p-btn-ghost p-btn-sm" style="margin-top:12px">Voir tous les matchs →</RouterLink>
+          <RouterLink :to="'/matchs?competition='+competition.slug" class="p-btn-ghost p-btn-sm" style="margin-top:12px">Voir tous les matchs </RouterLink>
         </div>
       </div>
     </div>

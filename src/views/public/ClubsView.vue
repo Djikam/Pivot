@@ -8,7 +8,7 @@
     </section>
     <div class="p-container" style="padding-top:24px;padding-bottom:60px">
       <div class="filters-bar">
-        <input v-model="search" class="p-input" placeholder="🔍 Rechercher un club…" style="flex:1;max-width:320px" @input="debouncedLoad" />
+        <input v-model="search" class="p-input" placeholder=" Rechercher un club…" style="flex:1;max-width:320px" @input="debouncedLoad" />
         <select v-model="filterRegion" class="p-input p-select" @change="load">
           <option value="">Toutes les régions</option>
           <option v-for="r in regions" :key="r" :value="r">{{ r }}</option>
@@ -33,14 +33,14 @@
           <div class="club-body">
             <div class="club-nom">{{ c.nom }}</div>
             <div class="club-meta text-sub">
-              <span><svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> {{ c.ville }}, {{ c.pays === 'Cameroun' ? c.region : c.pays }}{{ c.pays !== 'Cameroun' ? ' 🌍' : '' }}</span>
+              <span><svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> {{ c.ville }}, {{ c.pays === 'Cameroun' ? c.region : c.pays }}{{ c.pays !== 'Cameroun' ? ' ' : '' }}</span>
               <span v-if="c.universitaire" class="p-badge p-badge-blue" style="font-size:9px"><svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path></svg> Univ.</span>
             </div>
           </div>
           <svg class="club-arrow text-sub" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </RouterLink>
       </div>
-      <div v-if="!loading && clubs.length === 0" class="empty-state"><span>🔍</span><p>Aucun club trouvé.</p></div>
+      <div v-if="!loading && clubs.length === 0" class="empty-state"><span></span><p>Aucun club trouvé.</p></div>
     </div>
   </div>
 </template>

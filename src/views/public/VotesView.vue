@@ -10,7 +10,7 @@
       <div v-if="loading" class="loading-state"><div class="spinner" /></div>
       <div v-else>
         <div v-if="sessionsActives.length" class="sessions-section">
-          <h2 class="font-display" style="font-size:1.3rem;font-weight:700;margin-bottom:16px">🔥 Votes en cours</h2>
+          <h2 class="font-display" style="font-size:1.3rem;font-weight:700;margin-bottom:16px"> Votes en cours</h2>
           <div class="sessions-grid">
             <RouterLink v-for="s in sessionsActives" :key="s.id" :to="'/votes/'+s.id" class="session-card p-card">
               <span class="p-badge p-badge-live" style="align-self:flex-start">ACTIF</span>
@@ -31,7 +31,7 @@
           </div>
         </div>
         <div v-if="!sessionsActives.length && !sessionsTerminees.length" class="empty-state">
-          <span style="font-size:2.5rem">❤️</span>
+          <span style="font-size:2.5rem">️</span>
           <p>Aucun vote en cours. Revenez bientôt !</p>
         </div>
       </div>

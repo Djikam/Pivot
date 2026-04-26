@@ -22,20 +22,20 @@
       <div v-if="loading" class="loading-state"><div class="spinner" /></div>
 
       <div v-else-if="!selectedCompId" class="empty-state">
-        <span>🏆</span>
+        <span></span>
         <p>Sélectionne une compétition pour voir le classement.</p>
       </div>
 
       <div v-else-if="classement.length === 0" class="empty-state">
-        <span>📊</span>
+        <span></span>
         <p>Aucun classement disponible pour cette phase.</p>
-        <RouterLink :to="'/competitions/'+selectedComp?.slug" class="p-btn-ghost p-btn-sm">Voir la compétition →</RouterLink>
+        <RouterLink :to="'/competitions/'+selectedComp?.slug" class="p-btn-ghost p-btn-sm">Voir la compétition </RouterLink>
       </div>
 
       <div v-else>
         <div class="classement-header">
           <h2 class="font-display" style="font-size:1.2rem;font-weight:700">{{ selectedComp?.nom }}</h2>
-          <RouterLink :to="'/competitions/'+selectedComp?.slug" class="p-btn-ghost p-btn-sm">Voir les matchs →</RouterLink>
+          <RouterLink :to="'/competitions/'+selectedComp?.slug" class="p-btn-ghost p-btn-sm">Voir les matchs </RouterLink>
         </div>
         <div style="overflow-x:auto">
           <table class="p-table classement-table">
